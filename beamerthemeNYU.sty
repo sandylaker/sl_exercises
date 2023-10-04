@@ -1,0 +1,65 @@
+\DeclareOptionBeamer{compress}{\beamer@compresstrue}
+\ProcessOptionsBeamer
+
+\mode<presentation>
+
+%\useoutertheme[footline=authortitle]{miniframes}
+\usecolortheme{beaver}
+%\usecolortheme{orchid}
+\useinnertheme{rounded}
+\useoutertheme[subsection=false,footline=authortitle]{miniframes}  
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default] 
+\setbeamertemplate{headline}{}
+
+%\expandafter\def\expandafter\insertshorttitle\expandafter{%
+%  \insertshorttitle\hfill%
+%  \insertframenumber\,/\,\inserttotalframenumber}
+
+\defbeamertemplate{footline}{centered page number}
+{%
+  \hspace*{\fill}%
+  \usebeamercolor[darmstadt]{frame number in head/foot}%
+  \usebeamerfont{frame number in head/foot}%
+  \insertframenumber\,/\,\inserttotalframenumber%
+  \hspace*{\fill}\vskip5pt%
+}
+\setbeamertemplate{footline}[centered page number]
+
+
+
+\setbeamerfont{block title}{size={}}
+
+\definecolor{darkpurple}{rgb}{0.471,0.008,0.412}
+\definecolor{middlepurple}{rgb}{0.663,0.012,0.580}
+\definecolor{lightpurple}{rgb}{0.855,0.016,0.749}
+\definecolor{gold}{RGB}{254,232,0}
+\definecolor{nyupurple}{RGB}{90, 35, 140}
+\definecolor{darmstadt}{RGB}{36, 53, 114}
+\definecolor{lightnyupurple}{RGB}{159, 120, 184}
+
+\setbeamercolor{alerted text}{fg=darmstadt}
+\setbeamercolor{example text}{fg=darkgray}
+
+\setbeamercolor*{palette secondary}{fg=white,bg=gray} %subsection
+\setbeamercolor*{palette tertiary}{fg=white,bg=darmstadt} %section
+
+\setbeamercolor{title}{fg=white, bg=darmstadt} %Title of presentation
+\setbeamercolor{section title}{fg=white, bg=darmstadt}
+\setbeamercolor{subsection title}{fg=white, bg=gray}
+\setbeamercolor{frametitle}{fg=darmstadt, bg=white}
+
+\setbeamerfont{frametitle}{size=\LARGE}
+\setbeamerfont{frametitle}{series=\bfseries}
+
+\setbeamertemplate{blocks}[rounded][shadow=true] 
+\setbeamertemplate{items}[triangle]
+\setbeamercolor{item}{fg=gray, bg=white}
+
+\setbeamercovered{transparent}
+
+\setbeamercolor{section in head/foot}{fg=darmstadt, bg=white}
+\setbeamercolor{author in head/foot}{fg=darmstadt, bg=white}
+
+\mode
+<all>
