@@ -34,6 +34,9 @@
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
 
+\newcommand{\Eyx}{\mathbb{E}_{y|\xv}}
+\newcommand{\my}{m(y)}
+
 \title[]{\textbf{Exercise 1}}
 
 %\subtitle{}
@@ -56,7 +59,7 @@
 
 % This is only inserted into the PDF information catalog. Can be left
 % out.
-\subject{Subject}
+\subject{Exercise 1}
 
 
 
@@ -93,8 +96,209 @@
 
 \end{frame}
 
-\begin{frame}{Test}
-	$\xv \in \mathbb{R}^2$
+\begin{frame}{Exercise 1: Risk Minimizers for Generalized L2-Loss}
+Consider the regression learning setting, i.e., $\Yspace = \mathbb{R}$, and assume that your loss function of interest is $L(y, f(\xv)) = (m(y) - m(f(\xv)))^2$, where: $m: \mathbb{R} \to \mathbb{R}$ is a continuous strictly monotnone function.
+
+\textbf{Disclaimer: In the following we always assume that $\var(m(Y))$ exists.}
+
+(a) Consider the hypothesis space of a constant models $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} | f(\xv) = \thetab \ \forall \xv \in \Xspace \}$, where $\Xspace$ is the feature space. Show that 
+$$
+	\hat{f}(\xv) = m^{-1}\left( \frac{1}{n} \sum_{i=1}^n m(\yi) \right)
+$$
+is the optimal constant model for the loss function above, where $m^{-1}$ is the inverse function of m.
+	
 \end{frame}
+
+\begin{frame}{Solution to Question (a)}
+	\begin{enumerate}
+		\item<1-> $f$ is a \textbf{constant model}: $f(\xv) = \thetab$ for all $\xv$.
+		\item<2-> The empirical risk can be formulated as:
+			$$\riske(f) = \sumin \left(m(\yi) - m(f(\xi)) \right)^2 = \sumin \left(m(\yi) - m(\thetab) \right)^2.$$
+		\item<3-> $\riske(f)$ is \textbf{strictly convex} (because MSE loss and $m$ is strictly monotone). So the minimum is unique, and can be computed by solving $\partial{\riske(f)} / \partial \thetab = \bm{0}.$
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to Question (a): Continued}
+	Goal: Compute the optimal $\thetab$ by solving $\partial{\riske(f)} / \partial \thetab = \bm{0}.$
+	
+	\begin{enumerate}
+		\small
+		\item<1-> Compute the derivative: $$\frac{\partial \riske(f)}{\partial \thetab} = 2 \sumin (m(\yi) - m(\thetab)) \cdot \frac{\partial m(\thetab)}{\partial \thetab} = 0$$
+		\item<2-> Using the fact that $\frac{\partial m(\thetab)}{\partial \thetab}$ is constant for all $i$, we obtain:
+			\begin{align*}
+				\sumin (m(\yi) - m(\thetab)) &= 0 \\
+				\Rightarrow \sumin m(\yi) &= \sumin m(\thetab) \\
+				\Rightarrow m(\thetab) &= \frac{1}{n} \sumin m(\yi) \\
+				\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right)
+			\end{align*}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Question (b)}
+	(b) Verify that the risk of the optimal constant model is $\risk_L\left(\hat{f} \right) = (1 + \frac{1}{n}) \var(m(y))$.
+	
+	\vspace{10pt}
+	Recall that the risk of $\hat{f}$ is defined as 
+	$$\risk_L(\hat{f}) = \Exy[L(y, \hat{f}(\xv)]$$
+\end{frame}
+
+\begin{frame}{Solution to Question (b)}
+	\small
+	\begin{align*}
+		\risk_L(\hat{f}) &= \Exy[L(y, \hat{f}(\xv)]\\
+		&= \Exy[(m(y) - m(\hat{f}(\xv))^2] \\
+		&= \Exy\left[\left(m(y) - \frac{1}{n} \sumin m(\yi) \right)^2 \right] \\
+		&= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right]
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	Now take a look at the second term: $-2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right]$.
+	\vspace{10pt}
+	
+	Because $y, y^{(1)}, \ldots, y^{(n)}$ are i.i.d. with $\Exy[m(\yi)] = \Exy[m(y)]$, we have 
+	\begin{align*}
+		\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] &= \frac{1}{n} \cdot \Exy \left[m(y) \sumin m(\yi) \right] \\
+		&= \frac{1}{n} \cdot \Exy[m(y)] \Exy \left[\sumin m(\yi) \right] \\
+		&= \frac{1}{n} \cdot \Exy[m(y)] \cdot n \cdot \Exy[m(y)] \\
+		&= \Exy[m(y)]^2.
+	\end{align*}
+	
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	Now take a look at the third term: $\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right]$.
+	\vspace{10pt}
+	
+	Similarily, we have
+	\begin{align*}
+		&\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
+		&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\
+		&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \\
+		&= \frac{1}{n}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\
+		&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	Combining the results so far, we get
+	\begin{align*}
+		\risk_L(\hat{f}) &= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
+		&= \Exy[m(y)^2] - 2 \Exy[m(y)]^2 + \frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2 \\
+		&= \left(1 + \frac{1}{n} \right) \left(\Exy[m(y)^2] - \Exy[m(y)]^2 \right)\\ 
+		&= \left(1 + \frac{1}{n} \right) \var(\my).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Question (c)}
+	Derive that the risk minimizer $f^*$ is given by $f^*(\xv) = m^{-1} (\Eyx [m(y) | \xv])$.
+	\vspace{10pt}
+	
+	Hints:
+	\begin{itemize}
+		\item<2-> Consider unstricted hypothesis space $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} \}$. 
+		\item<3-> Since $\Hspace$ is unrestricted, for each $\xv$, we can predict any value $c \in \mathbb{R}$ we want. $\leadsto$ Point-wise prediction.
+		\item<4-> Point-wise prediction: given unlimited space, we can use a look-up table to store $f^*(\xv)$ for all $\xv$.
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Solution to Question (c)}
+	\uncover<1->{
+		By the law of total expectation, 
+		\begin{align*}
+			\risk_L(f) &= \Exy[L(y, f(\xv))] \\
+			&= \mathbb{E}_{\xv}[\Eyx[L(y, f(\xv)) \ | \ \xv ] ] \\ 
+			&= \mathbb{E}_{\xv}[\Eyx[(\my - m(f(\xv)))^2 \ | \ \xv ]].
+		\end{align*}
+	}
+	
+	\uncover<2->{
+		Since we consider a point-wise prediction, we can omit the $\mathbb{E}_\xv$, and we focus on computing $f^*(\xv) = c$ given a \textbf{fixed} $\xv$. In other words, we solve the optimal $c$ for each $\xv$ separately.
+	}
+	\vspace{10pt}
+	
+	\uncover<3->{
+		To solve $f^*(\xv) = \argmin_{c} \Eyx[(\my - m(f(\xv)))^2 \ | \ \xv ]$, we adopt the same way as the solution of Question (a), obtaining
+		$$ f^*(\xv) = m^{-1}(\Eyx[\my \ | \ \xv ]).$$
+	}
+	
+\end{frame}
+
+\begin{frame}{Question (d)}
+	(d): What is the optimal \textbf{constant} model in terms of the (theoretical) risk for the loss above and what is the risk?
+	
+	\vspace{10pt}
+	\uncover<2->{
+		Note: in Question (c), we allow $f$ outputs different values $c$ for different $\xv$. In Question (d), we aim to search an optimal $\bar{f}(\xv) = c$ for all $\xv$.
+	}
+\end{frame}
+
+\begin{frame}{Solution to Question (d)}
+	The (theoretical) risk for a constant model $\bar{f}(\xv) = c$ is:
+	\begin{align*}
+		\risk_L(\bar{f}) &= \mathbb{E}_{\xv} \left[ \Eyx \left[ (\my - m(\bar{f}(\xv)))^2 \right] \right]  \\
+			&= \int_{y} \int_{\xv} (\my - m(\bar{f}(\xv)))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
+			&= \int_{y} \int_{\xv} (\my - m(c))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
+			&= \int_{y} (\my - m(c))^2 p(y) \mathrm{d}y  \quad \rhd \\
+			&= \mathbb{E}_y \left[ (\my - m(c))^2 \right]
+	\end{align*}
+	Therefore, the optimal constant model is  
+	$$\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$$
+\end{frame}
+
+\begin{frame}{Solution to Question (d): Continued}
+	The risk given $\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$ is:
+	$$\risk_{L}(\bar{f}) = \Exy[(\my - m(\bar{f}(\xv))^2] = \mathbb{E}_y[(\my - \mathbb{E}_y[\my])^2] = \var(\my) $$
+\end{frame}
+
+\begin{frame}{Question (e)}
+
+	(e): Recall the decomposition of the Bayes regret into the estimation and the approximation error. Show that the former is $\frac{1}{n}\var(\my)$, while the latter is $\var\left(\Eyx[\my \ | \ \xv] \right)$ for the optimal constant model $\hat{f}(\xv)$ if the hypothesis space $\Hspace$ consists of the constant models.
+
+\end{frame}
+
+\begin{frame}{Solution to Question (e)}
+	\begin{itemize}
+			\item Recall from Question (a) that $\hat{f}(\xv) = m^{-1}\left(\frac{1}{n} \sumin m(\yi\right)$ and $\risk_L(\hat{f}) = \left( 1 + \frac{1}{n} \right) \var(\my)$.
+			\item Recall from Question (d) that $\bar{f}(\xv) = \argmin_{f \in \Hspace} \risk_L(f)$ and $\risk_L(\bar{f}) = \var(\my)$.
+			\item Recall from (c) that the point-wise risk minimizer $f^*(\xv) = m^{-1}(\Eyx[\my \ | \xv]) = \argmin_{f} R_L(f)$ for an \textbf{unstricted} function space.
+			\item Remember to differentiate between these risk minimizers.
+			\item The Bayes regret can be decomposed as:
+				$$\risk_L(\hat{f}) - \risk_L^* = \underbrace{\left[ \risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) \right]}_{\text{estimation error}} + \underbrace{\left[ \inf_{f \in \Hspace} \risk_L(f) - \risk_L^* \right]}_{\text{approximation error}}$$
+		\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Solution to Question (e): Continued}
+The estimation error is:
+	\begin{align*}
+		\risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) 
+		&= \risk_{L} (\fh) - \risk_L(\bar{f}) \\
+		&= \left(1 + \frac{1}{n}\right) \var(\my) - \var(\my) \\
+		&= \frac{1}{n} \var(\my).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (e): Continued}
+	The approximation error is:
+	\begin{align*}
+		\inf_{f \in \Hspace} \risk_L(f) - \risk_L^*
+		&= \risk_L(\bar{f}) - \risk_L(f^*) \\
+		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(f^*(\xv))^2 \ | \ \xv] \right] \quad \text{(plug in (d))} \\
+		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(m^{-1}(\Eyx[\my \ | \  \xv])))^2 \ | \ \xv] \right] \quad \text{(plug in (c))} \\
+		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - \Eyx[\my \ | \  \xv])^2 \ | \ \xv] \right] \\
+		&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\
+		&= \var(\Eyx[\my \ | \ \xv])
+	\end{align*}
+The last step holds because of the law of total variation:
+$$
+	\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
+$$
+\end{frame}
+
 
 \end{document}
