@@ -34,6 +34,10 @@
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
 
+\newcommand{\Ex}{\mathbb{E}_{\xv}}
+\newcommand{\Eyx}{\mathbb{E}_{y|\xv}}
+\newcommand{\Prob}{\mathbb{P}}
+
 \title[]{\textbf{Exercise 2}}
 
 %\subtitle{}
@@ -106,6 +110,145 @@
 		\hat{h}(\xv) = \mathrm{mode} \left\{\yi \right\}
 	$$
 	is the empirical risk minimizer for the 0-1-loss in this case.
+\end{frame}
+
+\begin{frame}{Solution to Question (a)}
+\small
+The empirical risk is
+	\begin{align*}
+		\riske(h) &= \sumin \id_{\yi \neq h(\xi)} \\
+		&=\sumin 1 - \id_{\yi = h(\xi)} \quad \rhd \\
+	\end{align*}
+
+Therefore
+\begin{align*}
+	\argmin_{h \in \Hspace} \riske(h) 
+	&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\ 
+	&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\
+	&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\}
+\end{align*}
+	
+\end{frame}
+
+\begin{frame}{Question (b)}
+	(b) What is the optimal constant model interms of the (theoretical) risk for the 0-1-loss and what is its risk?
+\end{frame}
+
+\begin{frame}{Solution to Question (b)}
+\small
+	\begin{align*}
+		\risk_L(h) &= \int_y \int_\xv \id_{y \neq h(\xv)} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
+		&= \int_y \int_\xv \id_{y \neq \thetab} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
+		&= \int_y \id_{y \neq \thetab} p(y) \mathrm{d}y \\
+		&= \int_y \left( 1 - \id_{y = \thetab} \right) p(y) \mathrm{d}y 
+	\end{align*}
+Therefore, $\argmin_{h} \risk_L(h) = \argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y$. Futhermore, $\Yspace = \{1, \ldots, g\}$, 
+it follows that $\argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y = \argmax_{\thetab \in \Yspace} \sumjg \id_{\thetab = j} \Prob (y=j)$. (Show example.)
+
+Hence, the optimal constant model for the \textbf{theorerical} risk is 
+$$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	Before we compute $\risk_{L}(\bar{h})$, we write 0-1-loss as follows:
+	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \sum_{k \in \Yspace} \id_{y=k} \id_{k\neq h(\xv)} = \sum_{k \in \Yspace} L(k, h(x)).$$
+	Then, the risk of $\bar{h}$ is 
+	\begin{align*}
+		\risk_L(\bar{h})
+		&= \Exy[L(y, \bar{h}(\xv))] \\
+		&= \Ex\left[ \Eyx \left[L(y, \bar{h}(\xv)) \ | \ \xv \right] \right] \\
+		&= \Ex\left[ \Eyx \left[\sum_{k \in \Yspace} \id_{y=k} L(k, \bar{h}(\xv)) \ | \ \xv \right] \right] \\
+		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \quad \rhd \\
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	\begin{align*}
+		\risk_L(\bar{h})
+		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \\
+		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Prob(y = k \ | \ \xv) \right] \\
+		&= \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Ex \left[ \Prob(y = k \ | \ \xv) \right] \\
+		& = \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Prob(y = k) \\
+		&= \sum_{k \in \Yspace} \id_{k \neq \bar{h}(\xv)} \Prob(y=k) \\
+		&=  \sum_{k \in \Yspace} \id_{k \neq \argmax_{l \in \Yspace} \Prob(y=l)} \Prob(y=k) \\
+		&= 1 - \max_{l \in \Yspace} \Prob(y=l).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Question (c)}
+	(c) Derive the approximation error if the hypothesis space $\Hspace$ consists of the \textbf{constant models}.
+	\vspace{10pt}
+	
+	Recall that the approximation error is defined as 
+	$$\inf_{h \in \Hspace} \risk_L(h) - \riskbayes_L$$
+\end{frame}
+
+\begin{frame}{Solution to (c)}
+	\begin{align*}
+		\inf_{h \in \Hspace} \risk_L(h) - \riskbayes_L 
+		&= \risk_L(\bar{h}) - \riskbayes_L \\
+		&= (1 - \max_{l \in \Yspace} \Prob(y=l)) - (1 - \Ex[\max_{l \in \Yspace} \Prob(y = l | \xv)]) \\
+		&= \Ex[\max_{l \in \Yspace} \Prob(y = l | \xv)] - \max_{l \in \Yspace} \Prob(y=l).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Question (d)}
+	(d) Assume now $g=2$ (binary classification) and consider now the hypothesis space of probabilistic classifiers $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, that is, $\pi(\xv)$ (or $1 - \pi(\xv)$) is an estimate of the posterior distribution $p_{y | \xv} (1 | \xv)$ (or $p_{y | \xv} (0 | \xv)$). Furthermore, consider the probabilistic 0-1-loss
+	$$
+	L(y, \pi(\xv)) = \begin{cases}
+		1, \quad & \text{if ($\pi(\xv) \geq 1/2$ and $y=0$) or ($\pi(\xv) < 1/ 2$ and $y = 1$),} \\
+		0, \quad & \text{else.}
+	\end{cases}
+	$$
+	Is the minimum of $\Exy[L(y, \pix)]$ unique over $\pi \in \Hspace$? Is the posterior distribution $p_{y|x}$ a resp. the minimizer of $\Exy[L(y, \pix)]$? Discuss the corresponding (dis-)advantanges of your findings.
+\end{frame}
+
+\begin{frame}{Solution to Question (d)}
+	\begin{itemize}
+		\item We can rewrite the 0-1-loss as $$L(y, \pix) = \id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix <1/2} \id_{y=1}.$$
+		\item Since $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, we can optimize $\pi$ for each point $\xv$.
+		\item In other words, for $\Exy[L(y, \pix)] = \Ex[\Eyx[L(y, \pix) \ | \ \xv]]$. we optimize $\Eyx[L(y, \pix) \ | \ \xv]$ for each $\xv$.
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Solution to Question (d): Continued}
+	\begin{align*}
+		\Eyx[L(y, \pix) \ | \ \xv]
+		&= \Eyx[\id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\
+		& = \Eyx[\id_{\pix \geq 1/2} \id_{y=0} \ | \ \xv] + \Eyx[ \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\
+		&= \id_{\pix \geq 1/2} \cdot \Eyx[\id_{y=0} \ | \ \xv] + \id_{\pix < 1/2} \cdot \Eyx[\id_{y=1} \ | \ \xv] \quad \rhd \\
+		&= \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). \\
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (d): Continued}
+	$$\Eyx[L(y, \pix) \ | \ \xv] = \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). $$
+	We can distinguish between two cases:
+	\begin{itemize}
+		\item If $\Prob(y=0 \ | \ \xv) \geq 1/ 2$, then any $\pix < 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
+		\item If $\Prob(y=0 \ | \ \xv) \leq 1/ 2$, then any $\pix \geq 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
+	\end{itemize}
+	In other words:
+	$$
+		\pix = \begin{cases}
+			< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$, } \\
+			\geq 1/2, \quad &\text{if $\Prob(y=1 \ | \ \xv) < 1/2$.}
+		\end{cases}
+	$$
+	
+	The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique.
+
+\end{frame}
+
+\begin{frame}{Solution to Question (d): Continued}
+Disadvantages of using $p_{y | \xv}$:
+\begin{itemize}
+	\item TODO (The solution is not very clear. Ask people around.)
+\end{itemize}
+	
 \end{frame}
 
 \end{document}
