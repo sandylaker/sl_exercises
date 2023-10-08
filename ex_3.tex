@@ -1,0 +1,187 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+
+\newcommand{\Ex}{\mathbb{E}_{\xv}}
+\newcommand{\Eyx}{\mathbb{E}_{y|\xv}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\my}{m(y)}
+\newcommand{\myi}{m(\yi)}
+\newcommand{\mfx}{m(f(\xv))}
+\newcommand{\mfxi}{m(f(\xv^{(i)}))}
+\newcommand{\zi}{z^{(i)}}
+\newcommand{\mfruexi}{m(\ftrue(\xv^{(i)}))}
+
+\title[]{\textbf{Exercise 3}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{Date}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+
+\begin{frame}{Exercise 3: Connection between between MLE and ERM}
+\small
+	Suppose we are facing a regression task, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace \subseteq \mathbb{R}^p$. Let us assume that the relationship between the features and labels is specified by 
+	$$y = m^{-1}(m(\ftrue(\xv)) + \eps),$$
+	where $m: \mathbb{R} \to \mathbb{R}$ is a continuous strictly monotone function with $m^{-1}$ being its inverse function, and the errors are Gaussian, i.e., $\eps \sim \mathcal{N}(0, \sigma^2)$. In particular, for the data points $(\xv^{(1)}, y^{(1)}, \ldots, \xv^{(n)}, y^{(n)})$ it holds that
+	$$\yi = m^{-1}(m(\ftrue(\xv^{(i)})) + \epsi),$$
+	where $\eps^{(1)}, \ldots, \eps^{(n)}$ are i.i.d. with distribution $\mathcal{N}(0, \eps^2)$.
+	
+	\textbf{Disclaimer:} We assume in the following that $\my$ and $\mfx$ is well-defined for any $y \in \Yspace, f \in \Hspace$ and $\xv \in \Xspace$.
+	
+	(a) How can we transform the labels $y^{(1)}, \ldots, y^{(n)}$ to ``new'' labels $z^{(1)}, \ldots, z^{(n)}$ such that $ z^{(i)} \ | \ \xv$ is normally distributed? What are the parameters of this normal distribution?
+	
+\end{frame}
+
+\begin{frame}{Solution: Question (a)}
+	We can use 
+	$$z^{(i)} = m(y^{(i)}).$$
+
+	We know that $ \yi = m^{-1}(\mfruexi + \epsi)$, therefore $	\myi = \mfruexi + \epsi$.
+	Hence, 
+	$$\zi = \mfruexi + \epsi, \quad \text{with } \eps^{(i)} \sim \mathcal{N}(0, \sigma^2). $$
+	Therefore, $\zi \ | \ \xv^{(i)}$ is normally distributed, i.e., $$\zi \ | \ \xv^{(i)} \sim  \mathcal{N}(\mfruexi, \sigma^2)$$.
+
+\end{frame}
+
+\begin{frame}{Question (b)}
+	Assume that the hypothesis space is 
+	$$\Hspace = \{ f(\cdot, \thetab): \Xspace \to \mathbb{R} | f(\cdot | \thetab) \text{ belongs to a certain functional family parameterized by } \thetab \in \Theta \},$$
+	where $\thetab = (\theta_1, \theta_2, \ldots, \theta_d))$ is a parameter vector, which is an element of a \textbf{parameter space} $\Theta$. Based on your findings (a), establish a relationship between minimizing the negative log-likelihood for $(\xv^{(1)}, z^{(1)}), 
+	\ldots (\xv^{(n)}, z^{(n)})$ and empirical loss minimizing over $\Hspace$ of the generalized L2-loss function of Exercise sheet 1, i.e., $L(y, \fx)) = (\my - \mfx)^2$.
+\end{frame}
+
+\begin{frame}{Solution to Question (b)}
+	\small
+	The likelihood for  $(\xv^{(1)}, z^{(1)}), \ldots (\xv^{(n)}, z^{(n)})$ is 
+	\begin{align*}
+		\mathcal{L}(\thetab) 
+		&= \prodin p \left( \zi \ | \ f(\xi \ | \ \thetab), \sigma^2 \right)  \\
+		&\propto \exp \left( -\frac{1}{2\sigma^2} \sumin \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \right).
+	\end{align*}
+	So the negative log-likelihood (NLL) is 
+	\begin{align*}
+		- \ell(\thetab) 
+		&= - \log(\mathcal{L}(\thetab))\\
+		&\propto \sumin  \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \\
+		&= \sumin  \left[ \myi - m(f(\xi \ | \ \thetab)) \right]^2 
+	\end{align*}
+	
+	Therefore, the NLL is propotional to the empirical risk of $f(\cdot | \thetab)$ w.r.t. the generalized L2-Loss.
+\end{frame}
+
+\begin{frame}{Question (c)}
+	(c) In many practical applications, one often observed statisical property is that the label $y$ given $\xv$ follows a \emph{log-normal distribution}. Note that we can obtain such a relationship by using $m(x) = \log(x)$ above. In the following we want to consider the conjecture of James D. Forbes, who conjectured in the year 1857 that the relationship between the air pressure $y$ and the boiling point of water $x$ is given by $$y = \theta_1 \exp(\theta_2 x + \eps),$$ for some specific values $\theta_1 \in \mathbb{R}_+, \theta_2 \in \mathbb{R}$ and some error terms $\eps$ (of course, we assume that this error term is stochastic and normally distributed).
+	
+	What would be a suitable hypothesis space $\Hspace$ if this conjecture holds?
+\end{frame}
+
+\begin{frame}{Solution to Question (c)}
+	\small
+	\begin{itemize}
+		\item The goal is to introduce a proper form for $f(\cdot | \thetab)$ so that $y = m^{-1}(m(f(x)) + \eps)$.
+		\item We use the transformation $m(x) = \log(x)$. So $m^{-1}(x) = \exp(x)$. 
+		\item The Forbes' conjectured model $y = \theta_1 \exp(\theta_2 x + \eps)$ can be written as 
+			\begin{align*}
+				y &= \theta_1 \exp(\theta_2 x + \eps) \\
+				&= \exp(\log(\theta_1 \cdot \exp(\theta_2 x + \eps))) \\
+				&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \log (\exp(\eps))] \\
+				&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \eps] \\
+				&= \exp[\log (\theta_1 \cdot \exp(\theta_2 x)) + \eps] \\
+				&= m^{-1}(m(\theta_1 \cdot \exp(\theta_2 x)) + \eps).
+			\end{align*}
+			Therefore, $f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x)$ is a suitable functional form for the hypothesis. So 
+			$$\Hspace = \{ f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x) \ | \ \thetab \in \Theta \}.$$
+			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x1, x2)^T = (1, x_2)^T$, the constant component is redundant in my opinion. TODO: maybe ask people around.)
+	\end{itemize}
+
+	
+	
+\end{frame}
+
+\end{document}

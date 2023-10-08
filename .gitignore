@@ -34,6 +34,7 @@ latex-math/
 *.nls
 *.out
 *.pdf
+!ex_*.pdf
 !example.pdf
 *.pyg
 *.run.xml
