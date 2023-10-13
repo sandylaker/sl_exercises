@@ -1,0 +1,248 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+
+\newcommand{\fyx}{f_y(\xv)}
+
+
+\title[]{\textbf{Supervised Learning: Exercise 4}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{Date}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+
+\begin{frame}{Exercise 4: Multiclass Hinge Loss}
+	\small
+	Consider the multiclass classification scenario consisting of a feature space $\Xspace$ and a label space $\Yspace = \{1, \ldots, g\}$ with $g \geq 2 $ classes. Moreover, we consider the hypothesis space of models based on $g$ discriminant/scoring functions:
+	$$\Hspace = \{ f = (f_1, \ldots, f_g)^T: \Xspace \to \mathbb{R}^g | f_k: \Xspace \to \mathbb{R},  \ \forall k \in \Yspace \}.$$
+	A model $f$ in $\Hspace$ is used to make a prediction by means of transforming the scores into classes by choosing the class with the maximum score:
+	\begin{align}
+		h(\xv) = \argmax_{k \in \{1, \ldots, g \}} f_k(\xv).
+		\label{eq:1}
+	\end{align} 
+	The multiclass hinge loss is defined by $$L(y, \fx) = \max_k (\fkx - f_y(\xv) + \id_{y \neq k}).$$
+	(a) Show that 0-1-loss for a predictor $h$ as in (\ref{eq:1}) based on a model $f \in \Hspace$ is at most the multiclass hinge loss for $f$ i.e., $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
+\end{frame}
+
+\begin{frame}{Solution to Question (a)}
+	\small
+	There are two cases: $y = \argmax_{k} f_k(\xv)$ or $y \neq \argmax_k \fkx$.
+	\vspace{10pt}
+	
+	If $y = \argmax_{k} f_k(\xv)$, then 
+	\begin{align*}
+		L(y, \fx) 
+		&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
+		& = f_y(\xv) - f_y(\xv) + 0 \\
+		&= 0\\
+	\end{align*}
+	In this case, the 0-1-loss is 
+	\begin{align*}
+		L_{0-1}(y, \hx) = 0
+	\end{align*}
+	because $y = \argmax_k f_k(x)$. That is, the prediction via argmax is correct. 
+	
+	So $L(y, \fx) = L_{0, 1} (y, \hx)$.
+\end{frame}
+
+\begin{frame}{Solution to Question (a): Continued}
+\small
+
+If $y \neq \argmax_{k} f_k(\xv)$, then
+\begin{align*}
+	L(y, \fx) 
+		&= \max_k (\underbrace{\fkx - f_y(\xv)}_{> 0} + \underbrace{\id_{y \neq k}}_{= 1}) \\
+		&> 1.
+\end{align*}
+The 0-1-loss is 
+\begin{align*}
+	L_{0-1}(y, \hx) = 1
+\end{align*}
+because $y \neq \argmax_k f_k(x)$. That is, the prediction via argmax is incorrect. So $L(y, \fx) > L_{0, 1} (y, \hx)$.
+
+\vspace{10pt}
+
+Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
+\end{frame}
+
+\begin{frame}{Question (b)}
+	(b) Verify that the multiclass hinge loss of $f \in \Hspace$ on a data point $(\xv, y) \in \Xspace \times \Yspace$ is bounded from above by $\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \}$.
+	\vspace{10pt}
+	\emph{Hint}: Note that this upper bound is sometimes referred to as the multiclass hinge loss.
+\end{frame}
+
+\begin{frame}{Solution to Question (b)}
+	\small
+	Case 1: $y = \argmax_{k} f_k(\xv)$, then the hinge loss: $$L(y, \fx) = \max_k(\fkx - \fyx + \id_{y\neq k}) = 0$$
+	and $$\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \} \geq \sum_{k \neq y} 0 = 0$$
+	So the $\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \}$ is a upper bound in this case.
+\end{frame}
+
+\begin{frame}{Solution to Question (b): Continued}
+	\small
+	Case 2: $y \neq \argmax_{k} f_k(\xv)$, then the hinge loss: 
+	\begin{align*}
+		L(y, \fx) 
+		&= \max_k(\fkx - \fyx + \id_{y\neq k}) \\
+		&= \max_{k \neq y}(\fkx - \fyx + 1)
+	\end{align*}
+	Let's say $k^* = \argmax_{k} f_k(\xv) \neq y$, then it follows that
+	\begin{align*}
+		L(y, \fx) 
+		&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ > 1} \\
+		&= \max\{0, f_{k^*}(\xv) - \fyx + 1\} \\
+		&\leq \max\{0, f_{k^*}(\xv) - \fyx + 1\} + \underbrace{\max\{0, f_1(\xv) - \fyx + 1\} + \ldots + \max\{0, f_g(\xv) - \fyx + 1\}}_{\forall j \in \Hspace \ \text{and } j \neq y \ \text{and } j \neq k^*} \\
+		&= \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
+	\end{align*}
+	So, combining the two cases, $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$ is an upper bound for $L(y, \fx)$.
+\end{frame}
+
+\begin{frame}{Question (c)}
+	In the case of binary classification, i.e., $g=2$ and $\Yspace = \{-1, +1\}$, we use a single discriminant model $\fx = f_1(\xv) - f_{-1}(\xv)$ based on two scoring functions: $f_1, f_{-1}: \Xspace \to \mathbb{R}$ for the prediction by means of $\hx = \mathrm{sgn}(\fx)$. Here, $f_1$ is the score for the positive class and $f_{-1}$ is the score for the negative class. Show that the upper bound in (b) coincide with the binary hinge loss $L(y, \fx) = \max \{0, 1 - y \fx \}$.
+\end{frame}
+
+\begin{frame}{Solution to Question (c)}
+	Case 1: $y= + 1$. In this case,
+	\begin{align*}
+		\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
+		&= \sum_{k \neq + 1} \max \{ 0, \fkx - f_1(\xv) + 1 \} \\
+		&= \max \{ 0, \underbrace{f_{-1}(\xv) - f_1(\xv)}_{:= \fx} + 1 \} \\
+		&= \max \{ 0, 1 - \fx \} \\
+		&= \max \{ 0, 1 - y \cdot \fx \}
+	\end{align*}
+	So the equation holds in this case.
+\end{frame}
+
+\begin{frame}{Solution to Question (c): Continued}
+	Case 2: $y = -1$. In this case,
+	\begin{align*}
+		\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \}
+		&= \sum_{k \neq -1} \max \{ 0, \fkx - f_{-1}(\xv) + 1 \} \\
+		&= \max \{ 0, f_1(\xv) - f_{-1}(\xv) + 1 \} \\
+		&= \max \{0, 1 + \fx \} \\
+		&= \max \{0, 1 - y\cdot \fx \}
+	\end{align*}
+	
+Therefore, it is proven that the equation holds in two cases.
+\end{frame}
+
+\begin{frame}{Question (d)}
+	Recall the statement of the lecture regarding the binary hinge loss:
+	\vspace{10pt}
+	
+	\emph{``... the hinge loss only equals zero for a margin $\geq 1$ encouraging confident (correct) predictions.''}
+	\vspace{10pt}
+	
+	Can we say something similar for the altenative multiclass hinge loss in (b)?
+	
+	Hint: multiclass hinge loss: $\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \}$.
+\end{frame}
+
+\begin{frame}{Solution to Question (d)}
+	Yes, we can say that \emph{it is only zero if all the $g-1$ margins are greater than 1.}
+	\begin{itemize}
+		\item Margins: $m_{y, k}(\xv) = \fyx - \fkx$, where $k \in \Yspace \setminus \{y\}$.
+		\item Mathematically: $ m_{y, k}(\xv) \geq 1 \ \forall k \neq y  \Leftrightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0$.
+	\end{itemize}
+	
+	\vspace{10pt}
+	
+	Proof: 
+	\begin{align*}
+		m_{y, k}(\xv) \geq 1 \ \forall k \neq y  
+		&\Rightarrow \fyx - \fkx  \geq 1 \ \forall k \neq y \\
+		&\Rightarrow \fkx - \fyx \geq -1 \ \forall k \neq y \\
+		&\Rightarrow \max \{0, 1 + \fkx - \fyx \} = 0 \ \forall k \neq y \\
+		&\Rightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0
+	\end{align*}
+	
+\end{frame}
+
+\end{document}
