@@ -1,0 +1,231 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+\input{latex-math/ml-infotheory.tex}
+
+\newcommand{\kld}[1]{D_{KL}\left(#1\right)}
+\newcommand{\Ef}{\mathbb{E}_f}
+\newcommand{\Varf}{\mathrm{Var}_f}
+
+\title[]{\textbf{Supervised Learning: Exercise of \\ Information Theory Part 1}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{Date}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+
+\begin{frame}{Exercise 1: Kullback-Leibler Divergence}
+	(a) You want to approximate the binomial distribution with $n$ numbers of trials and probability $p$ with a Gaussian distribution with mean $\mu$ and variance $\sigma^2$. To find a suitable distribution you investigate the Kullback-Leibler divergence (KLD) in terms of the parameters $\thetab = (\mu, \sigma^2)^T$.
+	\begin{enumerate}
+		\item Write down the KLD for the given setup.
+		\item Derive the gradients w.r.t. $\thetab$.
+		\item Is there an analytic solution for the optimal parameter setting? If yes, derive the corresponding solution. If no, give a short reasoning.
+		\item Independent of the previous exercise, state a numerical procedure to minimize the KLD.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to Question (a.1)}
+	\small
+	Question: Write down the KLD for the given setup.
+	
+	\begin{itemize}
+		\item Let $f$ be pmf of $Bin(n, p)$, we know that $\Ef[X] = np$ and $\Varf[X] = np (1 - p)$.
+		\item Let $q$ be the density of $\mathcal{N}(\mu, \sigma^2)$.
+		\item The KL divergence between $f$ andd $q$ is
+		\begin{align*}
+			\kld{f \ || \ q} 
+			&= \Ef \left[ \log \frac{f(X)}{q(X; \thetab)} \right] = \underbrace{\Ef \left[ \log f(X) \right]}_{c_1} - \Ef [\log q(X|\thetab)] \\
+			&= c_1 - \Ef \left[ \log \left( \frac{1}{\sqrt{2 \pi \sigma^2}} \exp \left( - \frac{1}{2\sigma^2} (X - \mu)^2 \right)  \right) \right] \\
+			&= c_1 - \Ef \left[ - \underbrace{\frac{1}{2} \log(2\pi)}_{c_2} - \frac{1}{2} \log (\sigma^2) - \frac{1}{2\sigma^2} (X - \mu)^2 \right]
+		\end{align*}
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}{Solution to Question (a.1): Continued}
+	\small
+	\begin{align*}
+		\kld{f \ || \ q} &= \underbrace{c_1 + c_2}_{c_3}  + \frac{1}{2}\log(\sigma^2) + \frac{1}{2\sigma^2} \Ef[(X - \mu)^2] \\
+		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2} \left( \underbrace{\Ef[X^2]}_{\Varf[X] + \Ef[X]^2} - 2\mu \Ef[X] + \mu^2 \right) \\
+		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2} (np(1 - p) + (np)^2 - 2\mu np + \mu^2) \\
+		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2}(np(1-p) + (np -\mu)^2)
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (a.2)}
+	\small
+	Question: Derive the gradients w.r.t. $\thetab$.
+	\begin{align*}
+		\frac{\partial \kld{ f \ || \ q}}{\partial \mu} &= \frac{\partial}{\partial \mu} \frac{(np - \mu)^2}{2 \sigma^2} = \frac{2 (np - \mu ) \cdot ( -1)}{2\sigma^2} = \frac{ \mu - np}{\sigma^2}
+	\end{align*}
+	\begin{align*}
+		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} 
+		&= \frac{\partial}{\partial \sigma^2} 
+		\left( \frac{1}{2} \log (\sigma^2) + \frac{1}{2 \sigma^2} (np(1 - p) + (np - \mu)^2)  \right) \\
+		&= \frac{1}{2\sigma^2} - \frac{1}{2 (\sigma^2)^2}(np (1- p) + (np -\mu)^2) \\
+		&= \frac{1}{2\sigma^2} - \frac{1}{2 \sigma^4} \Ef[(X -\mu)^2]
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question (a.3)}
+	\small
+	Question: Is there an analytic solution for the optimal parameter setting? If yes, derive the corresponding solution. If no, give a short reasoning.
+	
+	Solution: Yes, there is. By setting the partial derivatives to zero we can identify the critical points.
+	\begin{align*}
+		\frac{\partial \kld{f \ || \ q}}{\partial \mu} = 0 &\Leftrightarrow \hat{\mu} = np = \Ef[X] 
+	\end{align*}
+	\begin{align*}
+		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} = 0 & \Leftrightarrow \frac{1}{2\hat{\sigma}^2} = \frac{1}{2 \hat{\sigma}^2} \Ef[(X - \hat{\mu})^2] \\
+		& \Leftrightarrow \hat{\sigma}^2 = \Ef[(X - \Ef[X])^2] = \Varf[X] = np(1-p)
+	\end{align*}
+	In order to prove that critical point is a minimum, we need to check the Hessian matrix w.r.t. $(\mu, \sigma^2)$ is positive definite at $(\mu, \hat{\sigma}^2)$.
+\end{frame}
+
+\begin{frame}{Solution to Question (a.3): Continued}
+	The Hessian matrix is:
+	\begin{align*}
+		\nabla^2 = \begin{pmatrix}
+			\frac{1}{\sigma^2} & (np -\mu) \frac{1}{\sigma^4} \\
+			(np -\mu) \frac{1}{\sigma^4} & - \frac{1}{2\sigma^4} + \frac{1}{\sigma^6} \Ef [(X -\mu)^2]
+		\end{pmatrix}
+	\end{align*}
+	Evaluated at $(\hat{\mu}, \hat{\sigma}^2)$, we obtain
+	\begin{align*}
+		\nabla^2 \bigg|_{(\hat{\mu}, \hat{\sigma}^2)} 
+		&= \begin{pmatrix}
+			\frac{1}{np(1-p)} & 0 \\
+			0 & \frac{1}{2 (np(1-p))^2} \\
+			\end{pmatrix} \\
+		&= \begin{pmatrix}
+			\frac{1}{\Varf(X)} & 0 \\
+			0 & \frac{1}{2 \Varf(X)^2} \\
+		\end{pmatrix}
+	\end{align*}
+	So the Hessian at $(\hat{\mu}, \hat{\sigma}^2)$ is P.S.D.
+\end{frame}
+
+\begin{frame}{Question (b), (c) and (d)}
+	(b) Sample points according to the true distribution and visualize the KLD for different parameter settings of the Gaussian distribution (including the optimal one if available).
+	
+	\vspace{20pt}
+	(c) Create a surface plot with axes $n$ and $p$ and colour value equal to the KLD for the optimal normal distribution.
+	
+	\vspace{20pt}
+	(d) Based on the previous result, how can be behavior for varing $p$ and $n$ be explained, respectively?
+	
+	\vspace{20pt}
+	\textbf{Solution: Show the code.}
+\end{frame}
+
+
+\begin{frame}{Exercise 2: The Convexity of KL Divergence}
+	Let $p$ and $q$ be the PDFs of a pair of absolutely continuous distributions. 
+	
+	(a) Prove that the KL divergence is convex in the pair $(p, q)$, i.e., 
+	$$\kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2} \leq \lambda \kld{p1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2},$$
+	where $(p_1, q_1)$ and $(p_2, q_2)$ are two pairs of distribution and $0 \leq \lambda \leq 1$.
+	
+	\vspace{20pt}
+	Hint: you can use the log sum inequality, namely that $(a_1 + a_2) \log \left( \frac{a_1 + a_2}{b_1 + b_2} \right) \leq a_1 \log \frac{a_1}{b_1} + a_2 \log \frac{a_2}{b_2}$ holds for $a_1, a_2, b_1, b_2 \geq 0$.
+\end{frame}
+
+\begin{frame}{Solution to Question (a)}
+	\small
+	\begin{align*}
+		& \kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2}  \\
+		&= \int_\Xspace \left( (\lambda p_1(x) + (1 - \lambda) p_2(x)) \log \frac{\lambda p_1(x) + (1 - \lambda) p_2(x)}{\lambda q_1(x) + (1 - \lambda) q_2(x)} \right) \mathrm{d}x \\
+		&\leq \int_\Xspace \left( \lambda p_1(x) \log \frac{p_1(x)}{q_1(x)} + (1-\lambda) p_2(x) \log \frac{(1 - \lambda) p_2(x)}{(1-\lambda) q_2(x)} \right) \mathrm{d}x \\
+		&= \lambda \int_\Xspace \left(p_1(x) \log \frac{p_1(x)}{q_1(x)} \right) \mathrm{d}x + (1 - \lambda) \int_\Xspace \left( p_2(x) \log \frac{p_2(x)}{q_2(x)}\right) \mathrm{d}x \\
+%		&= \lambda \kld{p_1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2}.
+	\end{align*}
+\end{frame}
+
+
+\end{document}
