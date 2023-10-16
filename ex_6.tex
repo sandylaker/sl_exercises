@@ -41,6 +41,10 @@
 \newcommand{\HXcY}{H(X | Y)}
 \newcommand{\HYcX}{H(Y|X)}
 \newcommand{\IXY}{I(X;Y)}
+\newcommand{\td}{\tilde{d}}
+\newcommand{\tdk}{\title{d}_k}
+\newcommand{\tdki}{{\tilde{d}}_k^{(i)}}
+\newcommand{\pikxit}{\pi_{k}(\xi | \thetab)}
 
 
 \title[]{\textbf{Supervised Learning: Exercise for \\ Information Theory Part 2}}
@@ -221,7 +225,7 @@
 
 Note that if we observe $x+y$, and assume we also observe $x$, we can infer $y$.	 
 
-In other words, \textbf{each pair $(x+y, x)$ has the same probability as $(x+y, y)$. Therefore, $H(Y, X+Y) = H(X, X+Y)$.}
+In other words, \textbf{each pair $(x+y, x)$ has the same probability as $(x+y, y)$. Therefore, $H(Y, X+Y) = H(X, X+Y)$. (This can also be proven from the perspective of PGM.)}
 
 \end{frame}
 
@@ -264,6 +268,38 @@ Recall the lemma: $I(X; Y) - I(X; Y | Z)  = I(X; Y; Z)$
 		&= \IXY - I(X; Y; Z)  + I(Y; Z) - I(Y;Z) + I(X;Y;Z) \\
 		&= \IXY 
 	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 3: Smoothed Cross-Entropy Loss}
+	\small
+	\emph{Over-confidence} is a state when a model is more confident in its prediction than the input data warrants. Label smoothing (a.k.a. smoothed cross entropy loss) is a widely used trick in deep learning classification tasks for alleviating the over-confidence issue and increasing model robustness. In the conventional cross-entropy loss, we aim to minimize the KL-divergence between $d$ and $\pixt$, where the ground truth distribution $d$ is a delta distribution (i.e., only $d_k = 1$ for the ground truth class), and $\pixt$ is the predicted distribution by the model $\pi$ parameterized by $\thetab$. The key step in label smoothing is to smooth the ground truth distribution. Specifically, given a hyperparameter $\beta$ (e.g., $\beta = 0.1$), we uniformly distribute the probability mass of $\beta$ to all the $g$ classes and reduce the probability mass of ground truth class. Consequently, the smoothed ground truth distribution $\td$ is 
+	\begin{align*}
+		\tdk = \begin{cases}
+			\frac{\beta}{g} \qquad &\text{for } d_k = 0; \\
+			1 - \beta + \frac{\beta}{g} \qquad & \text{for } d_k = 1. 
+		\end{cases}
+	\end{align*}
+	The smoothed cross entropy is then $D_{KL}(\td \ || \ \pixt)$. 
+	
+	(a) Derive the empirical risk when using the smoothed cross-entropy as loss function.
+\end{frame}
+
+\begin{frame}{Solution to Question 3 (a)}
+	The empirical risk is 
+	\begin{align*}
+		\riske(\thetab) 
+		&= \frac{1}{n} \sumin \left( \sum_{k=1}^g \tdki \log \left( \frac{\tdki}{\pikxit} \right)  \right) \qquad \rhd \\
+		&= \frac{1}{n} \sumin \left( \sumkg \tdki \log \tdki - \tdki \log \pikxit  \right) \\
+		&= - \frac{1}{n} \sumin \sumkg \tdki \log \pikxit + Const.
+	\end{align*}
+	Note that only the terms dependent on $\thetab$ are relevant to optimization, wheares other terms are constant and can be omitted in implementation.
+\end{frame}
+
+\begin{frame}{Exercise 2: Question (b)}
+	(b) Implement the smoothed cross-entropy.
+	\vspace{20pt}
+	
+	\textbf{Show the code in the standard solution.}
 \end{frame}
 
 \end{document}
