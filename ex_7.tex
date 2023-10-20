@@ -1,0 +1,295 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+\renewcommand{\E}{\mathbb{E}}
+\newcommand{\Xnorm}{||X||_2}
+\newcommand{\Xnormsq}{||X||_2^2}
+\newcommand{\Var}[1]{\mathrm{Var}(#1)}
+\newcommand{\sumip}{\sum_{i=1}^p}
+\newcommand{\Xp}{X^\prime}
+\newcommand{\xp}{x^\prime}
+\newcommand{\xnormsq}{||x||_2^2}
+\newcommand{\xpnormsq}{||x^\prime||_2^2}
+\newcommand{\Xpnormsq}{||X^\prime||_2^2}
+\newcommand{\Xpnorm}{||X^\prime||_2}
+
+
+\title[]{\textbf{Exercise of Supervised Learning: 
+\\ Curse of Dimensionality}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{Date}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+\begin{frame}{Exercise 1}
+	Consider a random vector $X = (X_1, \ldots, X_p)^T \sim \mathcal{N}(0, \id)$, i.e., a multivariate normally distributed vector with mean vector zero and covariance matrix beging the identity matrix of dimension $p \times p$. In this case, the coordinates $X_1, \ldots, X_p$ are i.i.d. each with distribution $\mathcal{N}(0, 1)$.
+	
+	(a) Show that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$, where $|| \cdot ||_2$ is the Euclidean norm. 
+	
+	Hint: $\E_{Y \sim \mathcal{N}(0, 1)}(Y^4) = 3.$
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (a)}
+	\small
+	Note that $$\Xnormsq = \sum_{i=1}^p X_i^2.$$
+	Then, 
+	\begin{align*}
+		\E[\Xnormsq] &= \E \left[ \sumip X_i^2 \right] \\
+		&= \sumip \E[X_i^2] \\
+		&= \sumip (\underbrace{\E[X_i]^2}_{=0} + \Var{X_i}) \\
+		&= \sumip 1 \\
+		&= p.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Question 1 (a): Continued}
+	\small
+	\begin{align*}
+		\Var{\Xnormsq} &= \Var{\sumip X_i^2} \\
+		&= \sumip \Var{X_i^2} \\
+		&= \sumip (\underbrace{\E[X_i^4]}_{=3} - \underbrace{\E[X_i^2]^2}_{=1}) \qquad \rhd \\
+		&= \sumip (3 - 1) \\
+		&= 2p.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) Use (a) to infer that $|\E[\Xnorm - \sqrt{p}]| \leq \frac{1}{\sqrt{p}}$ by using the following steps:
+	\begin{enumerate}[(i)]
+		\item Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}.$ 
+		\item Compute $\E[(1)]$.
+		\item Note that $0 \leq \E[(2)] \leq \frac{\Var{\Xnormsq}}{2 p^{3/2}}$ holds due to $||X||_2 \geq 0$.
+		\item Put (i)- (iii) together.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (b)}
+	\small
+	Step (i): Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}.$ 
+	
+	Step (ii): 
+		\begin{align*}
+			\E[(1)] &= \E \left[\frac{\Xnormsq - p}{2\sqrt{p}} \right] \\
+			&= \frac{1}{2\sqrt{p}} (\underbrace{\E[\Xnormsq]}_{= p \ \text{(from Question(a))}} - p) \\
+			&= 0.
+		\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1(b): Continued}
+
+	Step (iii):	Prove that $0 \leq \E[(2)] \leq \frac{\Var{\Xnormsq}}{2 p^{3/2}}$ holds due to $||X||_2 \geq 0$.
+	\begin{align*}
+		\E[(2)] = \E \left[ \frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}\right] \geq 0, \qquad \text{since all the terms are non-negative.}
+	\end{align*}
+	Besides, since $\Xnorm \geq 0$, it follows that 
+	\begin{align*}
+		(2) &\leq \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \\
+		\Rightarrow \quad \E[(2)] &\leq  \E \left[ \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \right] = \frac{1}{2p^{3/2}} \cdot \E \left[(\Xnormsq - \E[\Xnormsq])^2 \right] = \frac{\Var{\Xnormsq}}{2p^{3/2}} \\
+		&= \frac{2p}{2p^{3/2}} = \frac{1}{\sqrt{p}},
+	\end{align*}
+	where we utilize the lemma from (a) that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1(b): Continued}
+	Step (iv): Putting everything together:
+	\begin{align*}
+		|\E[\Xnorm - \sqrt{p}]| = |\underbrace{\E[(1)]}_{=0} - \underbrace{\E[(2)}_{\geq 0}]| = \E[(2)] \leq \frac{1}{\sqrt{p}}.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	(c) Use (b) to infer that $\Var{\Xnorm} \leq 2$ by using the following steps:
+	\begin{enumerate}[(i)]
+		\item Write $\Var{\Xnorm} = \Var{\Xnorm - \sqrt{p}}$.
+		\item For any random variable $Y$ it holds that $\Var{Y} \leq \E[Y^2] $.
+		\item If you encounter the term $E[\Xnorm]$ write it as $\E[\underbrace{\Xnorm - \sqrt{p}}_{= (*)} + \sqrt{p}]$ and use (b) for $(*)$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (c)}
+	Step (i): Write $\Var{\Xnorm} = \Var{\Xnorm - \sqrt{p}}$.
+	\vspace{20pt}
+	
+	It holds because \textbf{variance does not change by constant shifts}. 
+	\vspace{20pt}
+	
+	Step (ii): For any random variable $Y$ it holds that $\Var{Y} \leq \E[Y^2] $.
+	\vspace{20pt}
+	
+	It holds because $\Var{Y} + \E[Y]^2 = \E[Y^2]$ and $\E[Y]^2 \geq 0$. Later we will use this inequality.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (c): Continued}
+	\small
+	\begin{align*}
+		\Var{\Xnorm} 
+		&= \Var{\Xnorm - \sqrt{p}} \qquad \text{Step (i)} \\
+		&\leq \E[(\Xnorm - \sqrt{p})^2] \qquad \text{Step (ii)} \\
+		&= \E[ \Xnormsq - 2 \sqrt{p} \Xnorm  + p ] \\
+		&= \underbrace{\E[\Xnormsq]}_{=p} - 2 \sqrt{p} \cdot \E[\Xnorm] + p \\
+		&= 2p  - 2\sqrt{p} \cdot \E[\Xnorm] \\
+		&= 2p - 2\sqrt{p}\cdot \E[\Xnorm - \sqrt{p} + \sqrt{p}] \qquad \text{Step (iv)} \\
+		&= 2p - 2p - 2\sqrt{p} \cdot \E[\Xnorm - \sqrt{p}] \\
+		&= -2\sqrt{p} \cdot \underbrace{\E[\Xnorm - \sqrt{p}]}_{\leq \frac{1}{\sqrt{p}} \quad \text{(from (b))}} \\
+		&\leq 2\sqrt{p} \cdot \frac{1}{\sqrt{p}} = 2.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Question 1 (d)}
+	Now let $\Xp = (X_1^\prime, \ldots, X_p^\prime)^T \sim \mathcal{N}(0, \id)$ be another multivariate normally distributed vector with mean vector zero and covariance matrix being the identity matrix of dimension $p \times p$. Further, assume that $X$ and $X^\prime$ are independent, so that $Z:= \frac{X - \Xp}{\sqrt{2}} \sim \mathcal{N}(0, \id)$. Conclude from the previous that 
+	\begin{align*}
+		\left| \E \left[|| X - \Xp||_2 - \sqrt{2p} \right] \right| \leq \frac{2}{p} \qquad \text{and} \qquad \Var{||X - \Xp ||_2} \leq 4.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (d)}
+	\small
+	We first investigate $Z$. Since $Z = \frac{X - \Xp}{\sqrt{2}} \sim \mathcal{N}(0, \id)$, it follows from (b) and (c) that 
+	\begin{align}
+		|\E[||Z||_2 - \sqrt{p}]| & \leq \sqrt{\frac{1}{p}},\\
+		\Var{||Z||_2} &\leq 2
+	\end{align}
+	But the norm of $Z$
+	\begin{align}
+		||Z||_2 = \sqrt{\sumip \left(\frac{X_i - \Xp_i}{\sqrt{2}} \right)^2}  = \sqrt{\frac{1}{2}\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} \sqrt{\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} || X - \Xp ||_2.
+	\end{align}
+	It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \frac{2}{p} \Rightarrow |\E[\sqrt{2} \underbrace{||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (d): Continued}
+	Moreover, (2): $\Var{||Z||_2} \leq 2$ implies that
+	\begin{align*}
+		\Var{||Z||_2} &\leq 2 \\
+		\Leftrightarrow \qquad 2 \Var{||Z||_2} &\leq 4 \\
+		\Leftrightarrow \qquad  \Var{\sqrt{2} ||Z||_2} & \leq 4 \qquad (\Var{aY} = a^2 \Var{Y} \ \text{for any RV } Y) \\
+		\Leftrightarrow \qquad \Var{||X - \Xp||_2} &\leq 4 \qquad \text{Using (3) that } ||Z||_2 = \sqrt{\frac{1}{2}} ||X - \Xp ||_2.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (e)}
+	(e) From the cosine rule we can infer that for any $x, \xp \in \mathbb{R}^p$ it holds that 
+	\begin{align*}
+		\langle x, \xp \rangle = \frac{1}{2} (\xnormsq + \xpnormsq - ||x - \xp ||^2_2 ).
+	\end{align*}
+	Use this to show that $\E[\langle X, \Xp \rangle] = 0. $ Moreover, derive that $\Var{\langle X, \Xp \rangle} = p$.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (e)}
+	Since $\langle x, \xp \rangle = \frac{1}{2} (\xnormsq + \xpnormsq - ||x - \xp ||^2_2 )$, we can infer that 
+	\begin{align*}
+		\E[\langle X, \Xp \rangle] &= \frac{1}{2} (\E[\Xnormsq] + \E[\Xpnormsq] - \E[||X - \Xp ||_2^2]) \\
+		&= \frac{1}{2} \left(p + p - 2\cdot \E\left[ \underbrace{\frac{1}{2} ||X - \Xp ||_2^2 }_{= ||Z||_2^2}\right] \right) \\
+		&= \frac{1}{2} ( p + p - 2p) = 0. \qquad (\text{From (a) we know that } \E[||Z||_2^2] = p )
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (e): Continued}
+	\begin{align*}
+		\Var{\langle X, \Xp \rangle} &= \Var{\sumip X_i \Xp_i} \\
+		&= \sumip \Var{X_i \Xp_i} \\
+		&= p \Var{X_1 \Xp_1} \\
+		&= p\cdot (\E[X_1^2 (\Xp_1)^2] - \E[X_1 (\Xp_1)]^2) \\
+		&= p \cdot (\underbrace{\E[X_1^2]}_{=1} \cdot \underbrace{\E[(\Xp_1)^2]}_{=1} - \underbrace{\E[X_1]^2}_{=0} \cdot \underbrace{\E[\Xp_1]^2}_{=0}) \\
+		&= p.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (f)}
+	(f) For different dimensions $p$, e.g., $p \in \{1, 2, 4, 8, \ldots, 1024\}$, create two sets consisting of 100 i.i.d. random observations from $\mathcal{N}(0, \id)$, respectively and 
+	\begin{enumerate}[(i)]
+		\item compute the average Euclidean length of (one of) the sampled sets and compare it to $\sqrt{p}$;
+		\item comptue the average Euclidean distances between the sampled sets and compare it to $\sqrt{2p}$;
+		\item compute the average inner products between the sampled sets;
+		\item compute in (i)-(iii) also the empirical variances of the respective terms.
+	\end{enumerate}
+	Visualize your results in an appropriate manner.
+	
+	\textbf{Show the standard solution.}
+\end{frame}
+
+\end{document}
