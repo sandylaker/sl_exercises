@@ -37,7 +37,7 @@
 \newcommand{\Eyx}{\mathbb{E}_{y|\xv}}
 \newcommand{\my}{m(y)}
 
-\title[]{\textbf{Supervised Learning: Exercise 1}}
+\title[]{\textbf{Exercise of Supervised Learning:\\ Advanced Risk Minimization Part 1}}
 
 %\subtitle{}
 
@@ -54,7 +54,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date: TODO}
+\date{October 27, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -126,10 +126,10 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 		\item<1-> Compute the derivative: $$\frac{\partial \riske(f)}{\partial \thetab} = 2 \sumin (m(\yi) - m(\thetab)) \cdot \frac{\partial m(\thetab)}{\partial \thetab} = 0$$
 		\item<2-> Using the fact that $\frac{\partial m(\thetab)}{\partial \thetab}$ is constant for all $i$, we obtain:
 			\begin{align*}
-				\sumin (m(\yi) - m(\thetab)) &= 0 \\
-				\Rightarrow \sumin m(\yi) &= \sumin m(\thetab) \\
-				\Rightarrow m(\thetab) &= \frac{1}{n} \sumin m(\yi) \\
-				\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right)
+				\only<3->{\sumin (m(\yi) - m(\thetab)) &= 0 \\ }
+				\only<4->{\Rightarrow \sumin m(\yi) &= \sumin m(\thetab) \\ }
+				\only<5->{\Rightarrow m(\thetab) &= \frac{1}{n} \sumin m(\yi) \\}
+				\only<6->{\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right) }
 			\end{align*}
 	\end{enumerate}
 \end{frame}
@@ -146,9 +146,9 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	\small
 	\begin{align*}
 		\risk_L(\hat{f}) &= \Exy[L(y, \hat{f}(\xv)]\\
-		&= \Exy[(m(y) - m(\hat{f}(\xv))^2] \\
-		&= \Exy\left[\left(m(y) - \frac{1}{n} \sumin m(\yi) \right)^2 \right] \\
-		&= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right]
+		\only<1->{&= \Exy[(m(y) - m(\hat{f}(\xv))^2] \\}
+		\only<2->{&= \Exy\left[\left(m(y) - \frac{1}{n} \sumin m(\yi) \right)^2 \right] \\}
+		\only<3->{&= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] }
 	\end{align*}
 \end{frame}
 
@@ -160,9 +160,9 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	Because $y, y^{(1)}, \ldots, y^{(n)}$ are i.i.d. with $\Exy[m(\yi)] = \Exy[m(y)]$, we have 
 	\begin{align*}
 		\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] &= \frac{1}{n} \cdot \Exy \left[m(y) \sumin m(\yi) \right] \\
-		&= \frac{1}{n} \cdot \Exy[m(y)] \Exy \left[\sumin m(\yi) \right] \\
-		&= \frac{1}{n} \cdot \Exy[m(y)] \cdot n \cdot \Exy[m(y)] \\
-		&= \Exy[m(y)]^2.
+		\only<1->{&= \frac{1}{n} \cdot \Exy[m(y)] \Exy \left[\sumin m(\yi) \right] \\}
+		\only<2->{&= \frac{1}{n} \cdot \Exy[m(y)] \cdot n \cdot \Exy[m(y)] \\}
+		\only<3->{&= \Exy[m(y)]^2.}
 	\end{align*}
 	
 \end{frame}
@@ -175,10 +175,10 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	Similarily, we have
 	\begin{align*}
 		&\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
-		&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\
-		&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \\
-		&= \frac{1}{n}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\
-		&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2
+		\only<2->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\}
+		\only<3->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \\}
+		\only<4->{&= \frac{1}{n}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\}
+		\only<5->{&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2}
 	\end{align*}
 \end{frame}
 
@@ -187,9 +187,9 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	Combining the results so far, we get
 	\begin{align*}
 		\risk_L(\hat{f}) &= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
-		&= \Exy[m(y)^2] - 2 \Exy[m(y)]^2 + \frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2 \\
-		&= \left(1 + \frac{1}{n} \right) \left(\Exy[m(y)^2] - \Exy[m(y)]^2 \right)\\ 
-		&= \left(1 + \frac{1}{n} \right) \var(\my).
+		\only<2->{&= \Exy[m(y)^2] - 2 \Exy[m(y)]^2 + \frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2 \\}
+		\only<3->{&= \left(1 + \frac{1}{n} \right) \left(\Exy[m(y)^2] - \Exy[m(y)]^2 \right)\\ }
+		\only<4->{&= \left(1 + \frac{1}{n} \right) \var(\my).}
 	\end{align*}
 \end{frame}
 
@@ -241,13 +241,15 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	The (theoretical) risk for a constant model $\bar{f}(\xv) = c$ is:
 	\begin{align*}
 		\risk_L(\bar{f}) &= \mathbb{E}_{\xv} \left[ \Eyx \left[ (\my - m(\bar{f}(\xv)))^2 \right] \right]  \\
-			&= \int_{y} \int_{\xv} (\my - m(\bar{f}(\xv)))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
-			&= \int_{y} \int_{\xv} (\my - m(c))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
-			&= \int_{y} (\my - m(c))^2 p(y) \mathrm{d}y  \quad \rhd \\
-			&= \mathbb{E}_y \left[ (\my - m(c))^2 \right]
+			\only<2->{&= \int_{y} \int_{\xv} (\my - m(\bar{f}(\xv)))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
+			\only<3->{&= \int_{y} \int_{\xv} (\my - m(c))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
+			\only<4->{&= \int_{y} (\my - m(c))^2 p(y) \mathrm{d}y  \quad \rhd \\
+			&= \mathbb{E}_y \left[ (\my - m(c))^2 \right]}
 	\end{align*}
+	\only<5->{
 	Therefore, the optimal constant model is  
 	$$\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$$
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (d): Continued}
@@ -263,11 +265,11 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 
 \begin{frame}{Solution to Question (e)}
 	\begin{itemize}
-			\item Recall from Question (a) that $\hat{f}(\xv) = m^{-1}\left(\frac{1}{n} \sumin m(\yi\right)$ and $\risk_L(\hat{f}) = \left( 1 + \frac{1}{n} \right) \var(\my)$.
-			\item Recall from Question (d) that $\bar{f}(\xv) = \argmin_{f \in \Hspace} \risk_L(f)$ and $\risk_L(\bar{f}) = \var(\my)$.
-			\item Recall from (c) that the point-wise risk minimizer $f^*(\xv) = m^{-1}(\Eyx[\my \ | \xv]) = \argmin_{f} R_L(f)$ for an \textbf{unstricted} function space.
-			\item Remember to differentiate between these risk minimizers.
-			\item The Bayes regret can be decomposed as:
+			\item<1-> Recall from Question (a) that $\hat{f}(\xv) = m^{-1}\left(\frac{1}{n} \sumin m(\yi\right)$ and $\risk_L(\hat{f}) = \left( 1 + \frac{1}{n} \right) \var(\my)$.
+			\item<2-> Recall from Question (d) that $\bar{f}(\xv) = \argmin_{f \in \Hspace} \risk_L(f)$ and $\risk_L(\bar{f}) = \var(\my)$.
+			\item<3-> Recall from (c) that the point-wise risk minimizer $f^*(\xv) = m^{-1}(\Eyx[\my \ | \xv]) = \argmin_{f} R_L(f)$ for an \textbf{unstricted} function space.
+			\item<4-> Remember to differentiate between these risk minimizers.
+			\item<5-> The Bayes regret can be decomposed as:
 				$$\risk_L(\hat{f}) - \risk_L^* = \underbrace{\left[ \risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) \right]}_{\text{estimation error}} + \underbrace{\left[ \inf_{f \in \Hspace} \risk_L(f) - \risk_L^* \right]}_{\text{approximation error}}$$
 		\end{itemize}
 \end{frame}
@@ -287,17 +289,19 @@ The estimation error is:
 	The approximation error is:
 	\begin{align*}
 		\inf_{f \in \Hspace} \risk_L(f) - \risk_L^*
-		&= \risk_L(\bar{f}) - \risk_L(f^*) \\
-		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(f^*(\xv))^2 \ | \ \xv] \right] \quad \text{(plug in (d))} \\
-		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(m^{-1}(\Eyx[\my \ | \  \xv])))^2 \ | \ \xv] \right] \quad \text{(plug in (c))} \\
-		&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - \Eyx[\my \ | \  \xv])^2 \ | \ \xv] \right] \\
-		&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\
-		&= \var(\Eyx[\my \ | \ \xv])
+		\only<2->{&= \risk_L(\bar{f}) - \risk_L(f^*) \\}
+		\only<3->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(f^*(\xv))^2 \ | \ \xv] \right] \quad \text{(plug in (d))} \\}
+		\only<4->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(m^{-1}(\Eyx[\my \ | \  \xv])))^2 \ | \ \xv] \right] \quad \text{(plug in (c))} \\}
+		\only<5->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - \Eyx[\my \ | \  \xv])^2 \ | \ \xv] \right] \\}
+		\only<6->{&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\
+		&= \var(\Eyx[\my \ | \ \xv])}
 	\end{align*}
-The last step holds because of the law of total variation:
-$$
-	\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
-$$
+	\only<7->{
+		The last step holds because of the law of total variation:
+		$$
+			\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
+		$$
+	}
 \end{frame}
 
 
