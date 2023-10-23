@@ -293,10 +293,10 @@ The estimation error is:
 		\only<3->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(f^*(\xv))^2 \ | \ \xv] \right] \quad \text{(plug in (d))} \\}
 		\only<4->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(m^{-1}(\Eyx[\my \ | \  \xv])))^2 \ | \ \xv] \right] \quad \text{(plug in (c))} \\}
 		\only<5->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - \Eyx[\my \ | \  \xv])^2 \ | \ \xv] \right] \\}
-		\only<6->{&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\
-		&= \var(\Eyx[\my \ | \ \xv])}
+		\only<6->{&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\}
+		\only<7->{&= \var(\Eyx[\my \ | \ \xv])}
 	\end{align*}
-	\only<7->{
+	\only<8->{
 		The last step holds because of the law of total variation:
 		$$
 			\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
