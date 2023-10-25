@@ -36,6 +36,7 @@ latex-math/
 *.pdf
 !ex_*.pdf
 !example.pdf
+!organization.pdf
 *.pyg
 *.run.xml
 *.snm
