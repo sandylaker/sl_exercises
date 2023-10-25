@@ -176,7 +176,7 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	\begin{align*}
 		&\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
 		\only<2->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\}
-		\only<3->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \\}
+		\only<3->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \text{\tiny(The square is within E due to dependency of (i) and (i))}\\}
 		\only<4->{&= \frac{1}{n}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\}
 		\only<5->{&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2}
 	\end{align*}
@@ -201,7 +201,6 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 	\begin{itemize}
 		\item<2-> Consider unstricted hypothesis space $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} \}$. 
 		\item<3-> Since $\Hspace$ is unrestricted, for each $\xv$, we can predict any value $c \in \mathbb{R}$ we want. $\leadsto$ Point-wise prediction.
-		\item<4-> Point-wise prediction: given unlimited space, we can use a look-up table to store $f^*(\xv)$ for all $\xv$.
 	\end{itemize}
 \end{frame}
 
@@ -296,7 +295,7 @@ The estimation error is:
 		\only<6->{&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\}
 		\only<7->{&= \var(\Eyx[\my \ | \ \xv])}
 	\end{align*}
-	\only<8->{
+	\only<7->{
 		The last step holds because of the law of total variation:
 		$$
 			\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
