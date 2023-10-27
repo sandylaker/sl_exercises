@@ -6,7 +6,7 @@
 
 %% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
 
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=169, handout]{beamer}
  
 \mode<presentation>
 {
@@ -129,7 +129,7 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 				\only<3->{\sumin (m(\yi) - m(\thetab)) &= 0 \\ }
 				\only<4->{\Rightarrow \sumin m(\yi) &= \sumin m(\thetab) \\ }
 				\only<5->{\Rightarrow m(\thetab) &= \frac{1}{n} \sumin m(\yi) \\}
-				\only<6->{\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right) }
+				\only<6->{\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right) \qquad \lhd}
 			\end{align*}
 	\end{enumerate}
 \end{frame}
@@ -177,7 +177,7 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 		&\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
 		\only<2->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\}
 		\only<3->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \text{\tiny(The square is within E due to dependency of (i) and (i))}\\}
-		\only<4->{&= \frac{1}{n}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\}
+		\only<4->{&= \frac{1}{n^2}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\}
 		\only<5->{&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2}
 	\end{align*}
 \end{frame}
@@ -189,7 +189,7 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 		\risk_L(\hat{f}) &= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
 		\only<2->{&= \Exy[m(y)^2] - 2 \Exy[m(y)]^2 + \frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2 \\}
 		\only<3->{&= \left(1 + \frac{1}{n} \right) \left(\Exy[m(y)^2] - \Exy[m(y)]^2 \right)\\ }
-		\only<4->{&= \left(1 + \frac{1}{n} \right) \var(\my).}
+		\only<4->{&= \left(1 + \frac{1}{n} \right) \var(\my). \qquad \lhd}
 	\end{align*}
 \end{frame}
 
@@ -253,7 +253,7 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 
 \begin{frame}{Solution to Question (d): Continued}
 	The risk given $\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$ is:
-	$$\risk_{L}(\bar{f}) = \Exy[(\my - m(\bar{f}(\xv))^2] = \mathbb{E}_y[(\my - \mathbb{E}_y[\my])^2] = \var(\my) $$
+	$$\risk_{L}(\bar{f}) = \Exy[(\my - m(\bar{f}(\xv))^2] = \mathbb{E}_y[(\my - \mathbb{E}_y[\my])^2] = \var(\my) \quad \lhd $$
 \end{frame}
 
 \begin{frame}{Question (e)}
