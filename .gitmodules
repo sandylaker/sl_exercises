@@ -1,0 +1,3 @@
+[submodule "latex-math"]
+	path = latex-math
+	url = https://github.com/slds-lmu/latex-math.git
