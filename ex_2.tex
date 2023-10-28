@@ -55,7 +55,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{November 3, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -104,6 +104,7 @@
 		1, \quad &\text{if} y \neq h(\xv), \\
 		0, \quad &\text{if} y = h(\xv).
 	\end{cases}
+	\qquad \lhd
 	$$
 	(a) Consider the hypothesis space of constant models $\Hspace = \{h: \Xspace \rightarrow \Yspace | h(\xv) = \thetab \in \Yspace \ \forall \xv \in \Xspace \}$, where $\Xspace$ is the feature space. Show that 
 	$$
@@ -123,30 +124,42 @@ The empirical risk is
 Therefore
 \begin{align*}
 	\argmin_{h \in \Hspace} \riske(h) 
-	&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\ 
-	&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\
-	&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\}
+	\only<1->{&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\} 
+	\only<2->{&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\}
+	\only<3->{&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\}}
 \end{align*}
 	
 \end{frame}
 
 \begin{frame}{Question (b)}
 	(b) What is the optimal constant model interms of the (theoretical) risk for the 0-1-loss and what is its risk?
+	\vspace{10pt}
+	
+	\uncover<2->{
+	Constant model: $$\hx = \theta$$
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (b)}
-\small
+	\small
 	\begin{align*}
 		\risk_L(h) &= \int_y \int_\xv \id_{y \neq h(\xv)} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
-		&= \int_y \int_\xv \id_{y \neq \thetab} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
-		&= \int_y \id_{y \neq \thetab} p(y) \mathrm{d}y \\
-		&= \int_y \left( 1 - \id_{y = \thetab} \right) p(y) \mathrm{d}y 
+		\only<2->{&= \int_y \int_\xv \id_{y \neq \thetab} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
+		\only<3->{&= \int_y \id_{y \neq \thetab} p(y) \mathrm{d}y \\}
+		\only<4->{&= \int_y \left( 1 - \id_{y = \thetab} \right) p(y) \mathrm{d}y = 1 - \int_y \id_{y=\thetab} p(y) \mathrm{d}y }
 	\end{align*}
-Therefore, $\argmin_{h} \risk_L(h) = \argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y$. Futhermore, $\Yspace = \{1, \ldots, g\}$, 
-it follows that $\argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y = \argmax_{\thetab \in \Yspace} \sumjg \id_{\thetab = j} \Prob (y=j)$. (Show example.)
-
-Hence, the optimal constant model for the \textbf{theorerical} risk is 
-$$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
+	\uncover<5->{
+		Therefore, $\argmin_{h} \risk_L(h) = \argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y$. 
+	}
+	\uncover<6->{
+		Futhermore, $\Yspace = \{1, \ldots, g\}$, 
+		it follows that $\argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y = \argmax_{\thetab \in \Yspace} \sumjg \id_{\thetab = j} \Prob (y=j)$. (Show example.)
+	}
+	
+	\uncover<7->{
+		Hence, the optimal constant model for the \textbf{theorerical} risk is 
+		$$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (b): Continued}
@@ -155,11 +168,13 @@ $$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
 	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \sum_{k \in \Yspace} \id_{y=k} \id_{k\neq h(\xv)} = \sum_{k \in \Yspace} L(k, h(x)).$$
 	Then, the risk of $\bar{h}$ is 
 	\begin{align*}
-		\risk_L(\bar{h})
-		&= \Exy[L(y, \bar{h}(\xv))] \\
-		&= \Ex\left[ \Eyx \left[L(y, \bar{h}(\xv)) \ | \ \xv \right] \right] \\
-		&= \Ex\left[ \Eyx \left[\sum_{k \in \Yspace} \id_{y=k} L(k, \bar{h}(\xv)) \ | \ \xv \right] \right] \\
-		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \quad \rhd \\
+		\only<2->{
+			\risk_L(\bar{h})
+			&= \Exy[L(y, \bar{h}(\xv))] \\
+		}
+		\only<3->{&= \Ex\left[ \Eyx \left[L(y, \bar{h}(\xv)) \ | \ \xv \right] \right] \\}
+		\only<4->{&= \Ex\left[ \Eyx \left[\sum_{k \in \Yspace} \id_{y=k} L(k, \bar{h}(\xv)) \ | \ \xv \right] \right] \\}
+		\only<5->{&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \quad \rhd \\}
 	\end{align*}
 \end{frame}
 
@@ -207,9 +222,9 @@ $$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
 
 \begin{frame}{Solution to Question (d)}
 	\begin{itemize}
-		\item We can rewrite the 0-1-loss as $$L(y, \pix) = \id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix <1/2} \id_{y=1}.$$
-		\item Since $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, we can optimize $\pi$ for each point $\xv$.
-		\item In other words, for $\Exy[L(y, \pix)] = \Ex[\Eyx[L(y, \pix) \ | \ \xv]]$. we optimize $\Eyx[L(y, \pix) \ | \ \xv]$ for each $\xv$.
+		\item<1-> We can rewrite the 0-1-loss as $$L(y, \pix) = \id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix <1/2} \id_{y=1}.$$
+		\item<2-> Since $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, we can optimize $\pi$ for each point $\xv$.
+		\item<3-> In other words, for $\Exy[L(y, \pix)] = \Ex[\Eyx[L(y, \pix) \ | \ \xv]]$. we optimize $\Eyx[L(y, \pix) \ | \ \xv]$ for each $\xv$.
 	\end{itemize}
 
 \end{frame}
@@ -218,9 +233,9 @@ $$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
 	\begin{align*}
 		\Eyx[L(y, \pix) \ | \ \xv]
 		&= \Eyx[\id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\
-		& = \Eyx[\id_{\pix \geq 1/2} \id_{y=0} \ | \ \xv] + \Eyx[ \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\
-		&= \id_{\pix \geq 1/2} \cdot \Eyx[\id_{y=0} \ | \ \xv] + \id_{\pix < 1/2} \cdot \Eyx[\id_{y=1} \ | \ \xv] \quad \rhd \\
-		&= \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). \\
+		\only<2->{& = \Eyx[\id_{\pix \geq 1/2} \id_{y=0} \ | \ \xv] + \Eyx[ \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\}
+		\only<3->{&= \id_{\pix \geq 1/2} \cdot \Eyx[\id_{y=0} \ | \ \xv] + \id_{\pix < 1/2} \cdot \Eyx[\id_{y=1} \ | \ \xv] \quad \rhd \\}
+		\only<4->{&= \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). \\}
 	\end{align*}
 \end{frame}
 
@@ -228,18 +243,22 @@ $$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
 	$$\Eyx[L(y, \pix) \ | \ \xv] = \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). $$
 	We can distinguish between two cases:
 	\begin{itemize}
-		\item If $\Prob(y=0 \ | \ \xv) \geq 1/ 2$, then any $\pix < 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
-		\item If $\Prob(y=0 \ | \ \xv) \leq 1/ 2$, then any $\pix \geq 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
+		\item<2-> If $\Prob(y=0 \ | \ \xv) \geq 1/ 2$, then any $\pix < 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
+		\item<3-> If $\Prob(y=0 \ | \ \xv) \leq 1/ 2$, then any $\pix \geq 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
 	\end{itemize}
-	In other words:
-	$$
-		\pix = \begin{cases}
-			< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$, } \\
-			\geq 1/2, \quad &\text{if $\Prob(y=1 \ | \ \xv) < 1/2$.}
-		\end{cases}
-	$$
 	
-	The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique.
+	\uncover<4->{
+		In other words:
+		$$
+			\pix = \begin{cases}
+				< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$, } \\
+				\geq 1/2, \quad &\text{if $\Prob(y=1 \ | \ \xv) < 1/2$.}
+			\end{cases}
+		$$
+	}
+	\uncover<5->{
+		The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique.
+	}
 
 \end{frame}
 
