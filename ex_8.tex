@@ -125,10 +125,106 @@
 	\begin{align*}
 		\argmin_{\thetab} \risket = \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \thetainnz.
 	\end{align*}
+	
+	Note that $\thetai$ is from the minimizer $\thetabh$ of the unregularized empirical risk :
+	\begin{align*}
+		\thetabh = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv = \Xmat^T \yv
+	\end{align*}
+	because we assume that $\Xmat^T \Xmat = \Imat$.
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (i)}
+	\begin{align*}
+		\argmin_{\thetab} \riskr(\thetab) &= \argmin_{\thetab} \frac{1}{2} ||\Xmat\thetab - \yv||_2^2  + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetab + \frac{1}{2} \thetab^T \Xmat^T \Xmat \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} - \underbrace{\yv^T \Xmat}_{\thetabh^T} \thetab + \frac{1}{2} \thetab^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} - \thetabh^T \thetab + \frac{1}{2} \thetab^T \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz  \qquad \lhd \\ 
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (ii)}
+	(ii) Note that the minimization problem on the right-hand side of (i) can be written as $\sumip g_i(\theta)$, where 
+		$$g_i(\theta) = -\thetahi \theta + \frac{\theta^2}{2} + \lambda \id_{|\theta| \neq 0}.$$
+		What is the advantage of this representation if we seek to find the $\thetab$ with entries $\theta_1, \ldots, \theta_p$ minimizing $\riskr(\thetab)$?
+\end{frame}
+
+
+\begin{frame}{Solution to Exercise 1 (ii)}
+	Advantage: we can minimize each $g_i$ \textbf{separately} to obtain the optimal entries $\theta_1, \ldots, \theta_p$.
+\end{frame}
+
+\begin{frame}{Exercise 1 (iii)}
+	Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$. 
 	
+	\emph{Hint:} Show that $g_i(\thetai) < 0 = g_i(0)$ and argue that the minimizer must have the same sign as $\thetahi$. (\textbf{Personally I find this hint is not so useful.})
+	
+	In other words, if $|\thetahi|$ is larger than the threshold, $\sqrt{2 \lambda}$, then the optimal $\theta^*_i$ is the consistent between the regularized and un-regularized empirical risk.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (iii)}
+	\small
+	We start with computing the $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
+	\begin{itemize}
+		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
+		\item Case 2: $\thetai \neq 0$. Then
+			\begin{align*}
+				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
+			\end{align*}
+			which is a quadratic function, and its minimizer is 
+			\begin{align*}
+				\thetai^* = \argmin_{\theta_i} g_i(\thetai) = \thetahi,
+			\end{align*}
+			and the minimal value of $g_i$ in this case is 
+			\begin{align*}
+				g_i(\thetai^*) = -\frac{\thetahi^2}{2} + \lambda.
+			\end{align*}
+	\end{itemize}
+	Which optimal $g_i$ is smaller? Case 1 or Case 2? It depends on $\lambda$. Note that we are given with $|\thetahi| > \sqrt{2 \lambda}$. So $-\frac{\thetahi^2}{2} + \lambda <  -\frac{2 \lambda}{2} + \lambda = 0.$
+	So the optimal $g_i$ in Case 2 is smaller. 
+	
+	So for the minimizer of $g_i$ it holds that $\thetai^* = \thetah_i$.
+\end{frame}
+
+\begin{frame}{Exercise 1 (iv)}
+	(iv) Derive that $\thetai^* = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}$, by using (iii) (and also still considering the case $|\thetahi| > \sqrt{2\lambda}$).
+	
+	\textbf{Solution}: In the solution of (iii) we have proven that 
+	\begin{align*}
+		\thetai^* = \thetahi 
+	\end{align*}
+	given that $|\thetahi| > \sqrt{2 \lambda}$. Given this contraint, the optimal $\thetai$ can be written as 
+	\begin{align*}
+		\thetai^* = \thetahi \cdot 1 = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (v)}
+	(v) Consider the complementary case of (iii) and (iv), i.e., $|\thetahi| \leq \sqrt{2\lambda}$, and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = 0$.
+	
+	\emph{Hint: } What is $g_i(0)$? Consider $\tilde{g}_i(0) = \thetahi \theta + \frac{\theta^2}{2} + \lambda$ which is the smooth extenstion of $g_i$. What is the relationship between the minimizer of $g_i$ and the minimizer of $\tilde{g}_i$? 
+	
+	(\textbf{We do not need this hint in the solution presented in the subsequent slides)}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (v)}
+	\small
+	Similarily, we start with computing $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
+	\begin{itemize}
+		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
+		\item Case 2: $\thetai \neq 0$. Then
+			\begin{align*}
+				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
+			\end{align*}
+		We have shown that the minimizer in \textbf{this case} is $\theta_i^* = \thetahi$ and $ \min g_i(\thetai^*) = g_i(\thetahi) = - \frac{\thetahi^2}{2} + \lambda.$
+	\end{itemize}
+	Since we consider the constraint $|\thetahi| \leq \sqrt{2\lambda}$. Then in Case 2  $$g_i(\theta_i^*) \geq - \frac{2\lambda}{2} + \lambda = 0.$$
+	So the minimal $g_i$ in Case 2 is \textbf{not smaller} than the minimal $g_i$ in Case 1. \textbf{(Plot $g_i(\theta_i)$ vs. $\theta_i$).}
+	Therefore, combining two cases, for the minimizer $\thetai^*$ of $g_i$ it holds that $$\thetai^* = 0. \qquad$$
+\end{frame}
+
+\begin{frame}{Exercise 2: Regularization}
+	\textbf{Directly show the standard solution.}
 \end{frame}
 
 \end{document}
