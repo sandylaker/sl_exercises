@@ -252,22 +252,30 @@ Therefore
 		$$
 			\pix = \begin{cases}
 				< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$, } \\
-				\geq 1/2, \quad &\text{if $\Prob(y=1 \ | \ \xv) < 1/2$.}
+				\geq 1/2, \quad &\text{if $\Prob(y=0 \ | \ \xv) < 1/2$.}
 			\end{cases}
 		$$
 	}
 	\uncover<5->{
-		The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique.
+		The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique. \qquad $\rhd$ (Plot $\pix$ vs. $\Prob(y=0 |\xv)$).
 	}
 
 \end{frame}
 
 \begin{frame}{Solution to Question (d): Continued}
-Disadvantages of using $p_{y | \xv}$:
+Using \textbf{probabilitisc 0-1-loss} to learn a \textbf{probabilistic} classifier.
+
+Disadvantages:
 \begin{itemize}
-	\item TODO (The solution is not very clear. Ask people around.)
+    \item<2-> For a probabilistic classifier, the objective is to approximate the true posterior distribution $p(y|\mathbf{x})$. However, minimizing the probabilistic 0-1 loss may yield an alternative form, diverging from $p(y|\mathbf{x})$.
 \end{itemize}
-	
+\uncover<3->{
+    Advantages:
+    \begin{itemize}
+        \item At least, $\pi(\mathbf{x})$ exhibits the correct "form" in the sense that the class probabilities are on the correct side of $1/2$.
+    \end{itemize}
+}
+
 \end{frame}
 
 \end{document}
