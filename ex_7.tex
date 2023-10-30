@@ -33,21 +33,18 @@
 
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
-\renewcommand{\E}{\mathbb{E}}
-\newcommand{\Xnorm}{||X||_2}
-\newcommand{\Xnormsq}{||X||_2^2}
-\newcommand{\Var}[1]{\mathrm{Var}(#1)}
-\newcommand{\sumip}{\sum_{i=1}^p}
-\newcommand{\Xp}{X^\prime}
-\newcommand{\xp}{x^\prime}
-\newcommand{\xnormsq}{||x||_2^2}
-\newcommand{\xpnormsq}{||x^\prime||_2^2}
-\newcommand{\Xpnormsq}{||X^\prime||_2^2}
-\newcommand{\Xpnorm}{||X^\prime||_2}
+
+\newcommand{\xik}{\xi_k}
+\newcommand{\xij}{\xi_j}
+\newcommand{\Imat}{\mathbf{I}}
+\newcommand{\Vmat}{\mathbf{V}}
+\newcommand{\Dmat}{\mathbf{D}}
+\newcommand{\Pmat}{\mathbf{P}}
+\newcommand{\Amattilde}{\tilde{\Amat}}
 
 
-\title[]{\textbf{Exercise of Supervised Learning: 
-\\ Curse of Dimensionality}}
+
+\title[]{\textbf{Exercise of Supervised Learning: \\ Regularization Part 2}}
 
 %\subtitle{}
 
@@ -106,190 +103,200 @@
 
 \end{frame}
 
+
 \begin{frame}{Exercise 1}
-	Consider a random vector $X = (X_1, \ldots, X_p)^T \sim \mathcal{N}(0, \id)$, i.e., a multivariate normally distributed vector with mean vector zero and covariance matrix beging the identity matrix of dimension $p \times p$. In this case, the coordinates $X_1, \ldots, X_p$ are i.i.d. each with distribution $\mathcal{N}(0, 1)$.
+	For a design matrix $\Xmat \in \mathbb{R}^{n \times p}$ and the vector of targets $\yv \in \mathbb{R}^n$, consider Lasso regression, i.e., 
+	$$\argmin_{\thetab \in \mathbb{R}^p} 0.5 || \Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1.$$
+	where $\lambda > 0$ is the regularization parameter.
 	
-	(a) Show that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$, where $|| \cdot ||_2$ is the Euclidean norm. 
+	(a) Since there exists no analytical solution to Lasso regression in general, we want to find a procedure similar to gradient descent that should converge to the true solution.
 	
-	Hint: $\E_{Y \sim \mathcal{N}(0, 1)}(Y^4) = 3.$
+	\vspace{10pt}
+	\textbf{We go through the questions in subsequent slides. (Write the optimization objective on whiteboard.)}
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a)}
+\begin{frame}{Exercise 1 (a) (i)}
+	\textbf{Question (a) (i)}: Explain why $\riskr$ is not differentiable.
+	
+	\vspace{10pt}
+	\textbf{Solution}: Because $\lambda ||\thetab||_1$ is not differentiable at $\thetab = \zero$.
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (ii)}
+	\textbf{Question (a) (ii)}: Show that $\riskr$ is convex. \emph{Hint: The sum of convex function is convex.}
+	
+	\vspace{10pt} 
+	
+	\textbf{Solution}: 
+		\begin{enumerate}
+			\item $0.5 ||\Xmat \thetab - \yv ||_2^2$ is convex, since it is quadratic.
+			\item $\lambda || \theta_1 ||_1$ is also convex (since it is a norm).
+			\item Sum of convex functions is convex. So $\riskr$ is convex.
+		\end{enumerate}
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (iii)}
 	\small
-	Note that $$\Xnormsq = \sum_{i=1}^p X_i^2.$$
-	Then, 
+	\textbf{Question (a) (iii)}: Find $\rho_j, z_j \in \mathbb{R}$ for which $$0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 = -\rho_j + \theta_j z_j.$$
+	\textbf{Solution}: 
 	\begin{align*}
-		\E[\Xnormsq] &= \E \left[ \sumip X_i^2 \right] \\
-		&= \sumip \E[X_i^2] \\
-		&= \sumip (\underbrace{\E[X_i]^2}_{=0} + \Var{X_i}) \\
-		&= \sumip 1 \\
-		&= p.
+		\frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 
+		&= \frac{\partial}{\partial \theta_j} 0.5 \sumin \left(\yi - \sum_{k=1}^p \xik \theta_k \right)^2 \\
+		&= - \sumin \xij \left( \yi - \sum_{k=1}^p \xik \theta_k \right) \\
+		&= - \underbrace{\sumin \xij \left( \yi - \sum_{k\neq j}^p \xik \theta_k \right)}_{= \rho_j} + \theta_j \underbrace{\sumin \left( \xij \right)^2}_{ = z_j}
 	\end{align*}
 \end{frame}
 
-\begin{frame}{Solution to Question 1 (a): Continued}
+\begin{frame}{Exercise 1 (a) (iv)}
 	\small
+	\textbf{Question (a) (iv)}: In this situation, we can use the so-called sub-derivative which we denote with $\partial f$ for a real-valued convex continuous function $f$. The subderivative maps a point $\theta \in \mathbb{R}$ to and interval
+	\begin{itemize}
+		\item and if $f$ is differentiable at $\tilde{\theta} \in \mathbb{R}$, then $\partial f(\tilde{\theta}) = \{ \frac{\mathrm{d}}{\mathrm{d}\theta} f(\tilde{\theta}) \}$,
+		\item and for $f(\theta) = \lambda |\theta|$ and $\lambda > 0$, it holds that $\partial f(\theta) = \begin{cases}
+			\{ -\lambda \} \quad & \text{for } \theta < 0, \\
+			[ -\lambda, \lambda] \quad & \text{for } \theta = 0, \\
+			\{ \lambda \} \quad & \text{for } \theta > 0
+		\end{cases}
+		$
+		\item and for $f, g$ real-valued convex functions with $\partial f(\tilde{\theta}) = [a, b], \partial g(\tilde{\theta}) = [c, d]$, $$\partial(f+g)(\tilde{\theta}) = [a + c, b + d]$$ where $b \geq a$ and $d \geq c$.
+	\end{itemize}
+	With this compute teh sub-derivative of $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}$ w.r.t. $\theta_j$, i.e., $\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} $ where $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}: \mathbb{R} \to \mathbb{R}_{\geq 0}, \theta_j \longmapsto \riskr(\theta_1, \ldots, \theta_j, \ldots, \theta_p)$ for constants $\thetab_{\neq j} = (\theta_1, \ldots, \theta_{j-1}, \theta_{j+1}, \ldots, \theta_p)^T$. \emph{Hint: Use (a) (iii).}
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (iv): Continued}
+	\textbf{Solution}:
+	Recall that $\riskr = 0.5 ||\Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1$ and $\frac{\partial}{\partial \theta_j} 0.5 ||\Xmat \thetab - \yv ||_2^2 = - \rho_j + \theta_j z_j$.
+	Therefor, 
 	\begin{align*}
-		\Var{\Xnormsq} &= \Var{\sumip X_i^2} \\
-		&= \sumip \Var{X_i^2} \\
-		&= \sumip (\underbrace{\E[X_i^4]}_{=3} - \underbrace{\E[X_i^2]^2}_{=1}) \qquad \rhd \\
-		&= \sumip (3 - 1) \\
-		&= 2p.
+		\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
+				\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
+				[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
+				\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
+		\end{cases}
 	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (v)}
+
+	\textbf{Question (a) (v)}: For a real-valued convex function $f$, the global minimum (if it exists) can be characterized in the following way:
+		
+		A point $\theta^* \in \mathbb{R}$ is the global minimum of $f$ if and only if $0 \in \partial f(\theta^*)$. 
+		With this show that 
+		$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} \Leftrightarrow \theta_j^* = 
+		\begin{cases}
+			\frac{\rho_j + \lambda}{z_j} \qquad & \text{for } \rho_j < - \lambda \\
+			0 \qquad & \text{for } - \lambda \leq \rho_j \leq \lambda \\
+			\frac{\rho_j - \lambda}{z_j} \qquad & \text{for } \rho_j > \lambda  
+		\end{cases}
+		$$
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (v): Continued}
+	\small
+	\textbf{Solution}: we need to show that 
+	\begin{align*}
+		0 \in \partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
+				\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
+				[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
+				\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
+		\end{cases}
+	\end{align*}
+		
+	where $z_j = \sumin \left( \xij \right)^2 \geq 0$.
+	\begin{itemize}
+		\item If $\theta_j < 0$, then $-\rho_j + \theta_j z_j - \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j + \lambda}{z_j}$. Since $\theta_j^* <0$ and $z_j \geq 0$, we have $\rho_j < -\lambda$;
+		\item If $\theta_j = 0$, then $\theta_j^* = 0$, and $-\rho_j - \lambda \leq 0 \leq -\rho_j + \lambda$ leads to $-\lambda \leq \rho_j \leq \lambda$, ;
+		\item If $\theta_j > 0$ then $-\rho_j + \theta_j z_j + \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j - \lambda}{z_j}$. Since $\theta_j^* > 0$, we have $\rho_j > \lambda$.
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (v): Continued}
+	Summarize everthing up:
+	$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} \Leftrightarrow \theta_j^* = 
+		\begin{cases}
+			\frac{\rho_j + \lambda}{z_j} \qquad & \text{for } \rho_j < - \lambda \\
+			0 \qquad & \text{for } - \lambda \leq \rho_j \leq \lambda \\
+			\frac{\rho_j - \lambda}{z_j} \qquad & \text{for } \rho_j > \lambda  
+		\end{cases}
+	$$
+\end{frame}
+
+\begin{frame}{Exercise 1 (a) (vi)}
+	\textbf{Question (a) (vi)}: Plot $\theta_j^*$ as a function of $\rho_j$ for $\rho_j \in [-5, 5], \lambda =1, z_j = 1$. (This function is called soft thresholding operator).
+	\vspace{10pt}
+	
+	\textbf{Solution}: \textbf{Show the standard solution.}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
-	(b) Use (a) to infer that $|\E[\Xnorm - \sqrt{p}]| \leq \frac{1}{\sqrt{p}}$ by using the following steps:
-	\begin{enumerate}[(i)]
-		\item Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}.$ 
-		\item Compute $\E[(1)]$.
-		\item Note that $0 \leq \E[(2)] \leq \frac{\Var{\Xnormsq}}{2 p^{3/2}}$ holds due to $||X||_2 \geq 0$.
-		\item Put (i)- (iii) together.
-	\end{enumerate}
+	\small
+	\textbf{Question (b)}: Find for non-singular $\Xmat^T \Xmat$ the matrix $\Amat \in \mathbb{R}^{p \times p} $ for which $$\Amat^T \Xmat^T \Xmat \Amat = \Imat$$
+	\emph{Hint: $\Xmat^T \Xmat$ is positive definite.}
+	
+	\textbf{Solution}: Since $\Xmat^T \Xmat$ is positive definite, there exist an orthogonal matrix $\Vmat$ and a diagonal matrix $\Dmat$ with $D_{ii} > 0$ such that $$\Vmat \Dmat \Vmat^T = \Xmat^T \Xmat.$$
+	So 
+	\begin{align*}
+		\Amat^T \Xmat^T \Xmat \Amat = \Amat^T \Vmat \Dmat \Vmat^T \Amat = \Imat
+	\end{align*}
+	To solve the equation for $\Amat$, we substitute the variable $ \Vmat^T \Amat = \Pmat$. Then, 
+	\begin{align*}
+		\Pmat^T \Dmat \Pmat = \Imat
+	\end{align*}
+	Since $\Dmat$ is a diagnonal matrix, it can be seen that $\Pmat = \Dmat^{- 0.5}$. Hence $\Vmat^T \Amat = \Pmat$. Because $\Vmat$ is orthogonal, we have $\Amat = \Vmat \Dmat^{-0.5}$.
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (b)}
-	\small
-	Step (i): Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}.$ 
+\begin{frame}{Exercise 1 (c) (i)}
+	(c) For a design matrix with orthornormal columns, i.e., $\Xmat^T \Xmat = \Imat$, exists an analytical minimizer of the Lasso regression $\thetabh_{Lasso} = (\thetah_{Lasso, 1}, \ldots, \thetah_{Lasso, p})^T$ that is given by 
+	$$\thetah_{Lasso, i} = \sign(\thetah_{i}) \max \left\{ \left|\thetah_i  - \lambda, 0 \right|  \right\}, \quad i = i, \ldots, p,$$
+	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk (w.r.t. the L2 loss).
 	
-	Step (ii): 
+	Under the assumption that $\Xmat^T\Xmat$ is non-singular, your colleague proposes to project $\Xmat$ with $\Amat$ from (b), i.e., use $\Amattilde = \Xmat \Amat$ and then apply the analytical solution given here. 
+	\vspace{10pt}
+	
+	\textbf{(i)} Show that this does not generally solve the original Lasso regression.
+	 
+	\vspace{10pt} 
+	\emph{Hint: You only need to check under which condition $\nabla_{\thetab} 0.5 || \Xmat \thetab - \yv||_2^2 = \nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 $. The proof can be finished with a subgradient argument regarding stationarity, which you do not have to do.}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c) (i): Continued}
+	\textbf{Solution}:
 		\begin{align*}
-			\E[(1)] &= \E \left[\frac{\Xnormsq - p}{2\sqrt{p}} \right] \\
-			&= \frac{1}{2\sqrt{p}} (\underbrace{\E[\Xnormsq]}_{= p \ \text{(from Question(a))}} - p) \\
-			&= 0.
+			\nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 &=  \Amat \Xmat^T \Xmat \Amat \thetab - \Amat^T \Xmat^T \yv \\
+			\nabla_{\thetab} 0.5 ||\Xmat \thetab - \yv ||_2^2 &= \Xmat^T \Xmat \thetab - \Xmat^T \yv\\
 		\end{align*}
+		To let the gradient be equal, it must be satisfied that 
+		$$\Amat = \Imat.$$
+		In other words, if $\Amat \neq \Imat$, then the analytical solution does not solve the original Lasso regression.
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1(b): Continued}
 
-	Step (iii):	Prove that $0 \leq \E[(2)] \leq \frac{\Var{\Xnormsq}}{2 p^{3/2}}$ holds due to $||X||_2 \geq 0$.
-	\begin{align*}
-		\E[(2)] = \E \left[ \frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}\right] \geq 0, \qquad \text{since all the terms are non-negative.}
-	\end{align*}
-	Besides, since $\Xnorm \geq 0$, it follows that 
-	\begin{align*}
-		(2) &\leq \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \\
-		\Rightarrow \quad \E[(2)] &\leq  \E \left[ \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \right] = \frac{1}{2p^{3/2}} \cdot \E \left[(\Xnormsq - \E[\Xnormsq])^2 \right] = \frac{\Var{\Xnormsq}}{2p^{3/2}} \\
-		&= \frac{2p}{2p^{3/2}} = \frac{1}{\sqrt{p}},
-	\end{align*}
-	where we utilize the lemma from (a) that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$.
+\begin{frame}{Exercise 1 (c) (ii)}
+	\textbf{Question (c) (ii)}: How could you adapt the penalty term such that the solution to the projected problem is equivalent to the original Lasso regression? In this case, can we still solve for parameters independently?
+	
+		\textbf{TODO:} It is weird in the solution that chosing $||\Amat \thetab||_1$ as regularization term. Because this will yeild $\thetab^* = \Amat^T \thetab_{\text{Orignal Lasso}}$, and it is different as $\thetab_{\text{Original Lasso}}$.
+
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1(b): Continued}
-	Step (iv): Putting everything together:
-	\begin{align*}
-		|\E[\Xnorm - \sqrt{p}]| = |\underbrace{\E[(1)]}_{=0} - \underbrace{\E[(2)}_{\geq 0}]| = \E[(2)] \leq \frac{1}{\sqrt{p}}.
-	\end{align*}
+\begin{frame}{Exercise 1 (c) (iii)}
+	\textbf{Question (c) (iii)}: Does the procedure proposed in (c) perform variable selection?
+	\pause
+	
+	\vspace{10pt}
+	\textbf{Solution}: 
+	\begin{itemize}
+		\item We can see this procedure as a projection of variables followed by a Lasso regression.
+		\item Hence, we select variables in these projected coordinates.
+		\item But this does not imply that the solution in the original coordinates $\Amat \thetab^*$ will be sparse.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Exercise 1 (c)}
-	(c) Use (b) to infer that $\Var{\Xnorm} \leq 2$ by using the following steps:
-	\begin{enumerate}[(i)]
-		\item Write $\Var{\Xnorm} = \Var{\Xnorm - \sqrt{p}}$.
-		\item For any random variable $Y$ it holds that $\Var{Y} \leq \E[Y^2] $.
-		\item If you encounter the term $E[\Xnorm]$ write it as $\E[\underbrace{\Xnorm - \sqrt{p}}_{= (*)} + \sqrt{p}]$ and use (b) for $(*)$.
-	\end{enumerate}
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (c)}
-	Step (i): Write $\Var{\Xnorm} = \Var{\Xnorm - \sqrt{p}}$.
+\begin{frame}{Exercise 1 (d)}
+	(d) You are given the following code to compare the quality of the projected Lasso regression vs. the regular Lasso regression. Complete the missing code of the algorithms and interpret the result.
 	\vspace{20pt}
 	
-	It holds because \textbf{variance does not change by constant shifts}. 
-	\vspace{20pt}
-	
-	Step (ii): For any random variable $Y$ it holds that $\Var{Y} \leq \E[Y^2] $.
-	\vspace{20pt}
-	
-	It holds because $\Var{Y} + \E[Y]^2 = \E[Y^2]$ and $\E[Y]^2 \geq 0$. Later we will use this inequality.
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (c): Continued}
-	\small
-	\begin{align*}
-		\Var{\Xnorm} 
-		&= \Var{\Xnorm - \sqrt{p}} \qquad \text{Step (i)} \\
-		&\leq \E[(\Xnorm - \sqrt{p})^2] \qquad \text{Step (ii)} \\
-		&= \E[ \Xnormsq - 2 \sqrt{p} \Xnorm  + p ] \\
-		&= \underbrace{\E[\Xnormsq]}_{=p} - 2 \sqrt{p} \cdot \E[\Xnorm] + p \\
-		&= 2p  - 2\sqrt{p} \cdot \E[\Xnorm] \\
-		&= 2p - 2\sqrt{p}\cdot \E[\Xnorm - \sqrt{p} + \sqrt{p}] \qquad \text{Step (iv)} \\
-		&= 2p - 2p - 2\sqrt{p} \cdot \E[\Xnorm - \sqrt{p}] \\
-		&= -2\sqrt{p} \cdot \underbrace{\E[\Xnorm - \sqrt{p}]}_{\leq \frac{1}{\sqrt{p}} \quad \text{(from (b))}} \\
-		&\leq 2\sqrt{p} \cdot \frac{1}{\sqrt{p}} = 2.
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Question 1 (d)}
-	Now let $\Xp = (X_1^\prime, \ldots, X_p^\prime)^T \sim \mathcal{N}(0, \id)$ be another multivariate normally distributed vector with mean vector zero and covariance matrix being the identity matrix of dimension $p \times p$. Further, assume that $X$ and $X^\prime$ are independent, so that $Z:= \frac{X - \Xp}{\sqrt{2}} \sim \mathcal{N}(0, \id)$. Conclude from the previous that 
-	\begin{align*}
-		\left| \E \left[|| X - \Xp||_2 - \sqrt{2p} \right] \right| \leq \frac{2}{p} \qquad \text{and} \qquad \Var{||X - \Xp ||_2} \leq 4.
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (d)}
-	\small
-	We first investigate $Z$. Since $Z = \frac{X - \Xp}{\sqrt{2}} \sim \mathcal{N}(0, \id)$, it follows from (b) and (c) that 
-	\begin{align}
-		|\E[||Z||_2 - \sqrt{p}]| & \leq \sqrt{\frac{1}{p}},\\
-		\Var{||Z||_2} &\leq 2
-	\end{align}
-	But the norm of $Z$
-	\begin{align}
-		||Z||_2 = \sqrt{\sumip \left(\frac{X_i - \Xp_i}{\sqrt{2}} \right)^2}  = \sqrt{\frac{1}{2}\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} \sqrt{\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} || X - \Xp ||_2.
-	\end{align}
-	It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \frac{2}{p} \Rightarrow |\E[\sqrt{2} \underbrace{||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (d): Continued}
-	Moreover, (2): $\Var{||Z||_2} \leq 2$ implies that
-	\begin{align*}
-		\Var{||Z||_2} &\leq 2 \\
-		\Leftrightarrow \qquad 2 \Var{||Z||_2} &\leq 4 \\
-		\Leftrightarrow \qquad  \Var{\sqrt{2} ||Z||_2} & \leq 4 \qquad (\Var{aY} = a^2 \Var{Y} \ \text{for any RV } Y) \\
-		\Leftrightarrow \qquad \Var{||X - \Xp||_2} &\leq 4 \qquad \text{Using (3) that } ||Z||_2 = \sqrt{\frac{1}{2}} ||X - \Xp ||_2.
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 1 (e)}
-	(e) From the cosine rule we can infer that for any $x, \xp \in \mathbb{R}^p$ it holds that 
-	\begin{align*}
-		\langle x, \xp \rangle = \frac{1}{2} (\xnormsq + \xpnormsq - ||x - \xp ||^2_2 ).
-	\end{align*}
-	Use this to show that $\E[\langle X, \Xp \rangle] = 0. $ Moreover, derive that $\Var{\langle X, \Xp \rangle} = p$.
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (e)}
-	Since $\langle x, \xp \rangle = \frac{1}{2} (\xnormsq + \xpnormsq - ||x - \xp ||^2_2 )$, we can infer that 
-	\begin{align*}
-		\E[\langle X, \Xp \rangle] &= \frac{1}{2} (\E[\Xnormsq] + \E[\Xpnormsq] - \E[||X - \Xp ||_2^2]) \\
-		&= \frac{1}{2} \left(p + p - 2\cdot \E\left[ \underbrace{\frac{1}{2} ||X - \Xp ||_2^2 }_{= ||Z||_2^2}\right] \right) \\
-		&= \frac{1}{2} ( p + p - 2p) = 0. \qquad (\text{From (a) we know that } \E[||Z||_2^2] = p )
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (e): Continued}
-	\begin{align*}
-		\Var{\langle X, \Xp \rangle} &= \Var{\sumip X_i \Xp_i} \\
-		&= \sumip \Var{X_i \Xp_i} \\
-		&= p \Var{X_1 \Xp_1} \\
-		&= p\cdot (\E[X_1^2 (\Xp_1)^2] - \E[X_1 (\Xp_1)]^2) \\
-		&= p \cdot (\underbrace{\E[X_1^2]}_{=1} \cdot \underbrace{\E[(\Xp_1)^2]}_{=1} - \underbrace{\E[X_1]^2}_{=0} \cdot \underbrace{\E[\Xp_1]^2}_{=0}) \\
-		&= p.
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 1 (f)}
-	(f) For different dimensions $p$, e.g., $p \in \{1, 2, 4, 8, \ldots, 1024\}$, create two sets consisting of 100 i.i.d. random observations from $\mathcal{N}(0, \id)$, respectively and 
-	\begin{enumerate}[(i)]
-		\item compute the average Euclidean length of (one of) the sampled sets and compare it to $\sqrt{p}$;
-		\item comptue the average Euclidean distances between the sampled sets and compare it to $\sqrt{2p}$;
-		\item compute the average inner products between the sampled sets;
-		\item compute in (i)-(iii) also the empirical variances of the respective terms.
-	\end{enumerate}
-	Visualize your results in an appropriate manner.
-	
-	\textbf{Show the standard solution.}
+	\textbf{Solution: show the sandard solution.}
 \end{frame}
 
 \end{document}

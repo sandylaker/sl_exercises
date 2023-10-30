@@ -30,24 +30,18 @@
 \bibpunct{(}{)}{;}{a}{,}{,}
 \def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
 \renewcommand{\bibsection}{\subsubsection*{\bibname } }
-
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
-\input{latex-math/ml-infotheory.tex}
 
-\newcommand{\HX}{H(X)}
-\newcommand{\HY}{H(Y)}
-\newcommand{\HXY}{H(X, Y)}
-\newcommand{\HXcY}{H(X | Y)}
-\newcommand{\HYcX}{H(Y|X)}
-\newcommand{\IXY}{I(X;Y)}
-\newcommand{\td}{\tilde{d}}
-\newcommand{\tdk}{\title{d}_k}
-\newcommand{\tdki}{{\tilde{d}}_k^{(i)}}
-\newcommand{\pikxit}{\pi_{k}(\xi | \thetab)}
+\newcommand{\thetahi}{\thetah_i}
+\newcommand{\thetai}{\theta_i}
+\newcommand{\thetainnz}{\id_{|\theta_i| \neq 0}}
+\newcommand{\Imat}{\mathbf{I}}
+\newcommand{\sumip}{\sum_{i=1}^p}
 
 
-\title[]{\textbf{Supervised Learning: Exercise for \\ Information Theory Part 2}}
+
+\title[]{\textbf{Exercise of Supervised Learning: \\ Regularization Part 1}}
 
 %\subtitle{}
 
@@ -64,7 +58,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{December 8, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,199 +101,130 @@
 \end{frame}
 
 
-\begin{frame}{Exercise 1: Entropy}
-	A fair \textbf{die} is rolled at the same time as a fair \textbf{coin} is tossed. Let $A$ be the number on the upper surface of the dice and let $B$ describe the outcome of the coin toss, where
-	$$
-		B = \begin{cases}
-			1, \quad &\text{head,} \\
-			0, \quad &\text{tail.}
-		\end{cases}
-	$$
-	Two random variables $X$ and $Y$ are given by $X = A + B$ and $Y = A - B$, respectively.
+
+\begin{frame}{Exercise 1: L0 Regularization}
+	\small
+	Consider the regression learning setting, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace = \mathbb{R}^p$. Let the hypothesis space be the linear models: $$\Hspace = \{ \fx = \thetab^T \xv \ | \ \thetab \in \mathbb{R}^p \}.$$
 	
-	(a) Calculate the entropies $\HX$ and $\HY$, the conditional entropies $\HYcX$ and $\HXcY$, the joint entropy $\HXY$ and the mutual information $\IXY$.
+	Suppose your loss function of interest is the L2 loss $L(y, \fx) = \frac{1}{2} (y - \fx)^2$. Consider the $L_0$-regularized empirical risk of a model $\fxt$: 
+	
+	$$
+		\riskrt = \risket + \lambda ||\thetab ||_0 = \frac{1}{2} \sum_{i=1}^n (\yi - \thetab^T \xi )^2 + \lambda \sum_{i=1}^p \thetainnz.
+	$$
+	
+	Assume that $\Xmat^T \Xmat = \Imat$, which holds if $\Xmat$ has orthonormal columns. Show that the minimizer $\thetah_{L0} = (\thetah_{L0, 1}, \ldots, \thetah_{L0, p})^T$ is given by 
+	$$
+		\thetah_{L0, i} = \thetahi \id_{\thetahi > \sqrt{2 \lambda}}, \qquad i = 1, \ldots, p,
+	$$
+	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk. For this purpose, using the following steps:
+	
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a)}
-	\begin{enumerate}
-		\item Let $a, b , x, y$ be the realizations of $A, B, X, Y$, rspectively.
-		\item \textbf{If we have observed $x$ and $y$, then we can calculate the observed $a$ and $b$.}
-			
-			Since: $x = a + b$ and $y = a - b$ yields $a = \frac{x + y}{2}$ and $b = \frac{x - y}{2}$.
-		\item In other words, a pair $(x, y)$ is uniquely associated with a pair $(a, b)$.
-		\item For each pair $(a, b) \in \{0, 1, \ldots, 6 \} \times \{0, 1\}$, it holds that $p_{AB}(a, b) = \frac{1}{6} \cdot \frac{1}{2} = \frac{1}{12}$.
-		\item Therefore, $p_{XY}(x, y) = p_{AB}(a, b) = \frac{1}{12}$ for all $(x, y)$.
-		\item So, the joint entropy
+\begin{frame}{Exercise 1 (i)}
+	(i) Derive that 
+	\begin{align*}
+		\argmin_{\thetab} \risket = \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \thetainnz.
+	\end{align*}
+	
+	Note that $\thetai$ is from the minimizer $\thetabh$ of the unregularized empirical risk :
+	\begin{align*}
+		\thetabh = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv = \Xmat^T \yv
+	\end{align*}
+	because we assume that $\Xmat^T \Xmat = \Imat$.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (i)}
+	\begin{align*}
+		\argmin_{\thetab} \riskr(\thetab) &= \argmin_{\thetab} \frac{1}{2} ||\Xmat\thetab - \yv||_2^2  + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetab + \frac{1}{2} \thetab^T \Xmat^T \Xmat \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} - \underbrace{\yv^T \Xmat}_{\thetabh^T} \thetab + \frac{1}{2} \thetab^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} - \thetabh^T \thetab + \frac{1}{2} \thetab^T \thetab + \lambda \sumip \thetainnz \\
+		&= \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz  \qquad \lhd \\ 
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (ii)}
+	(ii) Note that the minimization problem on the right-hand side of (i) can be written as $\sumip g_i(\theta)$, where 
+		$$g_i(\theta) = -\thetahi \theta + \frac{\theta^2}{2} + \lambda \id_{|\theta| \neq 0}.$$
+		What is the advantage of this representation if we seek to find the $\thetab$ with entries $\theta_1, \ldots, \theta_p$ minimizing $\riskr(\thetab)$?
+\end{frame}
+
+
+\begin{frame}{Solution to Exercise 1 (ii)}
+	Advantage: we can minimize each $g_i$ \textbf{separately} to obtain the optimal entries $\theta_1, \ldots, \theta_p$.
+\end{frame}
+
+\begin{frame}{Exercise 1 (iii)}
+	Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$. 
+	
+	\emph{Hint:} Show that $g_i(\thetai) < 0 = g_i(0)$ and argue that the minimizer must have the same sign as $\thetahi$. (\textbf{Personally I find this hint is not so useful.})
+	
+	In other words, if $|\thetahi|$ is larger than the threshold, $\sqrt{2 \lambda}$, then the optimal $\theta^*_i$ is the consistent between the regularized and un-regularized empirical risk.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (iii)}
+	\small
+	We start with computing the $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
+	\begin{itemize}
+		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
+		\item Case 2: $\thetai \neq 0$. Then
 			\begin{align*}
-				\HXY &= - \sum_{x, y} p_{XY}(x, y) \log_2 p_{XY}(x, y) = -12 \cdot \frac{1}{12} \log_2 \frac{1}{12} \\
-				&= 2 + \log_2 3.
+				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
 			\end{align*}
-
-	\end{enumerate}
+			which is a quadratic function, and its minimizer is 
+			\begin{align*}
+				\thetai^* = \argmin_{\theta_i} g_i(\thetai) = \thetahi,
+			\end{align*}
+			and the minimal value of $g_i$ in this case is 
+			\begin{align*}
+				g_i(\thetai^*) = -\frac{\thetahi^2}{2} + \lambda.
+			\end{align*}
+	\end{itemize}
+	Which optimal $g_i$ is smaller? Case 1 or Case 2? It depends on $\lambda$. Note that we are given with $|\thetahi| > \sqrt{2 \lambda}$. So $-\frac{\thetahi^2}{2} + \lambda <  -\frac{2 \lambda}{2} + \lambda = 0.$
+	So the optimal $g_i$ in Case 2 is smaller. 
 	
+	So for the minimizer of $g_i$ it holds that $\thetai^* = \thetah_i$.
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a): Continued}
+\begin{frame}{Exercise 1 (iv)}
+	(iv) Derive that $\thetai^* = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}$, by using (iii) (and also still considering the case $|\thetahi| > \sqrt{2\lambda}$).
+	
+	\textbf{Solution}: In the solution of (iii) we have proven that 
+	\begin{align*}
+		\thetai^* = \thetahi 
+	\end{align*}
+	given that $|\thetahi| > \sqrt{2 \lambda}$. Given this contraint, the optimal $\thetai$ can be written as 
+	\begin{align*}
+		\thetai^* = \thetahi \cdot 1 = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (v)}
+	(v) Consider the complementary case of (iii) and (iv), i.e., $|\thetahi| \leq \sqrt{2\lambda}$, and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = 0$.
+	
+	\emph{Hint: } What is $g_i(0)$? Consider $\tilde{g}_i(0) = \thetahi \theta + \frac{\theta^2}{2} + \lambda$ which is the smooth extenstion of $g_i$. What is the relationship between the minimizer of $g_i$ and the minimizer of $\tilde{g}_i$? 
+	
+	(\textbf{We do not need this hint in the solution presented in the subsequent slides)}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (v)}
 	\small
-	Next, we compute $\HX$ and $\HY$. We enumerate all the possible $(a, b)$ events.
-	\vspace{10pt}
-	 
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\begin{tabular}{c c c}
-			\hline
-			$x$ & events $(a, b)$ & $p_X(x)$ \\
-			\hline
-			1 & (1, 0) & 1/12 \\
-			2 & (2, 0), (1, 1) & 1/6 \\
-			3 & (3, 0), (2, 1) & 1/6 \\
-			4 & (4, 0), (3, 1) & 1/6 \\
-			5 & (5, 0), (4, 1) & 1/6 \\
-			6 & (6, 0), (5, 1) & 1/6 \\
-			7 & (6, 1) & 1/12 \\
-			\hline
-		\end{tabular}
-		
-		\begin{align*}
-			\HX &= \sum_x p_X(x) \log_2 p_X(x) \\
-				&= -2 \cdot \frac{1}{12} \log_2 \frac{1}{12} - 5\cdot \frac{1}{6} \log_2 \frac{1}{6} \\
-				&= \frac{7}{6} + \log_2 3.
-		\end{align*}
-	\end{minipage}
-	\hfill
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\begin{tabular}{c c c}
-			\hline
-			$y$ & events $(a, b)$ & $p_Y(y)$ \\
-			\hline
-			0 & (1, 1) & 1/12 \\
-			1 & (1, 0), (2, 1) & 1/6 \\
-			2 & (2, 0), (3, 1) & 1/6 \\
-			3 & (3, 0), (4, 1) & 1/6 \\
-			4 & (4, 0), (5, 1) & 1/6 \\
-			5 & (5, 0), (6, 1) & 1/6 \\
-			6 & (6, 0) & 1/12 \\
-			\hline
-		\end{tabular}
-		
-		\begin{align*}
-			\HY &= \sum_y p_Y(x) \log_2 p_Y(y) \\
-				&= -2 \cdot \frac{1}{12} \log_2 \frac{1}{12} - 5\cdot \frac{1}{6} \log_2 \frac{1}{6} \\
-				&= \frac{7}{6} + \log_2 3.
-		\end{align*}
-	\end{minipage}
-
+	Similarily, we start with computing $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
+	\begin{itemize}
+		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
+		\item Case 2: $\thetai \neq 0$. Then
+			\begin{align*}
+				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
+			\end{align*}
+		We have shown that the minimizer in \textbf{this case} is $\theta_i^* = \thetahi$ and $ \min g_i(\thetai^*) = g_i(\thetahi) = - \frac{\thetahi^2}{2} + \lambda.$
+	\end{itemize}
+	Since we consider the constraint $|\thetahi| \leq \sqrt{2\lambda}$. Then in Case 2  $$g_i(\theta_i^*) \geq - \frac{2\lambda}{2} + \lambda = 0.$$
+	So the minimal $g_i$ in Case 2 is \textbf{not smaller} than the minimal $g_i$ in Case 1. \textbf{(Plot $g_i(\theta_i)$ vs. $\theta_i$).}
+	Therefore, combining two cases, for the minimizer $\thetai^*$ of $g_i$ it holds that $$\thetai^* = 0. \qquad$$
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a): Continued}
-	The conditional entropies are
-	\begin{align*}
-		\HXcY &= \HXY - \HY = 2 + \log_2 3 - \frac{7}{6} - \log_2 3 = \frac{5}{6} \\
-		\HYcX &= \HXY - \HX = 2 + \log_2 3 - \frac{7}{6} - \log_2 3 = \frac{5}{6} \\
-	\end{align*}
-	
-	The mutual information $\IXY$ can be determined according to
-	\begin{align*}
-		\IXY = \HX - \HXY = \frac{7}{6} + \log_2 3 - \frac{5}{6} = \frac{1}{3} + \log_2 3.
-	\end{align*}
-\end{frame}
-
-
-\begin{frame}{Exercise 1: Question (b)}
-	(b) Show that, for independent discrete random variables $X$ and $Y$,
-	$$I(X; X + Y) - I(Y; X + Y) = \HX - \HY$$
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (b)}
-\small
-	\begin{align*}
-		I(X; X+ Y) - I(Y; X+Y) 
-		&= \HX - H(X | X + Y) - \HY + H(Y | X + Y) \\
-		&= \HX - \HY  + (H(Y| X+Y) - H(X| X+Y)) \\
-		&= \HX - \HY + \\
-		&\qquad (H(Y, X+Y) - H(X+Y) - H(X, X+Y) + H(X+Y)) \\
-		&= \HX - \HY + \underbrace{H(Y, X+Y) - H(X, X+Y)}_{=0} \\
-		&= \HX - \HY
-	\end{align*}
-
-Note that if we observe $x+y$, and assume we also observe $x$, we can infer $y$.	 
-
-In other words, \textbf{each pair $(x+y, x)$ has the same probability as $(x+y, y)$. Therefore, $H(Y, X+Y) = H(X, X+Y)$. (This can also be proven from the perspective of PGM.)}
-
-\end{frame}
-
-\begin{frame}{Exercise 2: Mutual Information of Three Variables}
-	Let $X, Y, Z$ be three discrete random variables. The mutual information of $X, Y,$ and $Z$ is defined as:
-	$$I(X; Y; Z) = \sum_x \sum_y \sum_z p(x, y, z) \log \left( \frac{p(x,y) p(x,z) p(y,z)}{p(x) p(y) p(z) p(x,y,z)}\right).$$
-	(a) Prove the lemma:  $$I(X; Y; Z) = I(X; Y) - I(X; Y |Z).$$ Note that the conditional information is defined as: $$I(X; Y | Z) = \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z)}{p(x|z) p(y|z)}.$$
-\end{frame}
-
-
-\begin{frame}{Solution to Question 2 (a)}
-	\small
-	According to the definition of mutual information, 
-	\begin{align*}
-		I(X; Y) - I(X; Y | Z) 
-		&= \sum_x \sum_y p(x, y) \log \frac{p(x, y)}{p(x) p(y)} - \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z)}{p(x|z) p(y|z)} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \frac{p(x, y)}{p(x) p(y)} - \\
-		& \qquad \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z) p(z)^2}{p(x|z) p(y|z) p(z)^2} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \frac{p(x, y)}{p(x) p(y)} - \sum_z \sum_x \sum_y p(x, y, z) \log \frac{p(x, y, z) p(z)}{p(x, z) p(y,z)} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \left(\frac{p(x, y) p(x, z) p(y,z)}{p(x) p(y) p(z) p(x,y,z)} \right) \\
-		&= I(X;Y;Z). 
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 2: Question (b)}
-(b) Prove the following relation with the above lemma:
-\begin{align*}
-	I(X; Y) = I(X; Y |Z) + I(Y; Z) - I(Y; Z | X)
-\end{align*}
-
-Recall the lemma: $I(X; Y) - I(X; Y | Z)  = I(X; Y; Z)$
-
-	
-\end{frame}
-
-\begin{frame}{Solution to Question 2 (b)}
-	Using the lemma we just proved, we obtain:
-	\begin{align*}
-		& I(X; Y |Z) + I(Y; Z) - I(Y; Z | X) \\
-		&= \IXY - I(X; Y; Z)  + I(Y; Z) - I(Y;Z) + I(X;Y;Z) \\
-		&= \IXY 
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 3: Smoothed Cross-Entropy Loss}
-	\small
-	\emph{Over-confidence} is a state when a model is more confident in its prediction than the input data warrants. Label smoothing (a.k.a. smoothed cross entropy loss) is a widely used trick in deep learning classification tasks for alleviating the over-confidence issue and increasing model robustness. In the conventional cross-entropy loss, we aim to minimize the KL-divergence between $d$ and $\pixt$, where the ground truth distribution $d$ is a delta distribution (i.e., only $d_k = 1$ for the ground truth class), and $\pixt$ is the predicted distribution by the model $\pi$ parameterized by $\thetab$. The key step in label smoothing is to smooth the ground truth distribution. Specifically, given a hyperparameter $\beta$ (e.g., $\beta = 0.1$), we uniformly distribute the probability mass of $\beta$ to all the $g$ classes and reduce the probability mass of ground truth class. Consequently, the smoothed ground truth distribution $\td$ is 
-	\begin{align*}
-		\tdk = \begin{cases}
-			\frac{\beta}{g} \qquad &\text{for } d_k = 0; \\
-			1 - \beta + \frac{\beta}{g} \qquad & \text{for } d_k = 1. 
-		\end{cases}
-	\end{align*}
-	The smoothed cross entropy is then $D_{KL}(\td \ || \ \pixt)$. 
-	
-	(a) Derive the empirical risk when using the smoothed cross-entropy as loss function.
-\end{frame}
-
-\begin{frame}{Solution to Question 3 (a)}
-	The empirical risk is 
-	\begin{align*}
-		\riske(\thetab) 
-		&= \frac{1}{n} \sumin \left( \sum_{k=1}^g \tdki \log \left( \frac{\tdki}{\pikxit} \right)  \right) \qquad \rhd \\
-		&= \frac{1}{n} \sumin \left( \sumkg \tdki \log \tdki - \tdki \log \pikxit  \right) \\
-		&= - \frac{1}{n} \sumin \sumkg \tdki \log \pikxit + Const.
-	\end{align*}
-	Note that only the terms dependent on $\thetab$ are relevant to optimization, wheares other terms are constant and can be omitted in implementation.
-\end{frame}
-
-\begin{frame}{Exercise 2: Question (b)}
-	(b) Implement the smoothed cross-entropy.
-	\vspace{20pt}
-	
-	\textbf{Show the code in the standard solution.}
+\begin{frame}{Exercise 2: Regularization}
+	\textbf{Directly show the standard solution.}
 \end{frame}
 
 \end{document}
