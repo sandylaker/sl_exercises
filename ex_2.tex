@@ -120,19 +120,20 @@ The empirical risk is
 		\riske(h) &= \sumin \id_{\yi \neq h(\xi)} \\
 		&=\sumin 1 - \id_{\yi = h(\xi)} \quad \rhd \\
 	\end{align*}
-
+\uncover<2->{
 Therefore
-\begin{align*}
-	\argmin_{h \in \Hspace} \riske(h) 
-	\only<1->{&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\} 
-	\only<2->{&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\}
-	\only<3->{&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\}}
-\end{align*}
+	\begin{align*}
+		\argmin_{h \in \Hspace} \riske(h) 
+		\only<2->{&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\} 
+		\only<3->{&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\}
+		\only<4->{&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\} \qquad \rhd}
+	\end{align*}
+}
 	
 \end{frame}
 
 \begin{frame}{Question (b)}
-	(b) What is the optimal constant model interms of the (theoretical) risk for the 0-1-loss and what is its risk?
+	(b) What is the optimal constant model in terms of the (theoretical) risk for the 0-1-loss and what is its risk?
 	\vspace{10pt}
 	
 	\uncover<2->{
@@ -165,7 +166,7 @@ Therefore
 \begin{frame}{Solution to Question (b): Continued}
 	\small
 	Before we compute $\risk_{L}(\bar{h})$, we write 0-1-loss as follows:
-	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \sum_{k \in \Yspace} \id_{y=k} \id_{k\neq h(\xv)} = \sum_{k \in \Yspace} L(k, h(x)).$$
+	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \sum_{k \in \Yspace} \id_{k=y} \id_{k\neq h(\xv)} = \sum_{k \in \Yspace} \id_{k = y} L(k, h(x)).$$
 	Then, the risk of $\bar{h}$ is 
 	\begin{align*}
 		\only<2->{
@@ -198,6 +199,8 @@ Therefore
 	
 	Recall that the approximation error is defined as 
 	$$\inf_{h \in \Hspace} \risk_L(h) - \riskbayes_L$$
+	and the Bayesian risk is 
+	$$\riskbayes_L = 1 - \Ex[\max_{l \in \Yspace} \Prob(y = l | \xv)])$$
 \end{frame}
 
 \begin{frame}{Solution to (c)}
@@ -213,7 +216,7 @@ Therefore
 	(d) Assume now $g=2$ (binary classification) and consider now the hypothesis space of probabilistic classifiers $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, that is, $\pi(\xv)$ (or $1 - \pi(\xv)$) is an estimate of the posterior distribution $p_{y | \xv} (1 | \xv)$ (or $p_{y | \xv} (0 | \xv)$). Furthermore, consider the probabilistic 0-1-loss
 	$$
 	L(y, \pi(\xv)) = \begin{cases}
-		1, \quad & \text{if ($\pi(\xv) \geq 1/2$ and $y=0$) or ($\pi(\xv) < 1/ 2$ and $y = 1$),} \\
+		1, \quad & \text{if ($\pi(\xv) \geq 1/2$ and $y=0$) or ($\pi(\xv) < 1/ 2$ and $y = 1$),} \qquad \rhd(interpret)\\
 		0, \quad & \text{else.}
 	\end{cases}
 	$$
