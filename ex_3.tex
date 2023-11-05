@@ -61,7 +61,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{November 17, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,7 +107,7 @@
 \begin{frame}{Exercise 3: Connection between between MLE and ERM}
 \small
 	Suppose we are facing a regression task, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace \subseteq \mathbb{R}^p$. Let us assume that the relationship between the features and labels is specified by 
-	$$y = m^{-1}(m(\ftrue(\xv)) + \eps),$$
+	$$y = m^{-1}(m(\ftrue(\xv)) + \eps), \qquad \lhd$$
 	where $m: \mathbb{R} \to \mathbb{R}$ is a continuous strictly monotone function with $m^{-1}$ being its inverse function, and the errors are Gaussian, i.e., $\eps \sim \mathcal{N}(0, \sigma^2)$. In particular, for the data points $(\xv^{(1)}, y^{(1)}, \ldots, \xv^{(n)}, y^{(n)})$ it holds that
 	$$\yi = m^{-1}(m(\ftrue(\xv^{(i)})) + \epsi),$$
 	where $\eps^{(1)}, \ldots, \eps^{(n)}$ are i.i.d. with distribution $\mathcal{N}(0, \eps^2)$.
@@ -119,14 +119,17 @@
 \end{frame}
 
 \begin{frame}{Solution: Question (a)}
+\uncover<1->{
 	We can use 
 	$$z^{(i)} = m(y^{(i)}).$$
 
 	We know that $ \yi = m^{-1}(\mfruexi + \epsi)$, therefore $	\myi = \mfruexi + \epsi$.
+}
+\uncover<2->{
 	Hence, 
 	$$\zi = \mfruexi + \epsi, \quad \text{with } \eps^{(i)} \sim \mathcal{N}(0, \sigma^2). $$
 	Therefore, $\zi \ | \ \xv^{(i)}$ is normally distributed, i.e., $$\zi \ | \ \xv^{(i)} \sim  \mathcal{N}(\mfruexi, \sigma^2)$$.
-
+}
 \end{frame}
 
 \begin{frame}{Question (b)}
@@ -140,19 +143,21 @@
 	\small
 	The likelihood for  $(\xv^{(1)}, z^{(1)}), \ldots (\xv^{(n)}, z^{(n)})$ is 
 	\begin{align*}
-		\mathcal{L}(\thetab) 
-		&= \prodin p \left( \zi \ | \ f(\xi \ | \ \thetab), \sigma^2 \right)  \\
-		&\propto \exp \left( -\frac{1}{2\sigma^2} \sumin \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \right).
+		\only<1->{
+			\mathcal{L}(\thetab) 
+			&= \prodin p \left( \zi \ | \ f(\xi \ | \ \thetab), \sigma^2 \right)  \\}
+		\only<2->{&\propto \exp \left( -\frac{1}{2\sigma^2} \sumin \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \right).}
 	\end{align*}
-	So the negative log-likelihood (NLL) is 
+	\uncover<3->{
+		So the negative log-likelihood (NLL) is 
+	}
 	\begin{align*}
-		- \ell(\thetab) 
-		&= - \log(\mathcal{L}(\thetab))\\
-		&\propto \sumin  \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \\
-		&= \sumin  \left[ \myi - m(f(\xi \ | \ \thetab)) \right]^2 
+		\only<4->{- \ell(\thetab) &= - \log(\mathcal{L}(\thetab))\\}
+		\only<5->{&\propto \sumin  \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \\}
+		\only<6->{&= \sumin  \left[ \myi - m(f(\xi \ | \ \thetab)) \right]^2 }
 	\end{align*}
 	
-	Therefore, the NLL is propotional to the empirical risk of $f(\cdot | \thetab)$ w.r.t. the generalized L2-Loss.
+	\uncover<7->{Therefore, the NLL is propotional to the empirical risk of $f(\cdot | \thetab)$ w.r.t. the generalized L2-Loss.}
 \end{frame}
 
 \begin{frame}{Question (c)}
@@ -164,23 +169,29 @@
 \begin{frame}{Solution to Question (c)}
 	\small
 	\begin{itemize}
-		\item The goal is to introduce a proper form for $f(\cdot | \thetab)$ so that $y = m^{-1}(m(f(x)) + \eps)$.
-		\item We use the transformation $m(x) = \log(x)$. So $m^{-1}(x) = \exp(x)$. 
-		\item The Forbes' conjectured model $y = \theta_1 \exp(\theta_2 x + \eps)$ can be written as 
+		\item<1-> The goal is to introduce a proper form for $f(\cdot | \thetab)$ so that $y = m^{-1}(m(f(x)) + \eps)$.
+		\item<2-> We use the transformation $m(\cdot) = \log(\cdot)$. So $m^{-1}(\cdot) = \exp(\cdot)$. 
+		\item<3-> The Forbes' conjectured model $y = \theta_1 \exp(\theta_2 x + \eps)$ can be written as 
 			\begin{align*}
-				y &= \theta_1 \exp(\theta_2 x + \eps) \\
-				&= \exp(\log(\theta_1 \cdot \exp(\theta_2 x + \eps))) \\
-				&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \log (\exp(\eps))] \\
-				&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \eps] \\
-				&= \exp[\log (\theta_1 \cdot \exp(\theta_2 x)) + \eps] \\
-				&= m^{-1}(m(\theta_1 \cdot \exp(\theta_2 x)) + \eps).
+				\only<4->{y &= \theta_1 \exp(\theta_2 x + \eps) \\}
+				\only<5->{&= \exp(\log(\theta_1 \cdot \exp(\theta_2 x + \eps))) \\}
+				\only<6->{&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \log (\exp(\eps))] \\}
+				\only<7->{&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \eps] \\}
+				\only<8->{&= \exp[\log (\theta_1 \cdot \exp(\theta_2 x)) + \eps] \\}
+				\only<9->{&= m^{-1}(m(\theta_1 \cdot \exp(\theta_2 x)) + \eps).}
 			\end{align*}
+			\uncover<10->{
 			Therefore, $f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x)$ is a suitable functional form for the hypothesis. So 
 			$$\Hspace = \{ f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x) \ | \ \thetab \in \Theta \}.$$
-			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x1, x2)^T = (1, x_2)^T$, the constant component is redundant in my opinion. TODO: maybe ask people around.)
+			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x1, x2)^T = (1, x_2)^T$.)}
 	\end{itemize}
+\end{frame}
 
-	
+\begin{frame}{Solution to Question (c): Continued}
+
+
+	\textbf{Show the code in the standard solution.}
+
 	
 \end{frame}
 
