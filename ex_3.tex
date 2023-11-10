@@ -44,7 +44,7 @@
 \newcommand{\zi}{z^{(i)}}
 \newcommand{\mfruexi}{m(\ftrue(\xv^{(i)}))}
 
-\title[]{\textbf{Supervised Learning: Exercise 3}}
+\title[]{\textbf{Exercise of Supervised Learning: \\ Advanced Risk Minimization Part 3}}
 
 %\subtitle{}
 
@@ -61,7 +61,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{November 17, 2023}
+\date{November 10, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -110,7 +110,7 @@
 	$$y = m^{-1}(m(\ftrue(\xv)) + \eps), \qquad \lhd$$
 	where $m: \mathbb{R} \to \mathbb{R}$ is a continuous strictly monotone function with $m^{-1}$ being its inverse function, and the errors are Gaussian, i.e., $\eps \sim \mathcal{N}(0, \sigma^2)$. In particular, for the data points $(\xv^{(1)}, y^{(1)}, \ldots, \xv^{(n)}, y^{(n)})$ it holds that
 	$$\yi = m^{-1}(m(\ftrue(\xv^{(i)})) + \epsi),$$
-	where $\eps^{(1)}, \ldots, \eps^{(n)}$ are i.i.d. with distribution $\mathcal{N}(0, \eps^2)$.
+	where $\eps^{(1)}, \ldots, \eps^{(n)}$ are i.i.d. with distribution $\mathcal{N}(0, \sigma^2)$.
 	
 	\textbf{Disclaimer:} We assume in the following that $\my$ and $\mfx$ is well-defined for any $y \in \Yspace, f \in \Hspace$ and $\xv \in \Xspace$.
 	
@@ -183,7 +183,7 @@
 			\uncover<10->{
 			Therefore, $f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x)$ is a suitable functional form for the hypothesis. So 
 			$$\Hspace = \{ f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x) \ | \ \thetab \in \Theta \}.$$
-			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x1, x2)^T = (1, x_2)^T$.)}
+			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x_1, x_2)^T = (1, x_2)^T$.)}
 	\end{itemize}
 \end{frame}
 
