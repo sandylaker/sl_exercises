@@ -36,6 +36,15 @@
 \input{latex-math/ml-svm.tex}
 
 \newcommand{\zv}{\bm{z}}
+\newcommand{\betav}{\bm{\beta}}
+\newcommand{\Kmat}{\bm{K}}
+\newcommand{\linearphixi}{\thetab^T \phixi + \theta_0}
+\newcommand{\phitxi}{\tilde{\phi}(\xi)}
+\renewcommand{\phixi}{\phi(\xi)}
+\newcommand{\psixiy}{\psi(\xi, y)}
+\newcommand{\psixiyi}{\psi(\xi, \yi)}
+\newcommand{\thetabt}{\tilde{\thetab}}
+\newcommand{\betab}{\bm{\beta}}
 
 
 \title[]{\textbf{Exercise of Supervised Learning: \\ SVM Part 2}}
@@ -102,7 +111,7 @@
 	For a data set $\D = \{(\xv^{(1)}, y^{(1)}), \ldots, (\xv^{(n)}, y^{(n)}) \}$ with $\yi \in \Yspace = \{+1, -1 \}$, assume that we are provided with a suitable feature map $\phi: \Xspace \to \Phi$, where $\Phi \subset \mathbb{R}^d$. In the featureized SVM learning problem we are facing the following optimization problem:
 	\begin{align*}
 		\min_{\thetab, \theta_0, \sli} &\frac{1}{2} \thetab^T \thetab + C \sumin \sli \\
-		\text{s.t. } & \yi \left(\left\langle \thetab, \phixi + \theta_0 \right\rangle \right) \geq 1 - \sli \qquad \forall i \in \{1, \ldots, n \}, \\
+		\text{s.t. } & \yi \left(\left\langle \thetab, \phixi \right\rangle  + \theta_0\right) \geq 1 - \sli \qquad \forall i \in \{1, \ldots, n \}, \\
 		\text{and } & \sli \geq 0 \qquad i \in \{1, \ldots, n \},
 	\end{align*}
 	where $C \geq 0$ is some constant.
@@ -118,7 +127,160 @@
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (a)}
+
+	\begin{enumerate}
+		\item Identify that: $\langle \thetab, \phixi \rangle + \theta_0 = \linearphixi$.
+		\item Check the conditions $\yi (\linearphixi) \geq 1 - \sli$ and $\sli \geq 0$.
+		\begin{itemize}
+			\item Case 1: if $\yi (\linearphixi) \geq 1$, then $\sli = 0$. \qquad $\rhd$
+			\item Case 2: if $\yi (\linearphixi) < 1$, then $\sli = 1 - \yi(\linearphixi) > 0$. \qquad $\rhd$
+		\end{itemize}
+		Combining both cases, we can write $$\sli = \max(0, 1 - \yi(\linearphixi))$$
+		Plug in to the primal problem we can prove that it is equivalent to the $\risket$ using hinge loss.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) Now assume we deal with a multiclass classification problem with a data set $\D = \{(\xv^{(1)}, y^{(1)}), \ldots, (\xv^{(n)}, y^{(n)})\}$ such that $y^{(i)} \in \Yspace = \{1, \ldots, g \}$ for each $i \in \{1, \ldots, n \}$. In this case, we can derive a similar regularized ERM problem by using the multiclass hinge loss (see Exercse Sheet 4(b)):
+	$$\risket = \frac{1}{2} || \thetab||^2 + C \sumin \sum_{y\neq \yi} \max (1 + \thetab^T \psi (\xi, y) - \thetab^T \psi(\xi, \yi), 0),$$
+	where $\psi: \Xspace \times \Yspace \to \mathbb{R}^d$ is a suitable (multiclass) feature map. Specify a $\psi$ such that this regularized multiclass ERM problem coincides with the regularized binary ERM problem in (a).
+\end{frame}
+
+\begin{frame}{Solution to 1 (b)}
+	\begin{enumerate}
+		\item Consider $\psi(\xv, y) = \frac{1}{2} y \tilde{\phi}(\xv)$, where $\tilde{\phi}(\xv) = (1, \phixi)^T$, and $\thetabt = (\theta_0, \thetab)^T$.
+		\item Then, for $y \neq \yi$, it follows that 
+				\begin{align*}
+					& 1 + \thetabt^T \psixiy - \thetab^T \psixiyi \\
+					&= 1 + \frac{1}{2} y \thetabt^T \phitxi - \frac{1}{2} \yi \thetabt^T \phitxi \\
+					&= 1 + \frac{1}{2} \left(y - \yi \right) \thetabt^T \phitxi \\
+					&= \begin{cases}
+						1 + \thetabt^T \phitxi, \qquad &\text{if} \ \yi = - 1 \\
+						1 - \thetabt^T \phitxi, \qquad &\text{if} \ \yi = +1 \\
+					\end{cases} \\
+					&= 1 - \yi \thetabt^T \phitxi. \\
+				\end{align*}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to 1 (b): Continued}
+	\begin{enumerate}
+		\setcounter{enumi}{2}
+		\item Thus, 
+				\begin{align*}
+					\risket &= \frac{1}{2}||\thetab||^2 + C \sumin \sum_{y \neq \yi} \max(1 + \thetabt^T \psixiy - \thetabt^T \psixiyi, 0) \\
+					&= \frac{1}{2} ||\thetab||^2 + C \sumin \max(1 - \yi \thetabt^T\phitxi, 0) \\
+					&= \frac{1}{2} ||\thetab||^2 + C \sumin \max(1 - \yi (\thetab^T \phixi + \theta_0), 0).
+				\end{align*}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	\footnotesize
+	(c) Show that the regularized multiclass ERM problem in (b) can be written in the kernelized form:
+	$$\frac{1}{2} \betav^T \Kmat \betav + C\sumin \sum_{y \neq \yi} \max (1 + (\Kmat \beta)_{(i-i)g + y} - (\Kmat \betav)_{(i-1)g + \yi}), 0),$$
+	where $\betav \in \mathbb{R}^{ng}$ and $\Kmat = \Xmat \Xmat^T$ for $\Xmat \in \mathbb{R}^{ng \times d} $ with row entries $\psi(\xi, y)^T $ for $i = i, \ldots, n$, $y = 1, \ldots, g$, i.e., 
+	$$\Xmat = \begin{pmatrix}
+		\psi(\xv^{(1)}, 1)^T & \\
+		\psi(\xv^{(1)}, 2)^T & \\
+		\vdots & \\
+		\psi(\xv^{(1)}, g)^T &  \\
+		\psi(\xv^{(2)}, 1)^T & \\
+		\vdots & \\
+		\psi(\xv^{(n)}, g)^T &  \\
+	\end{pmatrix}.$$
+	Here, $(\Kmat \betav)_{(i-1)g + y}$ denotes the $((i-1)g + y)$-th entry of the vector $\Kmat \betav$. \emph{Hint:} The representation theorems tells us that for the solution $\thetab^*$ of $\risket$ it holds that $\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (c)}
+	$\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$ means that $\thetab$ is a linear combination of the spanning bases, i.e. $\thetab = \Xmat^T \betab$ for $\betab \in \mathbb{R}^{ng}$ and 
+	$$\Xmat = \begin{pmatrix}
+		\psi(\xv^{(1)}, 1)^T & \\
+		\psi(\xv^{(1)}, 2)^T & \\
+		\vdots & \\
+		\psi(\xv^{(1)}, g)^T &  \\
+		\psi(\xv^{(2)}, 1)^T & \\
+		\vdots & \\
+		\psi(\xv^{(n)}, g)^T &  \\
+	\end{pmatrix}.
+	$$
 	
+	So for $\Kmat = \Xmat \Xmat^T$, we obtain
+	$$||\thetab||^2 = \thetab^T \thetab = (\Xmat^T \betab)^T \Xmat^T \betab = \betab^T \Kmat \betab$$
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (c): Continued}
+Furthermore,
+	$$\thetab^T \psixiy - \thetab^T \psixiyi = \betab^T \Xmat \psixiy - \beta^T\Xmat\psixiyi$$
+	Note that the result is a scalar.
+	\begin{itemize}
+		\item Recall that $\Kmat = \Xmat \Xmat^T$. 
+		\item $\psixiy$ is the $((i - 1) g + y)$-th row of $\Xmat$. (Similar argument for $\psixiyi$)
+		\item So, $\Xmat \psixiy$ is the $((i - 1) g + y)$-th row/column of $\Kmat = \Xmat \Xmat^T$ (symmetric).
+		\item So, the inner product $\betab^T (\Xmat \psixiy)$ is equivalent to: first compute $\Kmat \betab$, and then retrieve the entry in the $((i - 1) g + y)$-th row.
+	\end{itemize}
+	Therefore, 
+	\begin{align*}
+		\risket &= \frac{1}{2} ||\thetab||^2 + C\sumin \sum_{y \neq \yi} \max(1 + \thetab^T \psixiy - \thetab^T \psixiyi, 0) \\
+		&= \frac{1}{2} \betab^T \Kmat \betab + \sumin \sum_{y \neq \yi} \max(1 + (\Kmat \betab)_{(i-1)g + y} - (\Kmat \betab)_{(i-1)g + \yi}), 0)
+	\end{align*}
+\end{frame}
+
+
+\begin{frame}{Exercise 2: Kernel Trick}
+	The polynomial kernel is defined as 
+	$$k(x, \xt) = (x^T \xt + b)^d.$$
+	Furthermore, assume that $x \in \mathbb{R}^2$ and $d = 2$.
+	(a) Derive the explicit feature map $\phi$ taking into account that the following equation holds:
+	$$k(x, \xt) = \langle \phi(x), \phi(\xt) \rangle$$
+	
+\end{frame}
+
+\begin{frame}{Solution to 2 (a)}
+	\begin{align*}
+		k(x, \xt) &= 
+		\left( 
+			\begin{pmatrix}
+				x_1 \\
+				x_2
+			\end{pmatrix}^T 
+			\begin{pmatrix}
+				\xt_1 \\
+				\xt_2 \\
+			\end{pmatrix}
+			+ b 
+		\right)^2 \\
+		&= (x_1 \xt_1 + x_2 \xt_2 + b)^2 \\
+		&= x_1^2 \xt_1^2 + 2 x_1 \xt_1 x_2 \xt_2 + x_2^2 \xt_2^2 + 2b x_1 \xt_1 + 2b x_2 \xt_2 + b^2 \\
+		&= \left \langle 
+			\begin{pmatrix}
+				x_1^2 \\
+				\sqrt{2} x_1 x_2 \\
+				x_2^2 \\
+				\sqrt{2b} x_1 \\
+				\sqrt{2b} x_2 \\
+				b \\
+			\end{pmatrix}, 
+			\begin{pmatrix}
+				\xt_1^2 \\
+				\sqrt{2} \xt_1 \xt_2 \\
+				\xt_2^2 \\
+				\sqrt{2b} \xt_1 \\
+				\sqrt{2b} \xt_2 \\
+				b \\
+			\end{pmatrix} 
+			\right \rangle \\
+			&= \langle \phi(x), \phi(\xt) \rangle
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 2 (b)}
+	(b) Descrie the main differences between the kernel method and the explicit feature map.
+\end{frame}
+
+
+\begin{frame}{Solution to Exercise 2 (b)}
+	Using the kernel method reduces the compuational costs of computing the scalar product in the higher-dimensional features space after calculating the feature map.
 \end{frame}
 
 \end{document}
