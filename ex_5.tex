@@ -64,7 +64,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{November 17, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -120,10 +120,10 @@
 	Then, 
 	\begin{align*}
 		\E[\Xnormsq] &= \E \left[ \sumip X_i^2 \right] \\
-		&= \sumip \E[X_i^2] \\
-		&= \sumip (\underbrace{\E[X_i]^2}_{=0} + \Var{X_i}) \\
-		&= \sumip 1 \\
-		&= p.
+		\only<2->{&= \sumip \E[X_i^2] \\}
+		\only<3->{&= \sumip (\underbrace{\E[X_i]^2}_{=0} + \Var{X_i}) \\}
+		\only<4->{&= \sumip 1 \\}
+		\only<5->{&= p.}
 	\end{align*}
 \end{frame}
 
@@ -150,29 +150,35 @@
 
 \begin{frame}{Solution to Exercise 1 (b)}
 	\small
-	Step (i): Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}.$ 
+	Step (i): Write $\Xnorm - \sqrt{p} = \underbrace{\frac{\Xnorm - p}{2\sqrt{p}}}_{:= (1)} - \underbrace{\frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}}_{:= (2)}. \qquad \lhd$ 
 	
-	Step (ii): 
-		\begin{align*}
-			\E[(1)] &= \E \left[\frac{\Xnormsq - p}{2\sqrt{p}} \right] \\
-			&= \frac{1}{2\sqrt{p}} (\underbrace{\E[\Xnormsq]}_{= p \ \text{(from Question(a))}} - p) \\
-			&= 0.
-		\end{align*}
+	\uncover<2->{
+		Step (ii): 
+			\begin{align*}
+				\E[(1)] &= \E \left[\frac{\Xnormsq - p}{2\sqrt{p}} \right] \\
+				&= \frac{1}{2\sqrt{p}} (\underbrace{\E[\Xnormsq]}_{= p \ \text{(from Question(a))}} - p) \\
+				&= 0.
+			\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1(b): Continued}
 
 	Step (iii):	Prove that $0 \leq \E[(2)] \leq \frac{\Var{\Xnormsq}}{2 p^{3/2}}$ holds due to $||X||_2 \geq 0$.
-	\begin{align*}
-		\E[(2)] = \E \left[ \frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}\right] \geq 0, \qquad \text{since all the terms are non-negative.}
-	\end{align*}
-	Besides, since $\Xnorm \geq 0$, it follows that 
-	\begin{align*}
-		(2) &\leq \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \\
-		\Rightarrow \quad \E[(2)] &\leq  \E \left[ \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \right] = \frac{1}{2p^{3/2}} \cdot \E \left[(\Xnormsq - \E[\Xnormsq])^2 \right] = \frac{\Var{\Xnormsq}}{2p^{3/2}} \\
-		&= \frac{2p}{2p^{3/2}} = \frac{1}{\sqrt{p}},
-	\end{align*}
-	where we utilize the lemma from (a) that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$.
+	\uncover<2->{
+		\begin{align*}
+			\E[(2)] = \E \left[ \frac{(\Xnormsq - p)^2}{2\sqrt{p}(||X||_2 + \sqrt{p})^2}\right] \geq 0, \qquad \text{since all the terms are non-negative.}
+		\end{align*}
+	}
+	\uncover<3->{
+		Besides, since $\Xnorm \geq 0$, it follows that 
+		\begin{align*}
+			(2) &\leq \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \\
+			\Rightarrow \quad \E[(2)] &\leq  \E \left[ \frac{(\Xnormsq - p)^2}{2 p^{3/2}} \right] = \frac{1}{2p^{3/2}} \cdot \E \left[(\Xnormsq - \E[\Xnormsq])^2 \right] = \frac{\Var{\Xnormsq}}{2p^{3/2}} \\
+			&= \frac{2p}{2p^{3/2}} = \frac{1}{\sqrt{p}},
+		\end{align*}
+		where we utilize the lemma from (a) that $\E[\Xnormsq] = p$ and $\Var{\Xnormsq} = 2p$.
+	}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1(b): Continued}
@@ -234,11 +240,16 @@
 		|\E[||Z||_2 - \sqrt{p}]| & \leq \sqrt{\frac{1}{p}},\\
 		\Var{||Z||_2} &\leq 2
 	\end{align}
+	\uncover<2->{
 	But the norm of $Z$
-	\begin{align}
-		||Z||_2 = \sqrt{\sumip \left(\frac{X_i - \Xp_i}{\sqrt{2}} \right)^2}  = \sqrt{\frac{1}{2}\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} \sqrt{\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} || X - \Xp ||_2.
-	\end{align}
-	It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \frac{2}{p} \Rightarrow |\E[\sqrt{2} \underbrace{||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
+		\begin{align}
+			||Z||_2 = \sqrt{\sumip \left(\frac{X_i - \Xp_i}{\sqrt{2}} \right)^2}  = \sqrt{\frac{1}{2}\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} \sqrt{\sumip (X_i - \Xp_i)^2} = \sqrt{\frac{1}{2}} || X - \Xp ||_2.
+		\end{align}
+	}
+	
+	\uncover<3->{
+		It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \frac{2}{p} \Rightarrow |\E[\sqrt{2} \underbrace{||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
+	}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (d): Continued}

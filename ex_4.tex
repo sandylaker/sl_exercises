@@ -37,7 +37,7 @@
 \newcommand{\fyx}{f_y(\xv)}
 
 
-\title[]{\textbf{Supervised Learning: Exercise 4}}
+\title[]{\textbf{Exercise of Supervised Learning: \\ Multiclass Classification}}
 
 %\subtitle{}
 
@@ -54,7 +54,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{November 17, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,7 +107,7 @@
 		h(\xv) = \argmax_{k \in \{1, \ldots, g \}} f_k(\xv).
 		\label{eq:1}
 	\end{align} 
-	The multiclass hinge loss is defined by $$L(y, \fx) = \max_k (\fkx - f_y(\xv) + \id_{y \neq k}).$$
+	The multiclass hinge loss is defined by $$L(y, \fx) = \max_k (\fkx - f_y(\xv) + \id_{y \neq k}). \qquad \rhd$$
 	(a) Show that 0-1-loss for a predictor $h$ as in (\ref{eq:1}) based on a model $f \in \Hspace$ is at most the multiclass hinge loss for $f$ i.e., $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
 \end{frame}
 
@@ -115,41 +115,47 @@
 	\small
 	There are two cases: $y = \argmax_{k} f_k(\xv)$ or $y \neq \argmax_k \fkx$.
 	\vspace{10pt}
-	
-	If $y = \argmax_{k} f_k(\xv)$, then 
-	\begin{align*}
-		L(y, \fx) 
-		&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
-		& = f_y(\xv) - f_y(\xv) + 0 \\
-		&= 0\\
-	\end{align*}
-	In this case, the 0-1-loss is 
-	\begin{align*}
-		L_{0-1}(y, \hx) = 0
-	\end{align*}
-	because $y = \argmax_k f_k(x)$. That is, the prediction via argmax is correct. 
-	
-	So $L(y, \fx) = L_{0, 1} (y, \hx)$.
+	\uncover<2->{
+		If $y = \argmax_{k} f_k(\xv)$, then 
+		\begin{align*}
+			L(y, \fx) 
+			&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
+			& = f_y(\xv) - f_y(\xv) + 0 \\
+			&= 0\\
+		\end{align*}
+	}
+	\uncover<3->{
+		In this case, the 0-1-loss is 
+		\begin{align*}
+			L_{0-1}(y, \hx) = 0
+		\end{align*}
+		because $y = \argmax_k f_k(x)$. That is, the prediction via argmax is correct. 
+		
+		So $L(y, \fx) = L_{0, 1} (y, \hx)$.
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (a): Continued}
-\small
-
-If $y \neq \argmax_{k} f_k(\xv)$, then
-\begin{align*}
-	L(y, \fx) 
-		&= \max_k (\underbrace{\fkx - f_y(\xv)}_{> 0} + \underbrace{\id_{y \neq k}}_{= 1}) \\
-		&> 1.
-\end{align*}
-The 0-1-loss is 
-\begin{align*}
-	L_{0-1}(y, \hx) = 1
-\end{align*}
-because $y \neq \argmax_k f_k(x)$. That is, the prediction via argmax is incorrect. So $L(y, \fx) > L_{0, 1} (y, \hx)$.
-
-\vspace{10pt}
-
-Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
+	\small
+	
+	If $y \neq \argmax_{k} f_k(\xv)$, then
+	\begin{align*}
+		L(y, \fx) 
+			&= \max_k (\underbrace{\fkx - f_y(\xv)}_{> 0} + \underbrace{\id_{y \neq k}}_{= 1}) \\
+			&> 1.
+	\end{align*}
+	\uncover<2->{
+		The 0-1-loss is 
+		\begin{align*}
+			L_{0-1}(y, \hx) = 1
+		\end{align*}
+		because $y \neq \argmax_k f_k(x)$. That is, the prediction via argmax is incorrect. So $L(y, \fx) > L_{0, 1} (y, \hx)$.
+	}
+	
+	\vspace{10pt}
+	\uncover<3->{
+		Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
+	}
 \end{frame}
 
 \begin{frame}{Question (b)}
@@ -173,15 +179,17 @@ Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx}
 		&= \max_k(\fkx - \fyx + \id_{y\neq k}) \\
 		&= \max_{k \neq y}(\fkx - \fyx + 1)
 	\end{align*}
-	Let's say $k^* = \argmax_{k} f_k(\xv) \neq y$, then it follows that
-	\begin{align*}
-		L(y, \fx) 
-		&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ > 1} \\
-		&= \max\{0, f_{k^*}(\xv) - \fyx + 1\} \\
-		&\leq \max\{0, f_{k^*}(\xv) - \fyx + 1\} + \underbrace{\max\{0, f_1(\xv) - \fyx + 1\} + \ldots + \max\{0, f_g(\xv) - \fyx + 1\}}_{\forall j \in \Hspace \ \text{and } j \neq y \ \text{and } j \neq k^*} \\
-		&= \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
-	\end{align*}
-	So, combining the two cases, $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$ is an upper bound for $L(y, \fx)$.
+	\uncover<2->{
+		Let's say $k^* = \argmax_{k} f_k(\xv) \neq y$, then it follows that
+		\begin{align*}
+			L(y, \fx) 
+			&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ > 1} \\
+			&= \max\{0, f_{k^*}(\xv) - \fyx + 1\} \\
+			&\leq \max\{0, f_{k^*}(\xv) - \fyx + 1\} + \underbrace{\max\{0, f_1(\xv) - \fyx + 1\} + \ldots + \max\{0, f_g(\xv) - \fyx + 1\}}_{\forall j \in \Yspace \ \text{and } j \neq y \ \text{and } j \neq k^*} \\
+			&= \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
+		\end{align*}
+		So, combining the two cases, $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$ is an upper bound for $L(y, \fx)$.
+	}
 \end{frame}
 
 \begin{frame}{Question (c)}
@@ -193,7 +201,7 @@ Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx}
 	\begin{align*}
 		\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
 		&= \sum_{k \neq + 1} \max \{ 0, \fkx - f_1(\xv) + 1 \} \\
-		&= \max \{ 0, \underbrace{f_{-1}(\xv) - f_1(\xv)}_{:= \fx} + 1 \} \\
+		&= \max \{ 0, \underbrace{f_{-1}(\xv) - f_1(\xv)}_{:= - \fx} + 1 \} \\
 		&= \max \{ 0, 1 - \fx \} \\
 		&= \max \{ 0, 1 - y \cdot \fx \}
 	\end{align*}
@@ -228,21 +236,25 @@ Therefore, it is proven that the equation holds in two cases.
 \begin{frame}{Solution to Question (d)}
 	Yes, we can say that \emph{it is only zero if all the $g-1$ margins are greater than 1.}
 	\begin{itemize}
-		\item Margins: $m_{y, k}(\xv) = \fyx - \fkx$, where $k \in \Yspace \setminus \{y\}$.
-		\item Mathematically: $ m_{y, k}(\xv) \geq 1 \ \forall k \neq y  \Leftrightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0$.
+		\item<2-> Margins: $m_{y, k}(\xv) = \fyx - \fkx$, where $k \in \Yspace \setminus \{y\}$.
+		\item<3-> Mathematically: $ m_{y, k}(\xv) \geq 1 \ \forall k \neq y  \Leftrightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0$.
 	\end{itemize}
 	
 	\vspace{10pt}
-	
-	Proof: 
-	\begin{align*}
-		m_{y, k}(\xv) \geq 1 \ \forall k \neq y  
-		&\Rightarrow \fyx - \fkx  \geq 1 \ \forall k \neq y \\
-		&\Rightarrow \fkx - \fyx \geq -1 \ \forall k \neq y \\
-		&\Rightarrow \max \{0, 1 + \fkx - \fyx \} = 0 \ \forall k \neq y \\
-		&\Rightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0
-	\end{align*}
-	
+	\uncover<4->{
+		Proof: 
+		\begin{align*}
+			m_{y, k}(\xv) \geq 1 \ \forall k \neq y  
+			&\Rightarrow \fyx - \fkx  \geq 1 \ \forall k \neq y \\
+			&\Rightarrow \fkx - \fyx \geq -1 \ \forall k \neq y \\
+			&\Rightarrow \max \{0, 1 + \fkx - \fyx \} = 0 \ \forall k \neq y \\
+			&\Rightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0
+		\end{align*}
+	}
+\end{frame}
+
+\begin{frame}{Question (e) and Solution to (e)}
+	\textbf{Show the standard solution.}
 \end{frame}
 
 \end{document}
