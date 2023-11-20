@@ -1,0 +1,242 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+
+\newcommand{\betahm}{\hat{\beta}^{[m]}}
+\newcommand{\bhm}{\hat{b}^{[m]}}
+\newcommand{\bhM}{\hat{b}^{[M]}}
+\newcommand{\bhMmone}{\hat{b}^{[M-1]}}
+\newcommand{\gammahm}{\hat{\gamma}^{[m]}}
+\newcommand{\idhxneqy}{\id_{\ [\hh\left(\xi\right) \neq \yi]}}
+\newcommand{\errm}{\mathrm{err}^{[m]}}
+\newcommand{\summM}{\sum_{m=1}^M}
+\newcommand{\prodmM}{\prod_{m=1}^M}
+\newcommand{\Wm}{W^{[m]}}
+\newcommand{\WM}{W^{[M]}}
+\newcommand{\wmi}{w^{[m] (i)}}
+\newcommand{\wMi}{w^{[M] (i)}}
+\newcommand{\wtmi}{\tilde{w}^{[m](i)}}
+\newcommand{\wmponei}{w^{[m+1] (i)}}
+\newcommand{\wMmonei}{w^{[M-1] (i)}}
+\newcommand{\wMponei}{w^{[M + 1](i)}}
+\newcommand{\wonei}{w^{[1] (i)}}
+\newcommand{\betam}{\beta^{[m]}}
+\newcommand{\betaM}{\beta^{[M]}}
+\newcommand{\betaMmone}{\beta^{[M-1]}}
+\newcommand{\gammam}{\gamma^{[m]}}
+
+\title[]{\textbf{Exercise of Supervised Learning: \\ Boosting Part 1}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{December 22, 2023}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+
+
+\begin{frame}{Exercise 1: AdaBoost - Empirical Risk}
+	Let $\fh(\xv) = \summM \betahm \bhm (\xv) $ be the scoring function after running AdaBoost for $M \in \mathbb{N}$ iterations. Show that the average empirical risk (on $\Dtrain$) of the corresponding classifier $\hx = \sign (\fh(\xv))$ is bounded as follows
+	\begin{align}
+		\frac{\riske (\hat{h})}{n} = \frac{\sumin \idhxneqy}{n} \leq \prodmM \sqrt{1 - 4 \left(\gammahm\right)^2},
+	\end{align}
+	where $\gammahm = \frac{1}{2} - \errm$. For this purpose, proceed as follows:
+	
+	(a) Given an interpretation of $\gammahm$.
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (a)}
+	\begin{itemize}
+		\item Recall that $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$ is the weighted error of $\bhm$.
+		\item Random guessing has an error of approx. $\frac{1}{2}$.
+		\item So, $\gammahm = \frac{1}{2} - \errm$ tells us how better $\bhm$ is compared to random guessing.
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) For any $m = 1, \ldots, M$ let $\Wm = \sumin \wtmi$ be the total weight in iteration $m$ before normalizing the weights. Show that $\Wm = \sqrt{1 - 4\left(\gammahm \right)^2}$.
+	
+	Hint:
+	\begin{itemize}
+		\item $\wtmi = \wmi \cdot \exp \left( - \betam \yi \bhm(\xi) \right)$.
+		\item $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (b)}
+\small
+	\begin{align*}
+		\Wm &= \sumin \wtmi \\
+		&= \sumin \wmi \exp \left( -\betam \yi \bhm (\xi) \right) \\
+		&= \underbrace{\sum_{i: \yi \neq \bhm(\xi)}}_{\text{incorrect pred.}} \wmi \cdot \exp \left( \betam \right) + \underbrace{\sum_{i: \yi = \bhm (\xi)}}_{\text{correct pred.}} \wmi \cdot \exp \left( - \betam \right) \\
+		&= \exp \left( \betam \right) \underbrace{\sum_{i: \yi \neq \bhm(\xi)} \wmi}_{\errm} + \exp \left( - \betam \right) \underbrace{\sum_{i: \yi = \bhm(\xi)} \wmi}_{1 - \errm} \\
+		&= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (b): Continued}
+	\begin{align}
+			\Wm &= \sumin \wtmi = \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm)
+	\end{align}
+	Recall that $\betam = \frac{1}{2} \log \left(\frac{1 - \errm}{\errm} \right)$, so that 
+	\begin{align}
+		\exp \left( \betam \right) = \sqrt{\frac{1 - \errm}{\errm}}, \qquad \text{and } \qquad \exp \left( -\betam \right) = \sqrt{\frac{\errm}{1 - \errm}}.
+	\end{align}
+	We can then plug (2) into (3) and elimnate the terms related to $\betam$. 
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (b): Continued}
+	\begin{align*}
+		\Wm &= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
+		&= 2 \sqrt{( 1 - \errm) \errm} \\
+		&= 2 \sqrt{\left(\frac{1}{2} + \gammahm \right) \left(\frac{1}{2} - \gammahm \right)} \qquad \qquad (\gammahm = \frac{1}{2} - \errm)\\
+		&= 2 \sqrt{\frac{1}{4} - \left(\gammahm \right)^2} \\
+		&= \sqrt{1 - 4 (\gammahm)^2}. \\
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	(c) Show that 
+	\begin{align*}
+		\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm},
+	\end{align*}
+	where $\wMponei$ is the \textbf{normalized} weight if we would run AdaBoost for $M + 1$ iterations.
+	
+	Hint:
+	\begin{align*}
+		\wmponei = \frac{\wtmi}{\sumin \wtmi} = \frac{\wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}{\sumin \wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (c)}
+	\small
+	\begin{align*}
+		\wMponei &= \wMi \cdot \frac{\exp \left(-\betaM \yi \bhM (\xi) \right)}{\sumin \wMi \cdot \exp \left(-\betaM \yi \bhM (\xi) \right)} \\
+		&= \wMi \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM}  \qquad \text{(Definition of $\WM$)}\\
+		&= \wMmonei \cdot \frac{\exp \left( - \betaMmone \yi \bhMmone (\xi) \right)}{W^{[M-1]}} \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM} \quad \text{(Use hint)} \\
+		&= \ldots \qquad \text{(Repeatedly use the hint)}\\
+		&= \wonei \cdot \frac{\prodmM \exp \left( - \betam \yi \bhm (\xi) \right)}{\prodmM \Wm} = \wonei \frac{\exp \left( - \yi \summM \betam \bhm (\xi) \right)}{\prodmM \Wm} \\
+		&= \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}  \qquad \text{(Since $\summM \betam \bhm (\xi) = \fh(\xi)$)}
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (d)}
+	(d) Argue that $\idhxneqy \leq \exp \left( -y \fh(\xv) \right)$ for any $(\xv, y) \in \Xspace \times \Yspace$.
+	
+	Hint: 
+	What happens to $\exp(-y \fh(\xv))$ if $\yi \neq \hh(\xi)$?
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (d)}
+	\begin{align*}
+		\hh(\xv) \neq y &\Leftrightarrow \sign(\fh(\xv)) \neq y \\
+		&\Leftrightarrow -y\fh(\xv) > 0 \\
+		&\Leftrightarrow \exp(-y\fh(\xv)) > \exp(0) = 1 = \id_{\ [\hh(\xv) \neq y]}
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (e)}
+	(e) Combine everything to conclude (1).
+	
+	\emph{Hint:} Since for any $x$ it holds that $1 + x \leq \exp(x)$, we can infer from (1) that 
+	\begin{align*}
+		\frac{\riske(\hh)}{n} \leq \exp \left( - 2\summM \left(\gammahm \right)^2 \right) = \exp \left( -2 \summM \left( \frac{1}{2} - \errm \right)^2 \right),
+	\end{align*}
+	i.e., the average empirical risk is decreasing exponentially in the number of used iterations (provided $\errm < 1 / 2$).
+\end{frame}
+
+\begin{frame}{Solution to 1 (e)}
+	\small
+	\begin{align*}
+		\frac{\riske(\hh)}{n} &= \frac{\sumin \id_{\ \hh(\xi) \neq \yi}}{n} = \sumin \frac{1}{n} \cdot \id_{\ \hh(\xi) \neq \yi} \leq \sumin \frac{1}{n} \cdot \exp\left(- \yi \fh(\xi) \right)  \qquad \text{(Use (d))}\\
+		&= \sumin \wonei \exp \left( - \yi \fh(\xi) \right) \qquad \text{(Definition of $\wonei$)}\\
+		&= \sumin \wMponei \prodmM \Wm \qquad \text{(Use (c): $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm }$)} \\ \\
+		&= \prodmM \Wm \underbrace{\sumin \wMponei}_{=1} \leq \prodmM \sqrt{1 - 4 \left(\gammahm \right)^2} \qquad \text{(Use (b))}
+	\end{align*}
+\end{frame}
+
+\end{document}
