@@ -58,7 +58,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 8, 2023}
+\date{November 21, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -109,7 +109,7 @@
 	Suppose your loss function of interest is the L2 loss $L(y, \fx) = \frac{1}{2} (y - \fx)^2$. Consider the $L_0$-regularized empirical risk of a model $\fxt$: 
 	
 	$$
-		\riskrt = \risket + \lambda ||\thetab ||_0 = \frac{1}{2} \sum_{i=1}^n (\yi - \thetab^T \xi )^2 + \lambda \sum_{i=1}^p \thetainnz.
+		\riskrt = \risket + \lambda ||\thetab ||_0 = \frac{1}{2} \sum_{i=1}^n (\yi - \thetab^T \xi )^2 + \lambda \sum_{i=1}^p \thetainnz \qquad \lhd.
 	$$
 	
 	Assume that $\Xmat^T \Xmat = \Imat$, which holds if $\Xmat$ has orthonormal columns. Show that the minimizer $\thetah_{L0} = (\thetah_{L0, 1}, \ldots, \thetah_{L0, p})^T$ is given by 
@@ -136,10 +136,11 @@
 \begin{frame}{Solution to Exercise 1 (i)}
 	\begin{align*}
 		\argmin_{\thetab} \riskr(\thetab) &= \argmin_{\thetab} \frac{1}{2} ||\Xmat\thetab - \yv||_2^2  + \lambda \sumip \thetainnz \\
-		&= \argmin_{\thetab} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetab + \frac{1}{2} \thetab^T \Xmat^T \Xmat \thetab + \lambda \sumip \thetainnz \\
-		&= \argmin_{\thetab} - \underbrace{\yv^T \Xmat}_{\thetabh^T} \thetab + \frac{1}{2} \thetab^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetab + \lambda \sumip \thetainnz \\
-		&= \argmin_{\thetab} - \thetabh^T \thetab + \frac{1}{2} \thetab^T \thetab + \lambda \sumip \thetainnz \\
-		&= \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz  \qquad \lhd \\ 
+		\only<2->{
+		&= \argmin_{\thetab} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetab + \frac{1}{2} \thetab^T \Xmat^T \Xmat \thetab + \lambda \sumip \thetainnz \\}
+		\only<3->{&= \argmin_{\thetab} - \underbrace{\yv^T \Xmat}_{\thetabh^T} \thetab + \frac{1}{2} \thetab^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetab + \lambda \sumip \thetainnz \\}
+		\only<4->{&= \argmin_{\thetab} - \thetabh^T \thetab + \frac{1}{2} \thetab^T \thetab + \lambda \sumip \thetainnz \\}
+		\only<5->{&= \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz  \qquad \lhd \\}
 	\end{align*}
 \end{frame}
 
@@ -155,7 +156,7 @@
 \end{frame}
 
 \begin{frame}{Exercise 1 (iii)}
-	Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$. 
+	(iii) Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$. 
 	
 	\emph{Hint:} Show that $g_i(\thetai) < 0 = g_i(0)$ and argue that the minimizer must have the same sign as $\thetahi$. (\textbf{Personally I find this hint is not so useful.})
 	
@@ -166,8 +167,8 @@
 	\small
 	We start with computing the $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
 	\begin{itemize}
-		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
-		\item Case 2: $\thetai \neq 0$. Then
+		\item<2-> Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
+		\item<3-> Case 2: $\thetai \neq 0$. Then
 			\begin{align*}
 				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
 			\end{align*}
@@ -180,23 +181,29 @@
 				g_i(\thetai^*) = -\frac{\thetahi^2}{2} + \lambda.
 			\end{align*}
 	\end{itemize}
-	Which optimal $g_i$ is smaller? Case 1 or Case 2? It depends on $\lambda$. Note that we are given with $|\thetahi| > \sqrt{2 \lambda}$. So $-\frac{\thetahi^2}{2} + \lambda <  -\frac{2 \lambda}{2} + \lambda = 0.$
-	So the optimal $g_i$ in Case 2 is smaller. 
+	\uncover<4->{
+		Which optimal $g_i$ is smaller? Case 1 or Case 2? It depends on $\lambda$. Note that we are given with $|\thetahi| > \sqrt{2 \lambda}$. So $-\frac{\thetahi^2}{2} + \lambda <  -\frac{2 \lambda}{2} + \lambda = 0.$
+		So the optimal $g_i$ in Case 2 is smaller. 
+	}
 	
-	So for the minimizer of $g_i$ it holds that $\thetai^* = \thetah_i$.
+	\uncover<5->{So for the minimizer of $g_i$ it holds that $\thetai^* = \thetah_i$.}
 \end{frame}
 
 \begin{frame}{Exercise 1 (iv)}
 	(iv) Derive that $\thetai^* = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}$, by using (iii) (and also still considering the case $|\thetahi| > \sqrt{2\lambda}$).
 	
-	\textbf{Solution}: In the solution of (iii) we have proven that 
-	\begin{align*}
-		\thetai^* = \thetahi 
-	\end{align*}
-	given that $|\thetahi| > \sqrt{2 \lambda}$. Given this contraint, the optimal $\thetai$ can be written as 
-	\begin{align*}
-		\thetai^* = \thetahi \cdot 1 = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}.
-	\end{align*}
+	\uncover<2->{
+		\textbf{Solution}: In the solution of (iii) we have proven that 
+		\begin{align*}
+			\thetai^* &= \thetahi \quad \text{if} \quad |\thetahi| > \sqrt{2 \lambda}, \\
+		\end{align*}
+	}
+	\uncover<3->{
+		The optimal $\thetai$ can be written as 
+		\begin{align*}
+			\thetai^* = \thetahi \cdot 1 = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}.
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (v)}
@@ -211,16 +218,23 @@
 	\small
 	Similarily, we start with computing $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
 	\begin{itemize}
-		\item Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
-		\item Case 2: $\thetai \neq 0$. Then
+		\item<2->{Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.}
+		\item<3->{Case 2: $\thetai \neq 0$. Then
 			\begin{align*}
 				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
 			\end{align*}
-		We have shown that the minimizer in \textbf{this case} is $\theta_i^* = \thetahi$ and $ \min g_i(\thetai^*) = g_i(\thetahi) = - \frac{\thetahi^2}{2} + \lambda.$
+			We have shown that the minimizer in \textbf{this case} is $\theta_i^* = \thetahi$ and $ \min g_i(\thetai^*) = g_i(\thetahi) = - \frac{\thetahi^2}{2} + \lambda.$
+		}
 	\end{itemize}
-	Since we consider the constraint $|\thetahi| \leq \sqrt{2\lambda}$. Then in Case 2  $$g_i(\theta_i^*) \geq - \frac{2\lambda}{2} + \lambda = 0.$$
-	So the minimal $g_i$ in Case 2 is \textbf{not smaller} than the minimal $g_i$ in Case 1. \textbf{(Plot $g_i(\theta_i)$ vs. $\theta_i$).}
-	Therefore, combining two cases, for the minimizer $\thetai^*$ of $g_i$ it holds that $$\thetai^* = 0. \qquad$$
+	\uncover<4->{
+		Since we consider the constraint $|\thetahi| \leq \sqrt{2\lambda}$. Then in Case 2  $$g_i(\theta_i^*) \geq - \frac{2\lambda}{2} + \lambda = 0.$$
+	}
+	\uncover<5->{
+		So the minimal $g_i$ in Case 2 is \textbf{not smaller} than the minimal $g_i$ in Case 1. \textbf{(Plot $g_i(\theta_i)$ vs. $\theta_i$).}
+	}
+	\uncover<6->{
+		Therefore, combining two cases, for the minimizer $\thetai^*$ of $g_i$ it holds that $$\thetai^* = 0. \qquad$$
+	}
 \end{frame}
 
 \begin{frame}{Exercise 2: Regularization}
