@@ -61,7 +61,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{December 2, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -106,20 +106,21 @@
 
 \begin{frame}{Exercise 1}
 	For a design matrix $\Xmat \in \mathbb{R}^{n \times p}$ and the vector of targets $\yv \in \mathbb{R}^n$, consider Lasso regression, i.e., 
-	$$\argmin_{\thetab \in \mathbb{R}^p} 0.5 || \Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1.$$
+	$$\argmin_{\thetab \in \mathbb{R}^p} 0.5 || \Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1. \qquad \lhd$$
 	where $\lambda > 0$ is the regularization parameter.
 	
 	(a) Since there exists no analytical solution to Lasso regression in general, we want to find a procedure similar to gradient descent that should converge to the true solution.
 	
 	\vspace{10pt}
-	\textbf{We go through the questions in subsequent slides. (Write the optimization objective on whiteboard.)}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (i)}
 	\textbf{Question (a) (i)}: Explain why $\riskr$ is not differentiable.
 	
 	\vspace{10pt}
-	\textbf{Solution}: Because $\lambda ||\thetab||_1$ is not differentiable at $\thetab = \zero$.
+	\uncover<2->{
+		\textbf{Solution}: Because $\lambda ||\thetab||_1$ is not differentiable at $\thetab = \zero$.
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (ii)}
@@ -129,21 +130,29 @@
 	
 	\textbf{Solution}: 
 		\begin{enumerate}
-			\item $0.5 ||\Xmat \thetab - \yv ||_2^2$ is convex, since it is quadratic.
-			\item $\lambda || \theta_1 ||_1$ is also convex (since it is a norm).
-			\item Sum of convex functions is convex. So $\riskr$ is convex.
+			\item<2-> $0.5 ||\Xmat \thetab - \yv ||_2^2$ is convex, since it is quadratic.
+			\item<3-> $\lambda || \theta_1 ||_1$ is also convex (since it is a norm).
+			\item<4-> Sum of convex functions is convex. So $\riskr$ is convex.
 		\end{enumerate}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (iii)}
 	\small
-	\textbf{Question (a) (iii)}: Find $\rho_j, z_j \in \mathbb{R}$ for which $$0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 = -\rho_j + \theta_j z_j.$$
+	\textbf{Question (a) (iii)}: Find $\rho_j, z_j \in \mathbb{R}$ for which $$0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 = -\rho_j + \theta_j z_j. \qquad \lhd$$
 	\textbf{Solution}: 
 	\begin{align*}
-		\frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 
-		&= \frac{\partial}{\partial \theta_j} 0.5 \sumin \left(\yi - \sum_{k=1}^p \xik \theta_k \right)^2 \\
-		&= - \sumin \xij \left( \yi - \sum_{k=1}^p \xik \theta_k \right) \\
-		&= - \underbrace{\sumin \xij \left( \yi - \sum_{k\neq j}^p \xik \theta_k \right)}_{= \rho_j} + \theta_j \underbrace{\sumin \left( \xij \right)^2}_{ = z_j}
+		\only<2->{
+			\frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2
+		} 
+		\only<3->{
+			&= \frac{\partial}{\partial \theta_j} 0.5 \sumin \left(\yi - \sum_{k=1}^p \xik \theta_k \right)^2 \\
+		}
+		\only<4->{
+			&= - \sumin \xij \left( \yi - \sum_{k=1}^p \xik \theta_k \right) \\
+		}
+		\only<5->{
+			&= - \underbrace{\sumin \xij \left( \yi - \sum_{k\neq j}^p \xik \theta_k \right)}_{= \rho_j} + \theta_j \underbrace{\sumin \left( \xij \right)^2}_{ = z_j}
+		}
 	\end{align*}
 \end{frame}
 
@@ -160,20 +169,22 @@
 		$
 		\item and for $f, g$ real-valued convex functions with $\partial f(\tilde{\theta}) = [a, b], \partial g(\tilde{\theta}) = [c, d]$, $$\partial(f+g)(\tilde{\theta}) = [a + c, b + d]$$ where $b \geq a$ and $d \geq c$.
 	\end{itemize}
-	With this compute teh sub-derivative of $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}$ w.r.t. $\theta_j$, i.e., $\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} $ where $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}: \mathbb{R} \to \mathbb{R}_{\geq 0}, \theta_j \longmapsto \riskr(\theta_1, \ldots, \theta_j, \ldots, \theta_p)$ for constants $\thetab_{\neq j} = (\theta_1, \ldots, \theta_{j-1}, \theta_{j+1}, \ldots, \theta_p)^T$. \emph{Hint: Use (a) (iii).}
+	With this compute the sub-derivative of $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}$ w.r.t. $\theta_j$, i.e., $\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} $ where $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}: \mathbb{R} \to \mathbb{R}_{\geq 0}, \theta_j \longmapsto \riskr(\theta_1, \ldots, \theta_j, \ldots, \theta_p)$ for constants $\thetab_{\neq j} = (\theta_1, \ldots, \theta_{j-1}, \theta_{j+1}, \ldots, \theta_p)^T$. \emph{Hint: Use (a) (iii).}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (iv): Continued}
 	\textbf{Solution}:
 	Recall that $\riskr = 0.5 ||\Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1$ and $\frac{\partial}{\partial \theta_j} 0.5 ||\Xmat \thetab - \yv ||_2^2 = - \rho_j + \theta_j z_j$.
-	Therefor, 
-	\begin{align*}
-		\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
-				\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
-				[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
-				\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
-		\end{cases}
-	\end{align*}
+	Therefore,
+	\uncover<2->{ 
+		\begin{align*}
+			\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
+					\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
+					[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
+					\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
+			\end{cases}
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (v)}
@@ -181,6 +192,7 @@
 	\textbf{Question (a) (v)}: For a real-valued convex function $f$, the global minimum (if it exists) can be characterized in the following way:
 		
 		A point $\theta^* \in \mathbb{R}$ is the global minimum of $f$ if and only if $0 \in \partial f(\theta^*)$. 
+		
 		With this show that 
 		$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} \Leftrightarrow \theta_j^* = 
 		\begin{cases}
@@ -204,9 +216,9 @@
 		
 	where $z_j = \sumin \left( \xij \right)^2 \geq 0$.
 	\begin{itemize}
-		\item If $\theta_j < 0$, then $-\rho_j + \theta_j z_j - \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j + \lambda}{z_j}$. Since $\theta_j^* <0$ and $z_j \geq 0$, we have $\rho_j < -\lambda$;
-		\item If $\theta_j = 0$, then $\theta_j^* = 0$, and $-\rho_j - \lambda \leq 0 \leq -\rho_j + \lambda$ leads to $-\lambda \leq \rho_j \leq \lambda$, ;
-		\item If $\theta_j > 0$ then $-\rho_j + \theta_j z_j + \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j - \lambda}{z_j}$. Since $\theta_j^* > 0$, we have $\rho_j > \lambda$.
+		\item<2-> If $\theta_j < 0$, then $-\rho_j + \theta_j z_j - \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j + \lambda}{z_j}$. Since $\theta_j^* <0$ and $z_j \geq 0$, we have $\rho_j < -\lambda$;
+		\item<3-> If $\theta_j = 0$, then $\theta_j^* = 0$, and $-\rho_j - \lambda \leq 0 \leq -\rho_j + \lambda$ leads to $-\lambda \leq \rho_j \leq \lambda$, ;
+		\item<4-> If $\theta_j > 0$ then $-\rho_j + \theta_j z_j + \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j - \lambda}{z_j}$. Since $\theta_j^* > 0$, we have $\rho_j > \lambda$.
 	\end{itemize}
 	
 \end{frame}
@@ -231,19 +243,28 @@
 
 \begin{frame}{Exercise 1 (b)}
 	\small
-	\textbf{Question (b)}: Find for non-singular $\Xmat^T \Xmat$ the matrix $\Amat \in \mathbb{R}^{p \times p} $ for which $$\Amat^T \Xmat^T \Xmat \Amat = \Imat$$
+	\textbf{Question (b)}: For non-singular $\Xmat^T \Xmat$, find the matrix $\Amat \in \mathbb{R}^{p \times p} $ for which $$\Amat^T \Xmat^T \Xmat \Amat = \Imat$$
 	\emph{Hint: $\Xmat^T \Xmat$ is positive definite.}
 	
-	\textbf{Solution}: Since $\Xmat^T \Xmat$ is positive definite, there exist an orthogonal matrix $\Vmat$ and a diagonal matrix $\Dmat$ with $D_{ii} > 0$ such that $$\Vmat \Dmat \Vmat^T = \Xmat^T \Xmat.$$
-	So 
-	\begin{align*}
-		\Amat^T \Xmat^T \Xmat \Amat = \Amat^T \Vmat \Dmat \Vmat^T \Amat = \Imat
-	\end{align*}
-	To solve the equation for $\Amat$, we substitute the variable $ \Vmat^T \Amat = \Pmat$. Then, 
-	\begin{align*}
-		\Pmat^T \Dmat \Pmat = \Imat
-	\end{align*}
-	Since $\Dmat$ is a diagnonal matrix, it can be seen that $\Pmat = \Dmat^{- 0.5}$. Hence $\Vmat^T \Amat = \Pmat$. Because $\Vmat$ is orthogonal, we have $\Amat = \Vmat \Dmat^{-0.5}$.
+	\textbf{Solution}: 
+	\uncover<2->{
+		Since $\Xmat^T \Xmat$ is positive definite, there exist an orthogonal matrix $\Vmat$ and a diagonal matrix $\Dmat$ with $D_{ii} > 0$ such that $$\Vmat \Dmat \Vmat^T = \Xmat^T \Xmat.$$
+	}
+	\uncover<3->{
+		So 
+		\begin{align*}
+			\Amat^T \Xmat^T \Xmat \Amat = \Amat^T \Vmat \Dmat \Vmat^T \Amat = \Imat
+		\end{align*}
+	}
+	\uncover<4->{
+		To solve the equation for $\Amat$, we substitute the variable $ \Vmat^T \Amat = \Pmat$. Then, 
+		\begin{align*}
+			\Pmat^T \Dmat \Pmat = \Imat
+		\end{align*}
+	}
+	\uncover<5->{
+		Since $\Dmat$ is a diagnonal matrix, it can be seen that $\Pmat = \Dmat^{- 0.5}$. Hence $\Vmat^T \Amat = \Pmat$. Because $\Vmat$ is orthogonal, we have $\Amat = \Vmat \Dmat^{-0.5}$.
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c) (i)}
@@ -266,29 +287,34 @@
 			\nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 &=  \Amat \Xmat^T \Xmat \Amat \thetab - \Amat^T \Xmat^T \yv \\
 			\nabla_{\thetab} 0.5 ||\Xmat \thetab - \yv ||_2^2 &= \Xmat^T \Xmat \thetab - \Xmat^T \yv\\
 		\end{align*}
-		To let the gradient be equal, it must be satisfied that 
-		$$\Amat = \Imat.$$
-		In other words, if $\Amat \neq \Imat$, then the analytical solution does not solve the original Lasso regression.
+		\uncover<2->{
+			To let the gradient be equal, it must be satisfied that 
+			$$\Amat = \Imat.$$
+			In other words, if $\Amat \neq \Imat$, then the analytical solution does not solve the original Lasso regression.
+		}
 \end{frame}
 
 
 \begin{frame}{Exercise 1 (c) (ii)}
 	\textbf{Question (c) (ii)}: How could you adapt the penalty term such that the solution to the projected problem is equivalent to the original Lasso regression? In this case, can we still solve for parameters independently?
 	
-		\textbf{TODO:} It is weird in the solution that chosing $||\Amat \thetab||_1$ as regularization term. Because this will yeild $\thetab^* = \Amat^T \thetab_{\text{Orignal Lasso}}$, and it is different as $\thetab_{\text{Original Lasso}}$.
-
+		\textbf{Solution:} 
+		
+		\begin{itemize}
+			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^* = \Amat^T \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
+			\item<3-> However, due to the $||\Amat \thetab||_1$, it is (generally) not possible to split the risk into a sum of functiosn that depend on one parameter.
+		\end{itemize}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c) (iii)}
 	\textbf{Question (c) (iii)}: Does the procedure proposed in (c) perform variable selection?
-	\pause
 	
 	\vspace{10pt}
 	\textbf{Solution}: 
 	\begin{itemize}
-		\item We can see this procedure as a projection of variables followed by a Lasso regression.
-		\item Hence, we select variables in these projected coordinates.
-		\item But this does not imply that the solution in the original coordinates $\Amat \thetab^*$ will be sparse.
+		\item<2-> We can see this procedure as a projection of variables followed by a Lasso regression.
+		\item<3-> Hence, we select variables in these projected coordinates.
+		\item<4-> But this does not imply that the solution in the original coordinates $\Amat \thetab^*$ will be sparse.
 	\end{itemize}
 \end{frame}
 
