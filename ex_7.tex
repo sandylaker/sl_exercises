@@ -301,7 +301,7 @@
 		\textbf{Solution:} 
 		
 		\begin{itemize}
-			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^*_{\text{Projected}} = \Amat^T \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
+			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^*_{\text{Projected}} = \Amat^{-1} \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
 			\item<3-> However, due to the $||\Amat \thetab||_1$, it is (generally) not possible to split the risk into a sum of functiosn that depend on one parameter.
 		\end{itemize}
 \end{frame}
