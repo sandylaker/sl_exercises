@@ -269,7 +269,7 @@
 
 \begin{frame}{Exercise 1 (c) (i)}
 	(c) For a design matrix with orthornormal columns, i.e., $\Xmat^T \Xmat = \Imat$, exists an analytical minimizer of the Lasso regression $\thetabh_{Lasso} = (\thetah_{Lasso, 1}, \ldots, \thetah_{Lasso, p})^T$ that is given by 
-	$$\thetah_{Lasso, i} = \sign(\thetah_{i}) \max \left\{ \left|\thetah_i  - \lambda, 0 \right|  \right\}, \quad i = i, \ldots, p,$$
+	$$\thetah_{Lasso, i} = \sign(\thetah_{i}) \max \left\{ \left|\thetah_i \right|  - \lambda, 0   \right\}, \quad i = i, \ldots, p,$$
 	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk (w.r.t. the L2 loss).
 	
 	Under the assumption that $\Xmat^T\Xmat$ is non-singular, your colleague proposes to project $\Xmat$ with $\Amat$ from (b), i.e., use $\Amattilde = \Xmat \Amat$ and then apply the analytical solution given here. 
@@ -284,7 +284,7 @@
 \begin{frame}{Exercise 1 (c) (i): Continued}
 	\textbf{Solution}:
 		\begin{align*}
-			\nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 &=  \Amat \Xmat^T \Xmat \Amat \thetab - \Amat^T \Xmat^T \yv \\
+			\nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 &=  \Amat^T \Xmat^T \Xmat \Amat \thetab - \Amat^T \Xmat^T \yv \\
 			\nabla_{\thetab} 0.5 ||\Xmat \thetab - \yv ||_2^2 &= \Xmat^T \Xmat \thetab - \Xmat^T \yv\\
 		\end{align*}
 		\uncover<2->{
@@ -301,7 +301,7 @@
 		\textbf{Solution:} 
 		
 		\begin{itemize}
-			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^* = \Amat^T \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
+			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^*_{\text{Projected}} = \Amat^T \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
 			\item<3-> However, due to the $||\Amat \thetab||_1$, it is (generally) not possible to split the risk into a sum of functiosn that depend on one parameter.
 		\end{itemize}
 \end{frame}
@@ -314,7 +314,7 @@
 	\begin{itemize}
 		\item<2-> We can see this procedure as a projection of variables followed by a Lasso regression.
 		\item<3-> Hence, we select variables in these projected coordinates.
-		\item<4-> But this does not imply that the solution in the original coordinates $\Amat \thetab^*$ will be sparse.
+		\item<4-> But this does not imply that the solution in the original coordinates $\Amat^{-1} \thetab^*_{\text{Lasso}}$ will be sparse.
 	\end{itemize}
 \end{frame}
 
