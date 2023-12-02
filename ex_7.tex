@@ -61,7 +61,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 2, 2023}
+\date{December 1, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -313,8 +313,8 @@
 	\textbf{Solution}: 
 	\begin{itemize}
 		\item<2-> We can see $||\Xmat \Amat \thetab -  \yv ||_2^2 + \lambda ||\thetab||_1$ as a projection of variables followed by a Lasso regression.
-		\item<3-> Hence, we select variables in these projected coordinates.
-		\item<4-> But this does not imply that the solution in the original coordinates $\Amat\thetab^*$ will be sparse.
+		\item<3-> Hence, we select variables in these projected coordinates. That is, for $(\Xmat \Amat) \thetab^* = \tilde{\Xmat} \thetab^*$, $\thetab^*$ select variables on $\tilde{\Xmat}$.
+		\item<4-> But this does not imply that variable selection will occur on the original coordinates. To see this, $\Xmat \Amat \thetab^*$ needs to be viewed as $\Xmat (\Amat \thetab^*)$ as we now consider original features $\Xmat$.  In this case, $\Amat \thetab^*$ is in general non-sparse. Therefore, it does not perform variable selection on $\Xmat$.
 	\end{itemize}
 \end{frame}
 
