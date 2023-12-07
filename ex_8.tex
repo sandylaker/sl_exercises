@@ -55,7 +55,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 22, 2023}
+\date{December 8, 2023}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -154,12 +154,12 @@ The primal optimization problem for the two-class soft margin SVM classification
 	\end{align*}
 	
 	\begin{itemize}
-		\item $(0,0)$: $1 (0 + 0 - 2) = -2 \geq 1 - \zeta^{(1)} \rightarrow \zeta^{(1)} \geq 3$, $\leadsto$ Support vector with slack variable $\zetai = 3$.
-		\item $(0.5, 0.5)$: $-1 (0.5 + 0.5 - 2) = 1 \geq 1 - \zeta^{(2)} \rightarrow \zeta^{(2)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0 $.
-		\item $(0, 1)$: $ -1 (0 + 1 - 2) = 1 \geq 1 - \zeta^{(3)} \rightarrow \zeta^{(3)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
-		\item $(0, 3)$: $ 1 (0 + 3 - 2) = 1 \geq 1 - \zeta^{(4)} \rightarrow \zeta^{(4)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
-		\item $(3, 0)$: $ 1 (3 + 0 - 2) = 1 \geq 1 - \zeta^{(5)} \rightarrow \zeta^{(5)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
-		\item $(3, 3)$: $ 1 (3 + 3 - 2) = 4 \geq 1 - \zeta^{(6)} \rightarrow \zeta^{(6)} \geq -3 $, $\leadsto$ \textbf{Not} a support vector.
+		\item<2-> $(0,0)$: $1 (0 + 0 - 2) = -2 \geq 1 - \zeta^{(1)} \rightarrow \zeta^{(1)} \geq 3$, $\leadsto$ Support vector with slack variable $\zetai = 3$.
+		\item<3-> $(0.5, 0.5)$: $-1 (0.5 + 0.5 - 2) = 1 \geq 1 - \zeta^{(2)} \rightarrow \zeta^{(2)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0 $.
+		\item<4-> $(0, 1)$: $ -1 (0 + 1 - 2) = 1 \geq 1 - \zeta^{(3)} \rightarrow \zeta^{(3)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
+		\item<5-> $(0, 3)$: $ 1 (0 + 3 - 2) = 1 \geq 1 - \zeta^{(4)} \rightarrow \zeta^{(4)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
+		\item<6-> $(3, 0)$: $ 1 (3 + 0 - 2) = 1 \geq 1 - \zeta^{(5)} \rightarrow \zeta^{(5)} \geq 0$, $\leadsto$ Support vector with slack variable $\zetai = 0$.
+		\item<7-> $(3, 3)$: $ 1 (3 + 3 - 2) = 4 \geq 1 - \zeta^{(6)} \rightarrow \zeta^{(6)} \geq -3 $, $\leadsto$ \textbf{Not} a support vector.
 	\end{itemize}
 \end{frame}
 
@@ -189,9 +189,9 @@ The primal optimization problem for the two-class soft margin SVM classification
 \begin{frame}{Solution to Exercise 1 (d)}
 	Some alternatives are:
 	\begin{itemize}
-		\item Convert the $(0, 0)^T$ into a negative class.
-		\item Move the $(0, 0)^T$ to $(2, 2)^T$.
-		\item Delete $(0, 0)^T$.
+		\item<2-> Convert the $(0, 0)^T$ into a negative class.
+		\item<3-> Move the $(0, 0)^T$ to $(2, 2)^T$.
+		\item<4-> Delete $(0, 0)^T$.
 	\end{itemize}
 \end{frame}
 
