@@ -118,7 +118,7 @@
 	
 	(a) Argue that this is equivalent to the following ERM problem:
 		\begin{align*}
-			\riske(\thetab) = \frac{1}{2} ||\thetab||^2 + C\sumin \max(1 - \yi(\thetab^T \phixi + \theta_0)), 0).
+			\riske(\thetab) = \frac{1}{2} ||\thetab||^2 + C\sumin \max(1 - \yi(\thetab^T \phixi + \theta_0)), 0). \qquad \lhd 
 		\end{align*}
 		i.e., the regularized ERM problem for the hinge loss for the hypothesis space 
 		\begin{align*}
@@ -129,26 +129,38 @@
 \begin{frame}{Solution to Exercise 1 (a)}
 
 	\begin{enumerate}
-		\item Identify that: $\langle \thetab, \phixi \rangle + \theta_0 = \linearphixi$.
-		\item Check the conditions $\yi (\linearphixi) \geq 1 - \sli$ and $\sli \geq 0$.
+		\item<1-> Identify that: $\langle \thetab, \phixi \rangle + \theta_0 = \linearphixi$.
+		\item<2-> Check the conditions $\yi (\linearphixi) \geq 1 - \sli$ and $\sli \geq 0$.
 		\begin{itemize}
-			\item Case 1: if $\yi (\linearphixi) \geq 1$, then $\sli = 0$. \qquad $\rhd$
-			\item Case 2: if $\yi (\linearphixi) < 1$, then $\sli = 1 - \yi(\linearphixi) > 0$. \qquad $\rhd$
+			\item<3-> Case 1: if $\yi (\linearphixi) \geq 1$, then $\sli = 0$. \qquad $\rhd$
+			\item<4-> Case 2: if $\yi (\linearphixi) < 1$, then $\sli = 1 - \yi(\linearphixi) > 0$. \qquad $\rhd$
 		\end{itemize}
-		Combining both cases, we can write $$\sli = \max(0, 1 - \yi(\linearphixi))$$
-		Plug in to the primal problem we can prove that it is equivalent to the $\risket$ using hinge loss.
+		\uncover<5->{
+			Combining both cases, we can write $$\sli = \max(0, 1 - \yi(\linearphixi))$$
+			Plug in to the primal problem we can prove that it is equivalent to the $\risket$ using hinge loss.
+		}
 	\end{enumerate}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
 	(b) Now assume we deal with a multiclass classification problem with a data set $\D = \{(\xv^{(1)}, y^{(1)}), \ldots, (\xv^{(n)}, y^{(n)})\}$ such that $y^{(i)} \in \Yspace = \{1, \ldots, g \}$ for each $i \in \{1, \ldots, n \}$. In this case, we can derive a similar regularized ERM problem by using the multiclass hinge loss (see Exercse Sheet 4(b)):
-	$$\risket = \frac{1}{2} || \thetab||^2 + C \sumin \sum_{y\neq \yi} \max (1 + \thetab^T \psi (\xi, y) - \thetab^T \psi(\xi, \yi), 0),$$
+	$$\risket = \frac{1}{2} || \thetab||^2 + C \sumin \sum_{y\neq \yi} \max (1 + \thetab^T \psi (\xi, y) - \thetab^T \psi(\xi, \yi), 0), \quad \lhd $$
 	where $\psi: \Xspace \times \Yspace \to \mathbb{R}^d$ is a suitable (multiclass) feature map. Specify a $\psi$ such that this regularized multiclass ERM problem coincides with the regularized binary ERM problem in (a).
 \end{frame}
 
 \begin{frame}{Solution to 1 (b)}
 	\begin{enumerate}
-		\item Consider $\psi(\xv, y) = \frac{1}{2} y \tilde{\phi}(\xv)$, where $\tilde{\phi}(\xv) = (1, \phixi)^T$, and $\thetabt = (\theta_0, \thetab)^T$.
+		\item<1-> Motivation: functional margin has form $y(\langle\phi(\xv), \thetab \rangle + \theta_0)$. We can turn it into a inner product, e.g. something like $\langle \cdot, \thetab\rangle$.
+		\item<2-> We need to merge $\theta_0$ into the inner product. We can add a dummy feature $1$ to $\phi(\xv)$, as $\langle\phi(\xv), \thetab \rangle + \theta_0 = \langle(1, \phi(\xv) )^T,  (\theta_0, \thetab)^T \rangle$. Define $\tilde{\phi}(\xv) = (1, \phi(\xv))^T $, and $\tilde{\thetab} = (\theta_0, \thetab)^T$.
+		\item<3-> We can merge the coefficient $y$ into $\tilde{\phi}(\xv)$, obtaining $y\tilde{\phi}(\xv)$.
+		\item<4-> We have transformed $y(\langle\phi(\xv), \thetab \rangle + \theta_0)$ into inner product $\langle y \tilde{\phi}(\xv), \thetabt \rangle$.
+		\item<5-> Multiply with a magic number $\frac{1}{2}$. Consider $\psi(\xv, y) = \frac{1}{2} y \tilde{\phi}(\xv)$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Solution to 1(b): Continued}
+	\begin{enumerate}
+		\setcounter{enumi}{5}
 		\item Then, for $y \neq \yi$, it follows that 
 				\begin{align*}
 					& 1 + \thetabt^T \psixiy - \thetab^T \psixiyi \\
@@ -165,7 +177,7 @@
 
 \begin{frame}{Solution to 1 (b): Continued}
 	\begin{enumerate}
-		\setcounter{enumi}{2}
+		\setcounter{enumi}{6}
 		\item Thus, 
 				\begin{align*}
 					\risket &= \frac{1}{2}||\thetab||^2 + C \sumin \sum_{y \neq \yi} \max(1 + \thetabt^T \psixiy - \thetabt^T \psixiyi, 0) \\
@@ -188,25 +200,31 @@
 		\psi(\xv^{(2)}, 1)^T & \\
 		\vdots & \\
 		\psi(\xv^{(n)}, g)^T &  \\
-	\end{pmatrix}.$$
+	\end{pmatrix}. \qquad \lhd$$
 	Here, $(\Kmat \betav)_{(i-1)g + y}$ denotes the $((i-1)g + y)$-th entry of the vector $\Kmat \betav$. \emph{Hint:} The representation theorems tells us that for the solution $\thetab^*$ of $\risket$ it holds that $\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (c)}
-	$\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$ means that $\thetab$ is a linear combination of the spanning bases, i.e. $\thetab = \Xmat^T \betab$ for $\betab \in \mathbb{R}^{ng}$ and 
-	$$\Xmat = \begin{pmatrix}
-		\psi(\xv^{(1)}, 1)^T & \\
-		\psi(\xv^{(1)}, 2)^T & \\
-		\vdots & \\
-		\psi(\xv^{(1)}, g)^T &  \\
-		\psi(\xv^{(2)}, 1)^T & \\
-		\vdots & \\
-		\psi(\xv^{(n)}, g)^T &  \\
-	\end{pmatrix}.
+
+	$\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$ means that $\thetab$ is a linear combination of the spanning bases,
+	 
+	\uncover<2->{
+		i.e. $\thetab = \Xmat^T \betab$ for $\betab \in \mathbb{R}^{ng}$ and 
+		$$\Xmat = \begin{pmatrix}
+			\psi(\xv^{(1)}, 1)^T & \\
+			\psi(\xv^{(1)}, 2)^T & \\
+			\vdots & \\
+			\psi(\xv^{(1)}, g)^T &  \\
+			\psi(\xv^{(2)}, 1)^T & \\
+			\vdots & \\
+			\psi(\xv^{(n)}, g)^T &  \\
+		\end{pmatrix}.
 	$$
-	
-	So for $\Kmat = \Xmat \Xmat^T$, we obtain
-	$$||\thetab||^2 = \thetab^T \thetab = (\Xmat^T \betab)^T \Xmat^T \betab = \betab^T \Kmat \betab$$
+	}
+	\uncover<3->{
+		So for $\Kmat = \Xmat \Xmat^T$, we obtain
+		$$||\thetab||^2 = \thetab^T \thetab = (\Xmat^T \betab)^T \Xmat^T \betab = \betab^T \Kmat \betab$$
+	}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (c): Continued}
@@ -214,16 +232,18 @@ Furthermore,
 	$$\thetab^T \psixiy - \thetab^T \psixiyi = \betab^T \Xmat \psixiy - \beta^T\Xmat\psixiyi$$
 	Note that the result is a scalar.
 	\begin{itemize}
-		\item Recall that $\Kmat = \Xmat \Xmat^T$. 
-		\item $\psixiy$ is the $((i - 1) g + y)$-th row of $\Xmat$. (Similar argument for $\psixiyi$)
-		\item So, $\Xmat \psixiy$ is the $((i - 1) g + y)$-th row/column of $\Kmat = \Xmat \Xmat^T$ (symmetric).
-		\item So, the inner product $\betab^T (\Xmat \psixiy)$ is equivalent to: first compute $\Kmat \betab$, and then retrieve the entry in the $((i - 1) g + y)$-th row.
+		\item<2-> Recall that $\Kmat = \Xmat \Xmat^T$. 
+		\item<3-> $\psixiy$ is the $((i - 1) g + y)$-th row of $\Xmat$. (Similar argument for $\psixiyi$)
+		\item<4-> So, $\Xmat \psixiy$ is the $((i - 1) g + y)$-th row/column of $\Kmat = \Xmat \Xmat^T$ (symmetric).
+		\item<5-> So, the inner product $\betab^T (\Xmat \psixiy)$ is equivalent to: first compute $\Kmat \betab$, and then retrieve the entry in the $((i - 1) g + y)$-th row.
 	\end{itemize}
-	Therefore, 
-	\begin{align*}
-		\risket &= \frac{1}{2} ||\thetab||^2 + C\sumin \sum_{y \neq \yi} \max(1 + \thetab^T \psixiy - \thetab^T \psixiyi, 0) \\
-		&= \frac{1}{2} \betab^T \Kmat \betab + \sumin \sum_{y \neq \yi} \max(1 + (\Kmat \betab)_{(i-1)g + y} - (\Kmat \betab)_{(i-1)g + \yi}), 0)
-	\end{align*}
+	\uncover<5->{
+		Therefore, 
+		\begin{align*}
+			\risket &= \frac{1}{2} ||\thetab||^2 + C\sumin \sum_{y \neq \yi} \max(1 + \thetab^T \psixiy - \thetab^T \psixiyi, 0) \\
+			&= \frac{1}{2} \betab^T \Kmat \betab + \sumin \sum_{y \neq \yi} \max(1 + (\Kmat \betab)_{(i-1)g + y} - (\Kmat \betab)_{(i-1)g + \yi}), 0)
+		\end{align*}
+	}
 \end{frame}
 
 
@@ -238,7 +258,7 @@ Furthermore,
 
 \begin{frame}{Solution to 2 (a)}
 	\begin{align*}
-		k(x, \xt) &= 
+		k(x, \xt) &= (x^T \xt + b)^T = 
 		\left( 
 			\begin{pmatrix}
 				x_1 \\
@@ -250,9 +270,12 @@ Furthermore,
 			\end{pmatrix}
 			+ b 
 		\right)^2 \\
-		&= (x_1 \xt_1 + x_2 \xt_2 + b)^2 \\
-		&= x_1^2 \xt_1^2 + 2 x_1 \xt_1 x_2 \xt_2 + x_2^2 \xt_2^2 + 2b x_1 \xt_1 + 2b x_2 \xt_2 + b^2 \\
-		&= \left \langle 
+		\only<2->{
+			&= (x_1 \xt_1 + x_2 \xt_2 + b)^2 \\}
+		\only<3->{
+			&= x_1^2 \xt_1^2 + 2 x_1 \xt_1 x_2 \xt_2 + x_2^2 \xt_2^2 + 2b x_1 \xt_1 + 2b x_2 \xt_2 + b^2 \\}
+		\only<4->{
+			&= \left\langle 
 			\begin{pmatrix}
 				x_1^2 \\
 				\sqrt{2} x_1 x_2 \\
@@ -269,18 +292,21 @@ Furthermore,
 				\sqrt{2b} \xt_2 \\
 				b \\
 			\end{pmatrix} 
-			\right \rangle \\
+			\right\rangle \\
 			&= \langle \phi(x), \phi(\xt) \rangle
+		}
 	\end{align*}
 \end{frame}
 
 \begin{frame}{Exercise 2 (b)}
-	(b) Descrie the main differences between the kernel method and the explicit feature map.
+	(b) Describe the main differences between the kernel method and the explicit feature map.
+	
+	\vspace{10pt}
+	\uncover<2->{
+		\textbf{Solution:} Using the kernel method reduces the compuational costs of computing the scalar product in the higher-dimensional features space after calculating the feature map.
+	}
 \end{frame}
 
 
-\begin{frame}{Solution to Exercise 2 (b)}
-	Using the kernel method reduces the compuational costs of computing the scalar product in the higher-dimensional features space after calculating the feature map.
-\end{frame}
 
 \end{document}
