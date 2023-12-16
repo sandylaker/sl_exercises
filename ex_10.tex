@@ -130,9 +130,9 @@
 
 \begin{frame}{Solution to Exercise 1 (a)}
 	\begin{itemize}
-		\item Recall that $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$ is the weighted error of $\bhm$.
-		\item Random guessing has an error of approx. $\frac{1}{2}$.
-		\item So, $\gammahm = \frac{1}{2} - \errm$ tells us how better $\bhm$ is compared to random guessing.
+		\item<1-> Recall that $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$ is the weighted error of $\bhm$.
+		\item<2-> Random guessing has an error of approx. $\frac{1}{2}$.
+		\item<3-> So, $\gammahm = \frac{1}{2} - \errm$ tells us how better $\bhm$ is compared to random guessing.
 	\end{itemize}
 	
 \end{frame}
@@ -143,7 +143,13 @@
 	Hint:
 	\begin{itemize}
 		\item $\wtmi = \wmi \cdot \exp \left( - \betam \yi \bhm(\xi) \right)$.
-		\item $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$
+		\item<2-> Two cases: 
+			\begin{itemize}
+				\item correct prediction: $\yi = \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = 1$
+				\item incorrect prediction: $\yi = \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = -1$
+			\end{itemize}
+		\item<3-> $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$. That is, identify all the wrong predicted samples, sum up their weights.
+		
 	\end{itemize}
 \end{frame}
 
@@ -152,30 +158,44 @@
 	\begin{align*}
 		\Wm &= \sumin \wtmi \\
 		&= \sumin \wmi \exp \left( -\betam \yi \bhm (\xi) \right) \\
-		&= \underbrace{\sum_{i: \yi \neq \bhm(\xi)}}_{\text{incorrect pred.}} \wmi \cdot \exp \left( \betam \right) + \underbrace{\sum_{i: \yi = \bhm (\xi)}}_{\text{correct pred.}} \wmi \cdot \exp \left( - \betam \right) \\
-		&= \exp \left( \betam \right) \underbrace{\sum_{i: \yi \neq \bhm(\xi)} \wmi}_{\errm} + \exp \left( - \betam \right) \underbrace{\sum_{i: \yi = \bhm(\xi)} \wmi}_{1 - \errm} \\
-		&= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
+		\only<2->{
+			&= \underbrace{\sum_{i: \yi \neq \bhm(\xi)}}_{\text{incorrect pred.}} \wmi \cdot \exp \left( \betam \right) + \underbrace{\sum_{i: \yi = \bhm (\xi)}}_{\text{correct pred.}} \wmi \cdot \exp \left( - \betam \right) \\
+		}
+		\only<3->{
+			&= \exp \left( \betam \right) \underbrace{\sum_{i: \yi \neq \bhm(\xi)} \wmi}_{\errm} + \exp \left( - \betam \right) \underbrace{\sum_{i: \yi = \bhm(\xi)} \wmi}_{1 - \errm} \\
+		}
+		\only<4->{
+			&= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
+		}
 	\end{align*}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (b): Continued}
+	Summarizing the previous steps: 
 	\begin{align}
 			\Wm &= \sumin \wtmi = \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm)
 	\end{align}
-	Recall that $\betam = \frac{1}{2} \log \left(\frac{1 - \errm}{\errm} \right)$, so that 
-	\begin{align}
-		\exp \left( \betam \right) = \sqrt{\frac{1 - \errm}{\errm}}, \qquad \text{and } \qquad \exp \left( -\betam \right) = \sqrt{\frac{\errm}{1 - \errm}}.
-	\end{align}
-	We can then plug (2) into (3) and elimnate the terms related to $\betam$. 
+	
+	\uncover<2->{
+		Recall that $\betam = \frac{1}{2} \log \left(\frac{1 - \errm}{\errm} \right)$, so that 
+		\begin{align}
+			\exp \left( \betam \right) = \sqrt{\frac{1 - \errm}{\errm}}, \qquad \text{and } \qquad \exp \left( -\betam \right) = \sqrt{\frac{\errm}{1 - \errm}}.
+		\end{align}
+		We can then plug (3) into (2) and eliminate the terms related to $\betam$.
+	} 
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (b): Continued}
 	\begin{align*}
 		\Wm &= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
 		&= 2 \sqrt{( 1 - \errm) \errm} \\
-		&= 2 \sqrt{\left(\frac{1}{2} + \gammahm \right) \left(\frac{1}{2} - \gammahm \right)} \qquad \qquad (\gammahm = \frac{1}{2} - \errm)\\
-		&= 2 \sqrt{\frac{1}{4} - \left(\gammahm \right)^2} \\
-		&= \sqrt{1 - 4 (\gammahm)^2}. \\
+		\only<2->{
+			&= 2 \sqrt{\left(\frac{1}{2} + \gammahm \right) \left(\frac{1}{2} - \gammahm \right)} \qquad \qquad (\gammahm = \frac{1}{2} - \errm)\\
+		}
+		\only<3->{
+			&= 2 \sqrt{\frac{1}{4} - \left(\gammahm \right)^2} \\
+			&= \sqrt{1 - 4 (\gammahm)^2}. \\
+		}
 	\end{align*}
 \end{frame}
 
@@ -187,9 +207,14 @@
 	where $\wMponei$ is the \textbf{normalized} weight if we would run AdaBoost for $M + 1$ iterations.
 	
 	Hint:
-	\begin{align*}
-		\wmponei = \frac{\wtmi}{\sumin \wtmi} = \frac{\wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}{\sumin \wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}
-	\end{align*}
+	\begin{itemize}
+		\item 
+			\begin{align*}
+				\wmponei = \frac{\wtmi}{\sumin \wtmi} = \frac{\wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}{\sumin \wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}
+			\end{align*}
+		\item The above hint shows relation bewtween $\wmponei$ and $\wmi$, or between $\wmi$ and $w^{[m - 1](i)}$, ..., or $w^{[2](i)}$ and $w^{[1](i)}.$ This motivates us to use a recursive way for the proof.
+	\end{itemize}
+	
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (c)}
@@ -197,10 +222,18 @@
 	\begin{align*}
 		\wMponei &= \wMi \cdot \frac{\exp \left(-\betaM \yi \bhM (\xi) \right)}{\sumin \wMi \cdot \exp \left(-\betaM \yi \bhM (\xi) \right)} \\
 		&= \wMi \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM}  \qquad \text{(Definition of $\WM$)}\\
-		&= \wMmonei \cdot \frac{\exp \left( - \betaMmone \yi \bhMmone (\xi) \right)}{W^{[M-1]}} \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM} \quad \text{(Use hint)} \\
-		&= \ldots \qquad \text{(Repeatedly use the hint)}\\
-		&= \wonei \cdot \frac{\prodmM \exp \left( - \betam \yi \bhm (\xi) \right)}{\prodmM \Wm} = \wonei \frac{\exp \left( - \yi \summM \betam \bhm (\xi) \right)}{\prodmM \Wm} \\
-		&= \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}  \qquad \text{(Since $\summM \betam \bhm (\xi) = \fh(\xi)$)}
+		\only<2->{
+			&= \wMmonei \cdot \frac{\exp \left( - \betaMmone \yi \bhMmone (\xi) \right)}{W^{[M-1]}} \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM} \quad \text{(Use hint)} \\
+		}
+		\only<3->{
+			&= \ldots \qquad \text{(Repeatedly use the hint)}\\
+		}
+		\only<4->{
+			&= \wonei \cdot \frac{\prodmM \exp \left( - \betam \yi \bhm (\xi) \right)}{\prodmM \Wm} = \wonei \frac{\exp \left( - \yi \summM \betam \bhm (\xi) \right)}{\prodmM \Wm} \\
+		}
+		\only<5->{
+			&= \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}  \qquad \text{(Since $\summM \betam \bhm (\xi) = \fh(\xi)$)}
+		}
 	\end{align*}
 \end{frame}
 
@@ -209,33 +242,37 @@
 	
 	Hint: 
 	What happens to $\exp(-y \fh(\xv))$ if $\yi \neq \hh(\xi)$?
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (d)}
-	\begin{align*}
-		\hh(\xv) \neq y &\Leftrightarrow \sign(\fh(\xv)) \neq y \\
-		&\Leftrightarrow -y\fh(\xv) > 0 \\
-		&\Leftrightarrow \exp(-y\fh(\xv)) > \exp(0) = 1 = \id_{\ [\hh(\xv) \neq y]}
-	\end{align*}
+	\uncover<2->{
+		\textbf{Solution:}
+		\begin{align*}
+			\hh(\xv) \neq y &\Leftrightarrow \sign(\fh(\xv)) \neq y \\
+			&\Leftrightarrow -y\fh(\xv) > 0 \\
+			&\Leftrightarrow \exp(-y\fh(\xv)) > \exp(0) = 1 = \id_{\ [\hh(\xv) \neq y]}
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (e)}
-	(e) Combine everything to conclude (1).
-	
-	\emph{Hint:} Since for any $x$ it holds that $1 + x \leq \exp(x)$, we can infer from (1) that 
+	(e) Combine everything to conclude
 	\begin{align*}
-		\frac{\riske(\hh)}{n} \leq \exp \left( - 2\summM \left(\gammahm \right)^2 \right) = \exp \left( -2 \summM \left( \frac{1}{2} - \errm \right)^2 \right),
+		\frac{\riske (\hat{h})}{n} = \frac{\sumin \idhxneqy}{n} \leq \prodmM \sqrt{1 - 4 \left(\gammahm\right)^2}.
 	\end{align*}
-	i.e., the average empirical risk is decreasing exponentially in the number of used iterations (provided $\errm < 1 / 2$).
+
 \end{frame}
 
 \begin{frame}{Solution to 1 (e)}
 	\small
 	\begin{align*}
 		\frac{\riske(\hh)}{n} &= \frac{\sumin \id_{\ \hh(\xi) \neq \yi}}{n} = \sumin \frac{1}{n} \cdot \id_{\ \hh(\xi) \neq \yi} \leq \sumin \frac{1}{n} \cdot \exp\left(- \yi \fh(\xi) \right)  \qquad \text{(Use (d))}\\
-		&= \sumin \wonei \exp \left( - \yi \fh(\xi) \right) \qquad \text{(Definition of $\wonei$)}\\
-		&= \sumin \wMponei \prodmM \Wm \qquad \text{(Use (c): $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm }$)} \\ \\
-		&= \prodmM \Wm \underbrace{\sumin \wMponei}_{=1} \leq \prodmM \sqrt{1 - 4 \left(\gammahm \right)^2} \qquad \text{(Use (b))}
+		\only<2->{
+			&= \sumin \wonei \exp \left( - \yi \fh(\xi) \right) \qquad \text{(Definition of $\wonei = 1 / n$)}\\
+		}
+		\only<3->{
+			&= \sumin \wMponei \prodmM \Wm \qquad \text{(Use (c): $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm }$)} \\
+		}
+		\only<4->{
+			&= \prodmM \Wm \underbrace{\sumin \wMponei}_{=1} \leq \prodmM \sqrt{1 - 4 \left(\gammahm \right)^2} \qquad \text{(Use (b))}
+		}
 	\end{align*}
 \end{frame}
 
