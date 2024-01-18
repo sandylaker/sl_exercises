@@ -25,6 +25,8 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{pgfpages}
+\usepackage{multicol}
+%\usepackage{tabularx}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -33,21 +35,15 @@
 
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
-\input{latex-math/ml-infotheory.tex}
+\input{latex-math/ml-feature-sel.tex}
+\newcommand{\prob}[1]{\mathbb{P}\left(#1\right)}
+\newcommand{\xone}{x_1}
+\newcommand{\xtwo}{x_2}
+\newcommand{\txone}{\tilde{x}_1}
+\newcommand{\txtwo}{\tilde{x}_2}
+\newcommand{\BIC}[1]{\mathrm{BIC}_{\{#1\}}}
 
-\newcommand{\HX}{H(X)}
-\newcommand{\HY}{H(Y)}
-\newcommand{\HXY}{H(X, Y)}
-\newcommand{\HXcY}{H(X | Y)}
-\newcommand{\HYcX}{H(Y|X)}
-\newcommand{\IXY}{I(X;Y)}
-\newcommand{\td}{\tilde{d}}
-\newcommand{\tdk}{\title{d}_k}
-\newcommand{\tdki}{{\tilde{d}}_k^{(i)}}
-\newcommand{\pikxit}{\pi_{k}(\xi | \thetab)}
-
-
-\title[]{\textbf{Supervised Learning: Exercise for \\ Information Theory Part 2}}
+\title[]{\textbf{Exercise of Supervised Learning:\\Feature Selection}}
 
 %\subtitle{}
 
@@ -64,7 +60,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{January 19, 2024}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,199 +103,211 @@
 \end{frame}
 
 
-\begin{frame}{Exercise 1: Entropy}
-	A fair \textbf{die} is rolled at the same time as a fair \textbf{coin} is tossed. Let $A$ be the number on the upper surface of the dice and let $B$ describe the outcome of the coin toss, where
-	$$
-		B = \begin{cases}
-			1, \quad &\text{head,} \\
-			0, \quad &\text{tail.}
-		\end{cases}
-	$$
-	Two random variables $X$ and $Y$ are given by $X = A + B$ and $Y = A - B$, respectively.
+\begin{frame}{Exercise 1: Filter Problems}
+	Let $f(x_1, x_2| \bm{\mu})$ be the density function of the bivariate Normal distribution with mean $\bm{\mu}$ and covariance $\bm{\Sigma} = \id_2$. You are given the following data generation process (DGP):
+	\begin{itemize}
+		\item the target $Y \sim \mathrm{Bernoulli}(0.5)$,
+		\item the conditional density $p(x_1, x_2 | Y=1) = 0.5 (f(x_1, x_2 | (1, -1 )^T) + f(x_1, x_2 |(-1, 1)^T))$,
+		\item the conditional density $p(x_1, x_2 | Y=0) = 0.5 (f(x_1, x_2 | (1, 1)^T) + f(x_1, x_2 | (-1, -1)^T))$.
+	\end{itemize}
+	(Write the formulas on white board)
 	
-	(a) Calculate the entropies $\HX$ and $\HY$, the conditional entropies $\HYcX$ and $\HXcY$, the joint entropy $\HXY$ and the mutual information $\IXY$.
+	(a) Sketch the DGP.
+	
+	\textbf{Solution: Show the standard solution.}
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a)}
+\begin{frame}{Exercise 1 (b)}
+	(b) Compute $\prob{Y=1 | \xone = \txone}$ and $\prob{Y=1 | \xtwo = \txtwo}$.
+	\vspace{5pt}
+	
+	Hint: $\xone, \xtwo$ are generated based on $Y$.
+	
+	\begin{align*}
+		\prob{Y=1 | \xone = \txone} &= \frac{p(\xone = \txone | Y=1) \prob{Y=1}}{p(\xone = \txone | Y=1) \prob{Y=1} + p(\xone = \txone | Y = 0) \prob{Y=0}} \\
+		&= \frac{p(\xone = \txone | Y=1)}{p(\xone = \txone | Y=1) + p(\xone = \txone | Y = 0) } \qquad (\prob{Y=1} = \prob{Y=0})
+	\end{align*}
+	
+	Question: How to get $p(\xone = \txone | Y=1)$ and other terms?
+	
+\end{frame}
+
+\begin{frame}{Exercise 1 (b): Continued}
+	\begin{itemize}
+		\item<1-> Marginal over $x_2$ $\leadsto$ $p(\xone = \txone | Y=1) = \int p(\xone = \txone, \xtwo = z| Y=1) \mathrm{d}z$
+		\item<2-> Hard to \textbf{directly} marginalize because $(\xone, \xtwo) | Y$ is a mixture of Gaussian components: $p(x_1, x_2 | Y=1) = \mathbf{0.5} (f(x_1, x_2 | (1, -1 )^T) + f(x_1, x_2 |(-1, 1)^T))$
+		\item<3-> But it is easy to compute the marginal distribution for a \textbf{single Gaussian}.
+		\item<4-> Can we first marginalize individual Gaussian components and then mix up them? Yes.
+		\item<5-> Marginalize $x_1, x_2\sim \mathcal{N}((1, -1 )^T, \id_2)$ over $x_2$ $\leadsto$ $x_1 \sim \mathcal{N}(1, 1)$. 
+		\item<6-> Marginalize $x_1, x_2  \sim \mathcal{N}((-1, 1 )^T, \id_2)$ over $x_2$ $\leadsto$ $x_1 \sim \mathcal{N}(-1, 1)$. 
+		\item<7-> Let $g_\mu: \mathbb{R} \rightarrow [0, 1]$ be the prob. density function of $\mathcal{N}(\mu, 1)$.
+		\item<8-> $p(\xone = \txone | Y=1) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$ \qquad (Don't forget the weights of each Gaussian component).
+		\item<9-> Similarily: $p(\xone = \txone | Y=0) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$.
+		\item<10-> So $\prob{Y=1 | \xone = \txone} = \frac{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))}{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone)) +  \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))} = 0.5$ \quad (Same for $\prob{Y=1 | \xone = \txone}$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	(c) Compute $\prob{Y=1 | \xone = 1, \xtwo = 1}$.
+	\small 
+	\begin{align*}
+		\prob{Y=1 | \xone = 1, \xtwo = 1} &= \frac{p((1, 1) | Y=1) \prob{Y=1}}{p((1, 1) | Y=1) \prob{Y=1} + p((1, 1) | Y=0) \prob{Y=0}} \\
+		&= \frac{1}{1 + \frac{p((1, 1) | Y=1)}{p((1, 1) | Y=1)}} \\
+		&= \frac{1}{1 + \frac{\exp(0) + \exp(-0.5 (-2, -2)^T (-2, -2))}{2 \exp(-0.5 (0, -2)^T (0, -2))}} \qquad \text{(Use the given density functions)}\\
+		&\approx 0.21
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (d)}
+	(d) Explain what happends if we apply mutual information as filter in this scenario.
+	\begin{itemize}
+		\item<2-> From (b): $\prob{Y = 1} = \prob{Y = 1 | \xone = \txone} = \prob{Y = 1 | \xone = \txtwo} = 0.5$.
+		\item<3-> So $\xone$ is independent from $Y$, and the same hold for $\xtwo$.
+		\item<4-> Mutual information between $x_i$ and $Y$ will be $0$ for $i = 1, 2$.
+		\item<5-> Any feature will be more preferred over them.
+		\item<6-> But $Y$ is clearly jointly dependent on $x_1$ and $x_2$, as shown in (c), $\prob{Y=1 | \xone = 1, \xtwo = 1} \neq \prob{Y=1}$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Exercise 2: Filter simulation study}
+	\textbf{Show the standard solution.}
+\end{frame}
+
+\begin{frame}{Exercise 3: Wrappers}
+	You are given the following features and their respective BICs. BIC$_i$ with $i \in \{ \{A\}, \{B\}, \{C\}, \{D\}, \{A, B\}, \{A, C \} \{A, D \}, \{B, C \}, \{B, D\}, \{C, D\}, $ $\{A, B, C\}, \{A, B, D\}, \{B, C, D\}, \{A, B, C, D\}\}.$
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(a) Do forward search and note down each iteration.
+	
+	(b) Do backward search and note down each iteration.
+\end{frame}
+
+\begin{frame}{Exercise 3 (a)}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline					
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(a) Do forward search and note down each iteration.
 	\begin{enumerate}
-		\item Let $a, b , x, y$ be the realizations of $A, B, X, Y$, rspectively.
-		\item \textbf{If we have observed $x$ and $y$, then we can calculate the observed $a$ and $b$.}
-			
-			Since: $x = a + b$ and $y = a - b$ yields $a = \frac{x + y}{2}$ and $b = \frac{x - y}{2}$.
-		\item In other words, a pair $(x, y)$ is uniquely associated with a pair $(a, b)$.
-		\item For each pair $(a, b) \in \{0, 1, \ldots, 6 \} \times \{0, 1\}$, it holds that $p_{AB}(a, b) = \frac{1}{6} \cdot \frac{1}{2} = \frac{1}{12}$.
-		\item Therefore, $p_{XY}(x, y) = p_{AB}(a, b) = \frac{1}{12}$ for all $(x, y)$.
-		\item So, the joint entropy
-			\begin{align*}
-				\HXY &= - \sum_{x, y} p_{XY}(x, y) \log_2 p_{XY}(x, y) = -12 \cdot \frac{1}{12} \log_2 \frac{1}{12} \\
-				&= 2 + \log_2 3.
-			\end{align*}
-
+		\item<2-> $\{B\}$ since $\BIC{B} < \BIC{X} \qquad \forall X \in \{\{A\}, \{C\}, \{D\} \}$.
+		\item<3-> $\{B, D \}$ since $\BIC{B, D} < \BIC{X} \qquad \forall X \in \{\{A, B\}, \{B, C\}\}$
+		\item<4-> $\{B, C, D \}$ since $\BIC{B, C, D} < \BIC{A, B, D}$.
+		\item<5-> $\{B, C, D \}$ and terminate since $\BIC{B, C, D} < \BIC{A, C, B, D}$.
 	\end{enumerate}
-	
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a): Continued}
-	\small
-	Next, we compute $\HX$ and $\HY$. We enumerate all the possible $(a, b)$ events.
-	\vspace{10pt}
-	 
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\begin{tabular}{c c c}
-			\hline
-			$x$ & events $(a, b)$ & $p_X(x)$ \\
-			\hline
-			1 & (1, 0) & 1/12 \\
-			2 & (2, 0), (1, 1) & 1/6 \\
-			3 & (3, 0), (2, 1) & 1/6 \\
-			4 & (4, 0), (3, 1) & 1/6 \\
-			5 & (5, 0), (4, 1) & 1/6 \\
-			6 & (6, 0), (5, 1) & 1/6 \\
-			7 & (6, 1) & 1/12 \\
-			\hline
-		\end{tabular}
-		
-		\begin{align*}
-			\HX &= \sum_x p_X(x) \log_2 p_X(x) \\
-				&= -2 \cdot \frac{1}{12} \log_2 \frac{1}{12} - 5\cdot \frac{1}{6} \log_2 \frac{1}{6} \\
-				&= \frac{7}{6} + \log_2 3.
-		\end{align*}
-	\end{minipage}
-	\hfill
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\begin{tabular}{c c c}
-			\hline
-			$y$ & events $(a, b)$ & $p_Y(y)$ \\
-			\hline
-			0 & (1, 1) & 1/12 \\
-			1 & (1, 0), (2, 1) & 1/6 \\
-			2 & (2, 0), (3, 1) & 1/6 \\
-			3 & (3, 0), (4, 1) & 1/6 \\
-			4 & (4, 0), (5, 1) & 1/6 \\
-			5 & (5, 0), (6, 1) & 1/6 \\
-			6 & (6, 0) & 1/12 \\
-			\hline
-		\end{tabular}
-		
-		\begin{align*}
-			\HY &= \sum_y p_Y(x) \log_2 p_Y(y) \\
-				&= -2 \cdot \frac{1}{12} \log_2 \frac{1}{12} - 5\cdot \frac{1}{6} \log_2 \frac{1}{6} \\
-				&= \frac{7}{6} + \log_2 3.
-		\end{align*}
-	\end{minipage}
-
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (a): Continued}
-	The conditional entropies are
-	\begin{align*}
-		\HXcY &= \HXY - \HY = 2 + \log_2 3 - \frac{7}{6} - \log_2 3 = \frac{5}{6} \\
-		\HYcX &= \HXY - \HX = 2 + \log_2 3 - \frac{7}{6} - \log_2 3 = \frac{5}{6} \\
-	\end{align*}
-	
-	The mutual information $\IXY$ can be determined according to
-	\begin{align*}
-		\IXY = \HX - \HXY = \frac{7}{6} + \log_2 3 - \frac{5}{6} = \frac{1}{3} + \log_2 3.
-	\end{align*}
-\end{frame}
-
-
-\begin{frame}{Exercise 1: Question (b)}
-	(b) Show that, for independent discrete random variables $X$ and $Y$,
-	$$I(X; X + Y) - I(Y; X + Y) = \HX - \HY$$
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (b)}
-\small
-	\begin{align*}
-		I(X; X+ Y) - I(Y; X+Y) 
-		&= \HX - H(X | X + Y) - \HY + H(Y | X + Y) \\
-		&= \HX - \HY  + (H(Y| X+Y) - H(X| X+Y)) \\
-		&= \HX - \HY + \\
-		&\qquad (H(Y, X+Y) - H(X+Y) - H(X, X+Y) + H(X+Y)) \\
-		&= \HX - \HY + \underbrace{H(Y, X+Y) - H(X, X+Y)}_{=0} \\
-		&= \HX - \HY
-	\end{align*}
-
-Note that if we observe $x+y$, and assume we also observe $x$, we can infer $y$.	 
-
-In other words, \textbf{each pair $(x+y, x)$ has the same probability as $(x+y, y)$. Therefore, $H(Y, X+Y) = H(X, X+Y)$. (This can also be proven from the perspective of PGM.)}
-
-\end{frame}
-
-\begin{frame}{Exercise 2: Mutual Information of Three Variables}
-	Let $X, Y, Z$ be three discrete random variables. The mutual information of $X, Y,$ and $Z$ is defined as:
-	$$I(X; Y; Z) = \sum_x \sum_y \sum_z p(x, y, z) \log \left( \frac{p(x,y) p(x,z) p(y,z)}{p(x) p(y) p(z) p(x,y,z)}\right).$$
-	(a) Prove the lemma:  $$I(X; Y; Z) = I(X; Y) - I(X; Y |Z).$$ Note that the conditional information is defined as: $$I(X; Y | Z) = \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z)}{p(x|z) p(y|z)}.$$
-\end{frame}
-
-
-\begin{frame}{Solution to Question 2 (a)}
-	\small
-	According to the definition of mutual information, 
-	\begin{align*}
-		I(X; Y) - I(X; Y | Z) 
-		&= \sum_x \sum_y p(x, y) \log \frac{p(x, y)}{p(x) p(y)} - \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z)}{p(x|z) p(y|z)} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \frac{p(x, y)}{p(x) p(y)} - \\
-		& \qquad \sum_z \sum_x \sum_y p(z) p(x, y |z) \log \frac{p(x, y | z) p(z)^2}{p(x|z) p(y|z) p(z)^2} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \frac{p(x, y)}{p(x) p(y)} - \sum_z \sum_x \sum_y p(x, y, z) \log \frac{p(x, y, z) p(z)}{p(x, z) p(y,z)} \\
-		&= \sum_x \sum_y \sum_z p(x,y,z) \log \left(\frac{p(x, y) p(x, z) p(y,z)}{p(x) p(y) p(z) p(x,y,z)} \right) \\
-		&= I(X;Y;Z). 
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 2: Question (b)}
-(b) Prove the following relation with the above lemma:
-\begin{align*}
-	I(X; Y) = I(X; Y |Z) + I(Y; Z) - I(Y; Z | X)
-\end{align*}
-
-Recall the lemma: $I(X; Y) - I(X; Y | Z)  = I(X; Y; Z)$
-
-	
-\end{frame}
-
-\begin{frame}{Solution to Question 2 (b)}
-	Using the lemma we just proved, we obtain:
-	\begin{align*}
-		& I(X; Y |Z) + I(Y; Z) - I(Y; Z | X) \\
-		&= \IXY - I(X; Y; Z)  + I(Y; Z) - I(Y;Z) + I(X;Y;Z) \\
-		&= \IXY 
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Exercise 3: Smoothed Cross-Entropy Loss}
-	\small
-	\emph{Over-confidence} is a state when a model is more confident in its prediction than the input data warrants. Label smoothing (a.k.a. smoothed cross entropy loss) is a widely used trick in deep learning classification tasks for alleviating the over-confidence issue and increasing model robustness. In the conventional cross-entropy loss, we aim to minimize the KL-divergence between $d$ and $\pixt$, where the ground truth distribution $d$ is a delta distribution (i.e., only $d_k = 1$ for the ground truth class), and $\pixt$ is the predicted distribution by the model $\pi$ parameterized by $\thetab$. The key step in label smoothing is to smooth the ground truth distribution. Specifically, given a hyperparameter $\beta$ (e.g., $\beta = 0.1$), we uniformly distribute the probability mass of $\beta$ to all the $g$ classes and reduce the probability mass of ground truth class. Consequently, the smoothed ground truth distribution $\td$ is 
-	\begin{align*}
-		\tdk = \begin{cases}
-			\frac{\beta}{g} \qquad &\text{for } d_k = 0; \\
-			1 - \beta + \frac{\beta}{g} \qquad & \text{for } d_k = 1. 
-		\end{cases}
-	\end{align*}
-	The smoothed cross entropy is then $D_{KL}(\td \ || \ \pixt)$. 
-	
-	(a) Derive the empirical risk when using the smoothed cross-entropy as loss function.
-\end{frame}
-
-\begin{frame}{Solution to Question 3 (a)}
-	The empirical risk is 
-	\begin{align*}
-		\riske(\thetab) 
-		&= \frac{1}{n} \sumin \left( \sum_{k=1}^g \tdki \log \left( \frac{\tdki}{\pikxit} \right)  \right) \qquad \rhd \\
-		&= \frac{1}{n} \sumin \left( \sumkg \tdki \log \tdki - \tdki \log \pikxit  \right) \\
-		&= - \frac{1}{n} \sumin \sumkg \tdki \log \pikxit + Const.
-	\end{align*}
-	Note that only the terms dependent on $\thetab$ are relevant to optimization, wheares other terms are constant and can be omitted in implementation.
-\end{frame}
-
-\begin{frame}{Exercise 2: Question (b)}
-	(b) Implement the smoothed cross-entropy.
-	\vspace{20pt}
-	
-	\textbf{Show the code in the standard solution.}
+\begin{frame}{Exercise 3 (b)}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline					
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(b) Do backward search and note down each iteration.
+	\begin{enumerate}
+		\item<2-> Start with all features $\{A, B, C, D\}$.
+		\item<3-> $\{B, C, D \}$ and since $\BIC{B, C, D} < \BIC{X} \qquad \forall X \in \{\{A, B, C\}, \{A, C, D\} \}$.
+		\item<4-> $\{B, C, D \}$ and terminate since $\BIC{B, C, D} < \BIC{X} \qquad \forall X \in \{\{B, C\}, \{B, D\}, \{C, D\} \}$.
+	\end{enumerate}
 \end{frame}
 
 \end{document}
