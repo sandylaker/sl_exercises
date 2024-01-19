@@ -143,7 +143,7 @@
 		\item<7-> Let $g_\mu: \mathbb{R} \rightarrow [0, 1]$ be the prob. density function of $\mathcal{N}(\mu, 1)$.
 		\item<8-> $p(\xone = \txone | Y=1) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$ \qquad (Don't forget the weights of each Gaussian component).
 		\item<9-> Similarily: $p(\xone = \txone | Y=0) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$.
-		\item<10-> So $\prob{Y=1 | \xone = \txone} = \frac{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))}{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone)) +  \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))} = 0.5$ \quad (Same for $\prob{Y=1 | \xone = \txone}$.
+		\item<10-> So $\prob{Y=1 | \xone = \txone} = \frac{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))}{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone)) +  \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))} = 0.5$ \quad (Same for $\prob{Y=0 | \xone = \txone}$.
 	\end{itemize}
 \end{frame}
 
@@ -159,9 +159,9 @@
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
-	(d) Explain what happends if we apply mutual information as filter in this scenario.
+	(d) Explain what happens if we apply mutual information as filter in this scenario.
 	\begin{itemize}
-		\item<2-> From (b): $\prob{Y = 1} = \prob{Y = 1 | \xone = \txone} = \prob{Y = 1 | \xone = \txtwo} = 0.5$.
+		\item<2-> From (b): $\prob{Y = 1} = \prob{Y = 1 | \xone = \txone} = \prob{Y = 1 | \xtwo = \txtwo} = 0.5$.
 		\item<3-> So $\xone$ is independent from $Y$, and the same hold for $\xtwo$.
 		\item<4-> Mutual information between $x_i$ and $Y$ will be $0$ for $i = 1, 2$.
 		\item<5-> Any feature will be more preferred over them.
