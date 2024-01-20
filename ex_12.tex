@@ -25,6 +25,8 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{pgfpages}
+\usepackage{multicol}
+%\usepackage{tabularx}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -33,13 +35,15 @@
 
 \input{latex-math/basic-math.tex}
 \input{latex-math/basic-ml.tex}
-\input{latex-math/ml-infotheory.tex}
+\input{latex-math/ml-feature-sel.tex}
+\newcommand{\prob}[1]{\mathbb{P}\left(#1\right)}
+\newcommand{\xone}{x_1}
+\newcommand{\xtwo}{x_2}
+\newcommand{\txone}{\tilde{x}_1}
+\newcommand{\txtwo}{\tilde{x}_2}
+\newcommand{\BIC}[1]{\mathrm{BIC}_{\{#1\}}}
 
-\newcommand{\kld}[1]{D_{KL}\left(#1\right)}
-\newcommand{\Ef}{\mathbb{E}_f}
-\newcommand{\Varf}{\mathrm{Var}_f}
-
-\title[]{\textbf{Supervised Learning: Exercise of \\ Information Theory Part 1}}
+\title[]{\textbf{Exercise of Supervised Learning:\\Feature Selection}}
 
 %\subtitle{}
 
@@ -56,7 +60,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{Date}
+\date{January 19, 2024}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -99,133 +103,211 @@
 \end{frame}
 
 
-\begin{frame}{Exercise 1: Kullback-Leibler Divergence}
-	(a) You want to approximate the binomial distribution with $n$ numbers of trials and probability $p$ with a Gaussian distribution with mean $\mu$ and variance $\sigma^2$. To find a suitable distribution you investigate the Kullback-Leibler divergence (KLD) in terms of the parameters $\thetab = (\mu, \sigma^2)^T$.
+\begin{frame}{Exercise 1: Filter Problems}
+	Let $f(x_1, x_2| \bm{\mu})$ be the density function of the bivariate Normal distribution with mean $\bm{\mu}$ and covariance $\bm{\Sigma} = \id_2$. You are given the following data generation process (DGP):
+	\begin{itemize}
+		\item the target $Y \sim \mathrm{Bernoulli}(0.5)$,
+		\item the conditional density $p(x_1, x_2 | Y=1) = 0.5 (f(x_1, x_2 | (1, -1 )^T) + f(x_1, x_2 |(-1, 1)^T))$,
+		\item the conditional density $p(x_1, x_2 | Y=0) = 0.5 (f(x_1, x_2 | (1, 1)^T) + f(x_1, x_2 | (-1, -1)^T))$.
+	\end{itemize}
+	(Write the formulas on white board)
+	
+	(a) Sketch the DGP.
+	
+	\textbf{Solution: Show the standard solution.}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) Compute $\prob{Y=1 | \xone = \txone}$ and $\prob{Y=1 | \xtwo = \txtwo}$.
+	\vspace{5pt}
+	
+	Hint: $\xone, \xtwo$ are generated based on $Y$.
+	
+	\begin{align*}
+		\prob{Y=1 | \xone = \txone} &= \frac{p(\xone = \txone | Y=1) \prob{Y=1}}{p(\xone = \txone | Y=1) \prob{Y=1} + p(\xone = \txone | Y = 0) \prob{Y=0}} \\
+		&= \frac{p(\xone = \txone | Y=1)}{p(\xone = \txone | Y=1) + p(\xone = \txone | Y = 0) } \qquad (\prob{Y=1} = \prob{Y=0})
+	\end{align*}
+	
+	Question: How to get $p(\xone = \txone | Y=1)$ and other terms?
+	
+\end{frame}
+
+\begin{frame}{Exercise 1 (b): Continued}
+	\begin{itemize}
+		\item<1-> Marginal over $x_2$ $\leadsto$ $p(\xone = \txone | Y=1) = \int p(\xone = \txone, \xtwo = z| Y=1) \mathrm{d}z$
+		\item<2-> Hard to \textbf{directly} marginalize because $(\xone, \xtwo) | Y$ is a mixture of Gaussian components: $p(x_1, x_2 | Y=1) = \mathbf{0.5} (f(x_1, x_2 | (1, -1 )^T) + f(x_1, x_2 |(-1, 1)^T))$
+		\item<3-> But it is easy to compute the marginal distribution for a \textbf{single Gaussian}.
+		\item<4-> Can we first marginalize individual Gaussian components and then mix up them? Yes.
+		\item<5-> Marginalize $x_1, x_2\sim \mathcal{N}((1, -1 )^T, \id_2)$ over $x_2$ $\leadsto$ $x_1 \sim \mathcal{N}(1, 1)$. 
+		\item<6-> Marginalize $x_1, x_2  \sim \mathcal{N}((-1, 1 )^T, \id_2)$ over $x_2$ $\leadsto$ $x_1 \sim \mathcal{N}(-1, 1)$. 
+		\item<7-> Let $g_\mu: \mathbb{R} \rightarrow [0, 1]$ be the prob. density function of $\mathcal{N}(\mu, 1)$.
+		\item<8-> $p(\xone = \txone | Y=1) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$ \qquad (Don't forget the weights of each Gaussian component).
+		\item<9-> Similarily: $p(\xone = \txone | Y=0) = \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))$.
+		\item<10-> So $\prob{Y=1 | \xone = \txone} = \frac{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))}{ \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone)) +  \mathbf{0.5} (g_{1}(\txone) + g_{-1}(\txone))} = 0.5$ \quad (Same for $\prob{Y=0 | \xone = \txone}$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	(c) Compute $\prob{Y=1 | \xone = 1, \xtwo = 1}$.
+	\small 
+	\begin{align*}
+		\prob{Y=1 | \xone = 1, \xtwo = 1} &= \frac{p((1, 1) | Y=1) \prob{Y=1}}{p((1, 1) | Y=1) \prob{Y=1} + p((1, 1) | Y=0) \prob{Y=0}} \\
+		&= \frac{1}{1 + \frac{p((1, 1) | Y=1)}{p((1, 1) | Y=1)}} \\
+		&= \frac{1}{1 + \frac{\exp(0) + \exp(-0.5 (-2, -2)^T (-2, -2))}{2 \exp(-0.5 (0, -2)^T (0, -2))}} \qquad \text{(Use the given density functions)}\\
+		&\approx 0.21
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (d)}
+	(d) Explain what happens if we apply mutual information as filter in this scenario.
+	\begin{itemize}
+		\item<2-> From (b): $\prob{Y = 1} = \prob{Y = 1 | \xone = \txone} = \prob{Y = 1 | \xtwo = \txtwo} = 0.5$.
+		\item<3-> So $\xone$ is independent from $Y$, and the same hold for $\xtwo$.
+		\item<4-> Mutual information between $x_i$ and $Y$ will be $0$ for $i = 1, 2$.
+		\item<5-> Any feature will be more preferred over them.
+		\item<6-> But $Y$ is clearly jointly dependent on $x_1$ and $x_2$, as shown in (c), $\prob{Y=1 | \xone = 1, \xtwo = 1} \neq \prob{Y=1}$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Exercise 2: Filter simulation study}
+	\textbf{Show the standard solution.}
+\end{frame}
+
+\begin{frame}{Exercise 3: Wrappers}
+	You are given the following features and their respective BICs. BIC$_i$ with $i \in \{ \{A\}, \{B\}, \{C\}, \{D\}, \{A, B\}, \{A, C \} \{A, D \}, \{B, C \}, \{B, D\}, \{C, D\}, $ $\{A, B, C\}, \{A, B, D\}, \{B, C, D\}, \{A, B, C, D\}\}.$
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(a) Do forward search and note down each iteration.
+	
+	(b) Do backward search and note down each iteration.
+\end{frame}
+
+\begin{frame}{Exercise 3 (a)}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline					
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(a) Do forward search and note down each iteration.
 	\begin{enumerate}
-		\item Write down the KLD for the given setup.
-		\item Derive the gradients w.r.t. $\thetab$.
-		\item Is there an analytic solution for the optimal parameter setting? If yes, derive the corresponding solution. If no, give a short reasoning.
-		\item Independent of the previous exercise, state a numerical procedure to minimize the KLD.
+		\item<2-> $\{B\}$ since $\BIC{B} < \BIC{X} \qquad \forall X \in \{\{A\}, \{C\}, \{D\} \}$.
+		\item<3-> $\{B, D \}$ since $\BIC{B, D} < \BIC{X} \qquad \forall X \in \{\{A, B\}, \{B, C\}\}$
+		\item<4-> $\{B, C, D \}$ since $\BIC{B, C, D} < \BIC{A, B, D}$.
+		\item<5-> $\{B, C, D \}$ and terminate since $\BIC{B, C, D} < \BIC{A, C, B, D}$.
 	\end{enumerate}
 \end{frame}
 
-\begin{frame}{Solution to Question (a.1)}
-	\small
-	Question: Write down the KLD for the given setup.
-	
-	\begin{itemize}
-		\item Let $f$ be pmf of $Bin(n, p)$, we know that $\Ef[X] = np$ and $\Varf[X] = np (1 - p)$.
-		\item Let $q$ be the density of $\mathcal{N}(\mu, \sigma^2)$.
-		\item The KL divergence between $f$ andd $q$ is
-		\begin{align*}
-			\kld{f \ || \ q} 
-			&= \Ef \left[ \log \frac{f(X)}{q(X; \thetab)} \right] = \underbrace{\Ef \left[ \log f(X) \right]}_{c_1} - \Ef [\log q(X|\thetab)] \\
-			&= c_1 - \Ef \left[ \log \left( \frac{1}{\sqrt{2 \pi \sigma^2}} \exp \left( - \frac{1}{2\sigma^2} (X - \mu)^2 \right)  \right) \right] \\
-			&= c_1 - \Ef \left[ - \underbrace{\frac{1}{2} \log(2\pi)}_{c_2} - \frac{1}{2} \log (\sigma^2) - \frac{1}{2\sigma^2} (X - \mu)^2 \right]
-		\end{align*}
-	\end{itemize}
-	
+\begin{frame}{Exercise 3 (b)}
+	\begin{columns}
+		\begin{column}{0.3\textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline
+					$\{A\}$ & 0.9 \\
+					$\{B\}$ & 0.8 \\
+					$\{C\}$ & 1.0 \\
+					$\{D\}$ & 1.0 \\
+					$\{A, B\}$ & 0.8 \\
+					$\{A, C\}$ & 0.7 \\
+					$\{A, D\}$ & 0.8 \\
+				\end{tabular}
+			\end{table}
+		\end{column}
+		\begin{column}{0.3 \textwidth}
+			\centering
+			\begin{table}
+				\centering
+				\begin{tabular}{c c}
+					Features & BIC$_i$ \\
+					\hline					
+					$\{B, C\}$ & 0.7 \\
+					$\{B, D\}$ & 0.6 \\
+					$\{C, D\}$ & 0.9 \\
+					$\{A, B, C\}$ & 0.6 \\
+					$\{A, B, D\}$ & 0.8 \\
+					$\{B, C, D\}$ & 0.5 \\
+					$\{A, B, C, D\}$ & 0.6 \\
+				\end{tabular}
+			\end{table}	
+		\end{column}
+		\hfill
+	\end{columns}
+	(b) Do backward search and note down each iteration.
+	\begin{enumerate}
+		\item<2-> Start with all features $\{A, B, C, D\}$.
+		\item<3-> $\{B, C, D \}$ and since $\BIC{B, C, D} < \BIC{X} \qquad \forall X \in \{\{A, B, C\}, \{A, C, D\} \}$.
+		\item<4-> $\{B, C, D \}$ and terminate since $\BIC{B, C, D} < \BIC{X} \qquad \forall X \in \{\{B, C\}, \{B, D\}, \{C, D\} \}$.
+	\end{enumerate}
 \end{frame}
-
-
-\begin{frame}{Solution to Question (a.1): Continued}
-	\small
-	\begin{align*}
-		\kld{f \ || \ q} &= \underbrace{c_1 + c_2}_{c_3}  + \frac{1}{2}\log(\sigma^2) + \frac{1}{2\sigma^2} \Ef[(X - \mu)^2] \\
-		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2} \left( \underbrace{\Ef[X^2]}_{\Varf[X] + \Ef[X]^2} - 2\mu \Ef[X] + \mu^2 \right) \\
-		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2} (np(1 - p) + (np)^2 - 2\mu np + \mu^2) \\
-		&= c_3 + \log(\sigma) + \frac{1}{2\sigma^2}(np(1-p) + (np -\mu)^2)
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Solution to Question (a.2)}
-	\small
-	Question: Derive the gradients w.r.t. $\thetab$.
-	\begin{align*}
-		\frac{\partial \kld{ f \ || \ q}}{\partial \mu} &= \frac{\partial}{\partial \mu} \frac{(np - \mu)^2}{2 \sigma^2} = \frac{2 (np - \mu ) \cdot ( -1)}{2\sigma^2} = \frac{ \mu - np}{\sigma^2}
-	\end{align*}
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} 
-		&= \frac{\partial}{\partial \sigma^2} 
-		\left( \frac{1}{2} \log (\sigma^2) + \frac{1}{2 \sigma^2} (np(1 - p) + (np - \mu)^2)  \right) \\
-		&= \frac{1}{2\sigma^2} - \frac{1}{2 (\sigma^2)^2}(np (1- p) + (np -\mu)^2) \\
-		&= \frac{1}{2\sigma^2} - \frac{1}{2 \sigma^4} \Ef[(X -\mu)^2]
-	\end{align*}
-\end{frame}
-
-\begin{frame}{Solution to Question (a.3)}
-	\small
-	Question: Is there an analytic solution for the optimal parameter setting? If yes, derive the corresponding solution. If no, give a short reasoning.
-	
-	Solution: Yes, there is. By setting the partial derivatives to zero we can identify the critical points.
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \mu} = 0 &\Leftrightarrow \hat{\mu} = np = \Ef[X] 
-	\end{align*}
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} = 0 & \Leftrightarrow \frac{1}{2\hat{\sigma}^2} = \frac{1}{2 \hat{\sigma}^2} \Ef[(X - \hat{\mu})^2] \\
-		& \Leftrightarrow \hat{\sigma}^2 = \Ef[(X - \Ef[X])^2] = \Varf[X] = np(1-p)
-	\end{align*}
-	In order to prove that critical point is a minimum, we need to check the Hessian matrix w.r.t. $(\mu, \sigma^2)$ is positive definite at $(\mu, \hat{\sigma}^2)$.
-\end{frame}
-
-\begin{frame}{Solution to Question (a.3): Continued}
-	The Hessian matrix is:
-	\begin{align*}
-		\nabla^2 = \begin{pmatrix}
-			\frac{1}{\sigma^2} & (np -\mu) \frac{1}{\sigma^4} \\
-			(np -\mu) \frac{1}{\sigma^4} & - \frac{1}{2\sigma^4} + \frac{1}{\sigma^6} \Ef [(X -\mu)^2]
-		\end{pmatrix}
-	\end{align*}
-	Evaluated at $(\hat{\mu}, \hat{\sigma}^2)$, we obtain
-	\begin{align*}
-		\nabla^2 \bigg|_{(\hat{\mu}, \hat{\sigma}^2)} 
-		&= \begin{pmatrix}
-			\frac{1}{np(1-p)} & 0 \\
-			0 & \frac{1}{2 (np(1-p))^2} \\
-			\end{pmatrix} \\
-		&= \begin{pmatrix}
-			\frac{1}{\Varf(X)} & 0 \\
-			0 & \frac{1}{2 \Varf(X)^2} \\
-		\end{pmatrix}
-	\end{align*}
-	So the Hessian at $(\hat{\mu}, \hat{\sigma}^2)$ is P.S.D.
-\end{frame}
-
-\begin{frame}{Question (b), (c) and (d)}
-	(b) Sample points according to the true distribution and visualize the KLD for different parameter settings of the Gaussian distribution (including the optimal one if available).
-	
-	\vspace{20pt}
-	(c) Create a surface plot with axes $n$ and $p$ and colour value equal to the KLD for the optimal normal distribution.
-	
-	\vspace{20pt}
-	(d) Based on the previous result, how can be behavior for varing $p$ and $n$ be explained, respectively?
-	
-	\vspace{20pt}
-	\textbf{Solution: Show the code.}
-\end{frame}
-
-
-\begin{frame}{Exercise 2: The Convexity of KL Divergence}
-	Let $p$ and $q$ be the PDFs of a pair of absolutely continuous distributions. 
-	
-	(a) Prove that the KL divergence is convex in the pair $(p, q)$, i.e., 
-	$$\kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2} \leq \lambda \kld{p1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2},$$
-	where $(p_1, q_1)$ and $(p_2, q_2)$ are two pairs of distribution and $0 \leq \lambda \leq 1$.
-	
-	\vspace{20pt}
-	Hint: you can use the log sum inequality, namely that $(a_1 + a_2) \log \left( \frac{a_1 + a_2}{b_1 + b_2} \right) \leq a_1 \log \frac{a_1}{b_1} + a_2 \log \frac{a_2}{b_2}$ holds for $a_1, a_2, b_1, b_2 \geq 0$.
-\end{frame}
-
-\begin{frame}{Solution to Question (a)}
-	\small
-	\begin{align*}
-		& \kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2}  \\
-		&= \int_\Xspace \left( (\lambda p_1(x) + (1 - \lambda) p_2(x)) \log \frac{\lambda p_1(x) + (1 - \lambda) p_2(x)}{\lambda q_1(x) + (1 - \lambda) q_2(x)} \right) \mathrm{d}x \\
-		&\leq \int_\Xspace \left( \lambda p_1(x) \log \frac{p_1(x)}{q_1(x)} + (1-\lambda) p_2(x) \log \frac{(1 - \lambda) p_2(x)}{(1-\lambda) q_2(x)} \right) \mathrm{d}x \\
-		&= \lambda \int_\Xspace \left(p_1(x) \log \frac{p_1(x)}{q_1(x)} \right) \mathrm{d}x + (1 - \lambda) \int_\Xspace \left( p_2(x) \log \frac{p_2(x)}{q_2(x)}\right) \mathrm{d}x \\
-%		&= \lambda \kld{p_1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2}.
-	\end{align*}
-\end{frame}
-
 
 \end{document}

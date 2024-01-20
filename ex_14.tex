@@ -1,0 +1,248 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+\usepackage{multicol}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+\input{latex-math/ml-infotheory.tex}
+\newcommand{\etpx}{H(X)}
+\newcommand{\etpy}{H(Y)}
+\newcommand{\etpxy}{H(X, Y)}
+\newcommand{\etpycx}{H(Y|X)}
+\newcommand{\etpxcy}{H(X|Y)}
+\newcommand{\mixy}{I(X; Y)}
+\newcommand{\miyz}{I(Y;Z)}
+\newcommand{\miyzcx}{I(Y;Z|X)}
+\newcommand{\mixyz}{I(X;Y;Z)}
+\newcommand{\mixycz}{I(X;Y|Z)}
+\newcommand{\px}{p(x)}
+\newcommand{\py}{p(y)}
+\newcommand{\pz}{p(z)}
+\newcommand{\pxy}{p(x,y)}
+\newcommand{\pxz}{p(x, z)}
+\newcommand{\pyz}{p(y, z)}
+\newcommand{\pxyz}{p(x, y, z)}
+\newcommand{\pxycz}{p(x, y | z)}
+\newcommand{\pxcz}{p(x|z)}
+\newcommand{\pycz}{p(y|z)}
+
+\title[]{\textbf{Exercise of Supervised Learning}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{February 2, 2024}
+
+
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+\begin{frame}{Exercise 1: Entropy}
+	A fair die is rolled at the same time as a fair coin is tossed. Let $A$ be the number on the upper surface of the dice and let $B$ describe the outcome of the coin toss, where 
+	\begin{align*}
+		B = \begin{cases}
+			1, \quad & \text{head,} \\
+			0 \quad & \text{tail.}
+		\end{cases}
+	\end{align*}
+	Two random variables $X$ and $Y$ are given by $X = A + B$ and $Y = A - B$, respectively.
+	\vspace{10pt}
+	
+	(a) Calculate the entropies $H(X)$ and $H(Y)$, the conditional entropies $H(Y|X)$ and $H(X|Y)$, the joint entropy $H(X, Y)$ and the mutual information $I(X;Y)$.
+\end{frame}
+
+\begin{frame}{Exercise 1 (a)}
+(a) Calculate the entropies $H(X)$ and $H(Y)$, the conditional entropies $H(Y|X)$ and $H(X|Y)$, the joint entropy $H(X, Y)$ and the mutual information $I(X;Y)$.
+
+\textbf{Solution}: Let $a, b, x,$ and $y$ denote the realizations of $A, B, X$ and $Y$, respectively.
+
+Note that each event $(a,b)$ is associated with \textbf{exactly one} event $(x,y)$. Why?
+
+Because given a pair $(a, b)$, $x = 0.5 (a + b)$ and $y = 0.5 (a - b)$ are unique. 
+So the joint probability
+\begin{align*}
+	p_{AB}(a, b) = p_{XY}(x, y) = \frac{1}{6} \cdot \frac{1}{2} = \frac{1}{12}
+\end{align*}
+
+So, the joint entropy:
+\begin{align*}
+	H(X, Y) &= - \sum_{x, y} p_{X, Y}(x,y) \log_2 p_{X, Y}(x, y) \\ 
+	&= - 12 \cdot \frac{1}{12} \log_2 \frac{1}{12} \\ 
+	&= 2 + \log_2 3
+\end{align*}
+	
+\end{frame}
+
+\begin{frame}{Exercise 1 (a): Continued}
+	\begin{columns}
+		\begin{column}{0.5\textwidth}
+			\begin{table}
+				\begin{tabular}{c l c}
+					\hline
+					$x$ & Events $(a,b)$ & $p_X(x)$ \\
+					\hline
+					1 & $(1, 0)$	 & $1/12$ \\
+					2 & $(2, 0), (1, 1)$	 & $1/6$ \\
+					3 & $(3, 0), (2, 1)$	 & $1/6$ \\
+					4 & $(4, 0), (3, 1)$	 & $1/6$ \\
+					5 & $(5, 0), (4, 1)$	 & $1/6$ \\
+					6 & $(6, 0), (5, 1)$	 & $1/6$ \\
+					7 & $(6, 1)$	 & $1/12$ \\
+					\hline
+				\end{tabular}
+			\end{table}
+		\end{column}
+		
+		\begin{column}{0.5\textwidth}
+			\begin{table}
+				\begin{tabular}{c l c}
+					\hline
+					$y$ & Events $(a,b)$ & $p_Y(y)$ \\
+					\hline
+					1 & $(1, 1)$	 & $1/12$ \\
+					2 & $(1, 0), (2, 1)$	 & $1/6$ \\
+					3 & $(2, 0), (3, 1)$	 & $1/6$ \\
+					4 & $(3, 0), (4, 1)$	 & $1/6$ \\
+					5 & $(4, 0), (5, 1)$	 & $1/6$ \\
+					6 & $(4, 0), (6, 1)$	 & $1/6$ \\
+					7 & $(6, 0)$	 & $1/12$ \\
+					\hline
+				\end{tabular}
+			\end{table}
+		\end{column}
+	\end{columns}
+	
+	\begin{align*}
+		\etpx &= \sum_x p_X(x) \log_2 p_X(x) = \frac{7}{6} + \log_2 3. \\
+		\etpy &= \sum_x p_Y(y) \log_2 p_Y(y) = \frac{7}{6} + \log_2 3. 
+	\end{align*}
+
+\end{frame}
+
+\begin{frame}{Exercise 1 (a): Continued}
+	\textbf{Disclaimer: the basic formulas like the following ones need to be either remembered or written on your cheatsheet. They will not be given on the exam sheets.}
+	
+	The conditional entropies
+	\begin{align*}
+		\etpxcy &= \etpxy - \etpy = \frac{5}{6} \\
+		\etpycx & = \etpxy - \etpx = \frac{5}{6} \\
+	\end{align*}
+	The mutual information 
+	\begin{align*}
+		\mixy = \etpx - \etpxcy = \frac{1}{3} + \log_2 3.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) Show that, for independent discrete random variables $X$ and $Y$, 
+	\begin{align*}
+		I(X; X + Y) - I(Y; X + Y) = H(X) - H(Y).
+	\end{align*}
+	Solution: 
+	\begin{align*}
+		I(X; X + Y) - I(Y; X + Y) &= H(X+Y) - H(X+Y |X) - H(X+Y) + H(X+Y|Y) \\
+		&= H(X+Y|Y) - H(X+Y|X)
+	\end{align*}
+	Note that $p(x + y | x) = p(y|x)$, because $x$ is given, so if we observe $x+y$, we can immediately infer the value of $y$. In this case where $X$ is observed, there is an one-to-one mapping between $X+Y$ and $Y$.
+	
+	So, $H(X+Y|X) = H(X|Y)$, and $H(X+Y|Y) = H(X|Y)$. Hence,
+	\begin{align*}
+		I(X; X + Y) - I(Y; X + Y) &= H(X|Y) - H(Y|X) \\
+			& = H(X) - H(Y) \\
+	\end{align*}
+	
+\end{frame}
+
+\begin{frame}{Exercise 2 (a)}
+	Let $X, Y$ and $Z$ be three discrete random variables. The mutual information of $X$, $Y$ and $Z$ is defined as:
+	\begin{align*}
+		\mixyz = \sum_x \sum_y \sum_z \pxyz \log \left(\frac{\pxy \pxz \pyz}{\px \py \pz \pxyz} \right)
+	\end{align*}
+	(a) Prove the lemma: $\mixyz = \mixy - \mixycz$. Note that the conditional mutual information is defined as:
+	\begin{align*}
+		\mixycz = \sum_x \sum_y \sum_z \pz \pxycz \log \frac{\pxycz}{\pxcz \pycz}
+	\end{align*}
+	Hint: Starting from the right hand side of the equation in the lemma.
+\end{frame}
+
+\begin{frame}{Exercise 2 (a): Continued}
+	\small
+	\begin{align*}
+		\mixy - \mixycz 
+		&= \sum_x \sum_y \pxy \log \frac{\pxy}{\px \py} - \sum_z \sum_x \sum_y \pz \pxycz \log \frac{\pxycz}{\pxcz \pycz} \\
+		&= \sum_x\sum_y\sum_z \pxyz \log \frac{\pxy}{\px \py} \\ 
+		&\qquad - \sum_x \sum_y \sum_z \pxyz \log \frac{\pxycz \pz^2}{\pxcz \pycz \pz^2} \\
+		&= \sum_x\sum_y\sum_z \pxyz \log \frac{\pxy}{\px \py} - \sum_x \sum_y \sum_z \pxyz \log \frac{\pxyz \pz}{\pxz \pyz} \\
+		&= \sum_x \sum_y \sum_z \pxyz \log \left( \frac{\pxy \pxz \pyz}{\px \py \pz \pxyz} \right) \\
+		&= \mixyz
+	\end{align*}
+	
+\end{frame}
+
+\begin{frame}{Exercise 2 (b)}
+	(b) Prove the following relation with the above lemma:
+	\begin{align*}
+		\mixy = \mixycz + \miyz - \miyzcx.
+	\end{align*}
+	Solution: Using the lemma on the conditional MI, we obtain:
+	\begin{align*}
+		& \mixycz + \miyz - \miyzcx \\
+		&= \mixy - \mixyz + \miyz - \miyz + \mixyz \\
+		&= \mixy.
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 3}
+	\textbf{Show the standard solution.}
+\end{frame}
+
+\end{document}
