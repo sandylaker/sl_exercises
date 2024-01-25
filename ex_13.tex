@@ -115,8 +115,8 @@
 	
 	\begin{itemize}
 		\item Let $f$ be pmf of $Bin(n, p)$, we know that $\Ef[X] = np$ and $\Varf[X] = np (1 - p)$.
-		\item Let $q$ be the density of $\mathcal{N}(\mu, \sigma^2)$.
-		\item The KL divergence between $f$ andd $q$ is
+		\item<2-> Let $q$ be the density of $\mathcal{N}(\mu, \sigma^2)$.
+		\item<3-> The KL divergence between $f$ andd $q$ is
 		\begin{align*}
 			\kld{f \ || \ q} 
 			&= \Ef \left[ \log \frac{f(X)}{q(X; \thetab)} \right] = \underbrace{\Ef \left[ \log f(X) \right]}_{c_1} - \Ef [\log q(X|\thetab)] \\
@@ -144,28 +144,34 @@
 	\begin{align*}
 		\frac{\partial \kld{ f \ || \ q}}{\partial \mu} &= \frac{\partial}{\partial \mu} \frac{(np - \mu)^2}{2 \sigma^2} = \frac{2 (np - \mu ) \cdot ( -1)}{2\sigma^2} = \frac{ \mu - np}{\sigma^2}
 	\end{align*}
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} 
-		&= \frac{\partial}{\partial \sigma^2} 
-		\left( \frac{1}{2} \log (\sigma^2) + \frac{1}{2 \sigma^2} (np(1 - p) + (np - \mu)^2)  \right) \\
-		&= \frac{1}{2\sigma^2} - \frac{1}{2 (\sigma^2)^2}(np (1- p) + (np -\mu)^2) \\
-		&= \frac{1}{2\sigma^2} - \frac{1}{2 \sigma^4} \Ef[(X -\mu)^2]
-	\end{align*}
+	\uncover<2->{
+		\begin{align*}
+			\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} 
+			&= \frac{\partial}{\partial \sigma^2} 
+			\left( \frac{1}{2} \log (\sigma^2) + \frac{1}{2 \sigma^2} (np(1 - p) + (np - \mu)^2)  \right) \\
+			&= \frac{1}{2\sigma^2} - \frac{1}{2 (\sigma^2)^2}(np (1- p) + (np -\mu)^2) \\
+			&= \frac{1}{2\sigma^2} - \frac{1}{2 \sigma^4} \Ef[(X -\mu)^2]
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (a.3)}
 	\small
 	Question: Is there an analytic solution for the optimal parameter setting? If yes, derive the corresponding solution. If no, give a short reasoning.
-	
-	Solution: Yes, there is. By setting the partial derivatives to zero we can identify the critical points.
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \mu} = 0 &\Leftrightarrow \hat{\mu} = np = \Ef[X] 
-	\end{align*}
-	\begin{align*}
-		\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} = 0 & \Leftrightarrow \frac{1}{2\hat{\sigma}^2} = \frac{1}{2 \hat{\sigma}^2} \Ef[(X - \hat{\mu})^2] \\
-		& \Leftrightarrow \hat{\sigma}^2 = \Ef[(X - \Ef[X])^2] = \Varf[X] = np(1-p)
-	\end{align*}
-	In order to prove that critical point is a minimum, we need to check the Hessian matrix w.r.t. $(\mu, \sigma^2)$ is positive definite at $(\mu, \hat{\sigma}^2)$.
+	\uncover<2->{
+
+		Solution: Yes, there is. By setting the partial derivatives to zero we can identify the critical points.
+		\begin{align*}
+			\frac{\partial \kld{f \ || \ q}}{\partial \mu} = 0 &\Leftrightarrow \hat{\mu} = np = \Ef[X] 
+		\end{align*}
+	}
+	\uncover<3->{
+		\begin{align*}
+			\frac{\partial \kld{f \ || \ q}}{\partial \sigma^2} = 0 & \Leftrightarrow \frac{1}{2\hat{\sigma}^2} = \frac{1}{2 \hat{\sigma}^4} \Ef[(X - \hat{\mu})^2] \\
+			& \Leftrightarrow \hat{\sigma}^2 = \Ef[(X - \Ef[X])^2] = \Varf[X] = np(1-p)
+		\end{align*}
+		In order to prove that critical point is a minimum, we need to check the Hessian matrix w.r.t. $(\mu, \sigma^2)$ is positive definite at $(\mu, \hat{\sigma}^2)$.
+	}
 \end{frame}
 
 \begin{frame}{Solution to Question (a.3): Continued}
