@@ -215,7 +215,7 @@
 	Let $p$ and $q$ be the PDFs of a pair of absolutely continuous distributions. 
 	
 	(a) Prove that the KL divergence is convex in the pair $(p, q)$, i.e., 
-	$$\kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2} \leq \lambda \kld{p1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2},$$
+	$$\kld{\lambda p_1 + (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2} \leq \lambda \kld{p1 \ || \ q_1} + (1 - \lambda) \kld{p_2 \ || \ q_2},$$
 	where $(p_1, q_1)$ and $(p_2, q_2)$ are two pairs of distribution and $0 \leq \lambda \leq 1$.
 	
 	\vspace{20pt}
@@ -225,7 +225,7 @@
 \begin{frame}{Solution to Question (a)}
 	\small
 	\begin{align*}
-		& \kld{\lambda p_1 (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2}  \\
+		& \kld{\lambda p_1 + (1 - \lambda) p_2 \ || \ \lambda q_1 + (1-\lambda) q_2}  \\
 		&= \int_\Xspace \left( (\lambda p_1(x) + (1 - \lambda) p_2(x)) \log \frac{\lambda p_1(x) + (1 - \lambda) p_2(x)}{\lambda q_1(x) + (1 - \lambda) q_2(x)} \right) \mathrm{d}x \\
 		&\leq \int_\Xspace \left( \lambda p_1(x) \log \frac{p_1(x)}{q_1(x)} + (1-\lambda) p_2(x) \log \frac{(1 - \lambda) p_2(x)}{(1-\lambda) q_2(x)} \right) \mathrm{d}x \\
 		&= \lambda \int_\Xspace \left(p_1(x) \log \frac{p_1(x)}{q_1(x)} \right) \mathrm{d}x + (1 - \lambda) \int_\Xspace \left( p_2(x) \log \frac{p_2(x)}{q_2(x)}\right) \mathrm{d}x \\
