@@ -56,7 +56,7 @@
 \newcommand{\pxcz}{p(x|z)}
 \newcommand{\pycz}{p(y|z)}
 
-\title[]{\textbf{Exercise of Supervised Learning}}
+\title[]{\textbf{Exercise of Supervised Learning:\\Information Theory Part 2}}
 
 %\subtitle{}
 
@@ -107,7 +107,7 @@
 
 Note that each event $(a,b)$ is associated with \textbf{exactly one} event $(x,y)$. Why?
 
-Because given a pair $(a, b)$, $x = 0.5 (a + b)$ and $y = 0.5 (a - b)$ are unique. 
+Because given a pair $(x, y)$, $a = 0.5 (x + y)$ and $b = 0.5 (x - y)$ are unique. 
 So the joint probability
 \begin{align*}
 	p_{AB}(a, b) = p_{XY}(x, y) = \frac{1}{6} \cdot \frac{1}{2} = \frac{1}{12}
@@ -148,13 +148,13 @@ So, the joint entropy:
 					\hline
 					$y$ & Events $(a,b)$ & $p_Y(y)$ \\
 					\hline
-					1 & $(1, 1)$	 & $1/12$ \\
-					2 & $(1, 0), (2, 1)$	 & $1/6$ \\
-					3 & $(2, 0), (3, 1)$	 & $1/6$ \\
-					4 & $(3, 0), (4, 1)$	 & $1/6$ \\
-					5 & $(4, 0), (5, 1)$	 & $1/6$ \\
-					6 & $(4, 0), (6, 1)$	 & $1/6$ \\
-					7 & $(6, 0)$	 & $1/12$ \\
+					0 & $(1, 1)$	 & $1/12$ \\
+					1 & $(1, 0), (2, 1)$	 & $1/6$ \\
+					2 & $(2, 0), (3, 1)$	 & $1/6$ \\
+					3 & $(3, 0), (4, 1)$	 & $1/6$ \\
+					4 & $(4, 0), (5, 1)$	 & $1/6$ \\
+					5 & $(4, 0), (6, 1)$	 & $1/6$ \\
+					6 & $(6, 0)$	 & $1/12$ \\
 					\hline
 				\end{tabular}
 			\end{table}
