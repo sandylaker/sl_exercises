@@ -115,24 +115,28 @@
 	\small
 	There are two cases: $y = \argmax_{k} f_k(\xv)$ or $y \neq \argmax_k \fkx$.
 	\vspace{10pt}
+	
 	\uncover<2->{
-		If $y = \argmax_{k} f_k(\xv)$, then 
-		\begin{align*}
-			L(y, \fx) 
-			&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
-			& = f_y(\xv) - f_y(\xv) + 0 \\
-			&= 0\\
-		\end{align*}
-	}
-	\uncover<3->{
-		In this case, the 0-1-loss is 
+		If $y = \argmax_{k} f_k(\xv)$, the 0-1-loss is 
 		\begin{align*}
 			L_{0-1}(y, \hx) = 0
 		\end{align*}
 		because $y = \argmax_k f_k(x)$. That is, the prediction via argmax is correct. 
-		
-		So $L(y, \fx) = L_{0, 1} (y, \hx)$.
 	}
+	
+	\uncover<3->{
+		Now we analyzie $L(y, \fx)$. We need to evaluate $\fkx - f_y(\xv) + \id_{y \neq k}$ for all $k \in [1, 2, \ldots, g]$, then we take the maximal number. Note that for $k = y$, we have 
+		$$\fkx - f_y(\xv) + \id_{y \neq k} = f_y(\xv) - f_y(\xv) + 0 = 0$$
+		So, it means the max over all $k$-s yields 0 or some larger number. Formally,  
+		\begin{align*}
+			L(y, \fx) 
+			&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
+			&\geq f_y(\xv) - f_y(\xv) + 0 = 0 \
+		\end{align*}
+		
+		So $L(y, \fx) \geq  L_{0, 1} (y, \hx)$ holds.
+	}
+	
 \end{frame}
 
 \begin{frame}{Solution to Question (a): Continued}
@@ -166,24 +170,39 @@
 
 \begin{frame}{Solution to Question (b)}
 	\small
-	Case 1: $y = \argmax_{k} f_k(\xv)$, then the hinge loss: $$L(y, \fx) = \max_k(\fkx - \fyx + \id_{y\neq k}) = 0$$
-	and $$\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \} \geq \sum_{k \neq y} 0 = 0$$
-	So the $\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \}$ is a upper bound in this case.
+	\uncover<1->{	
+	Let's assume $k^* = \argmax_k \fkx$. Note that $k^*$ can be $y$ or some other classes.
+	}
+	\vspace{10pt}
+	
+	\uncover<2->{
+	\textbf{Case 1}: If $k^* = y$, then $L(y, \fx) = f_{k^*}(\xv) - f_y(\xv) + 0 =0$. So,  $L(y, \fx) \leq \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$. (Sum of non-neg. number is also non-neg.)
+		So we have finished the proof for this case.
+	}
+	\vspace{10pt}
+	
+	\uncover<3->{
+	\textbf{Case 2}: If $k^* \neq y$, then $L(y, \fx) = f_{k^*}(\xv) - f_y(\xv) + 1 > 1$.  (Result from (a)).
+
+	So in this case, we can write
+	\begin{align*}
+		L(y, \fx) &= \underbrace{f_{k^*}(\xv) - f_y(\xv) + 1}_{\geq 0} \\
+		&= \max\{0, f_{k^*}(\xv) - f_y(\xv) + 1 \}.
+	\end{align*}
+	}
+	
+	\uncover<4->{
+	But our goal is to compare $L(y, \fx)$ with $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$. So we need to add more terms of other $k$ with $k\neq k^*$. For other classes, we can apply the same fact that $\max \{0, 1 + \fkx - \fyx\} \geq 0$, as $\max\{0, \cdot\}$ always gives a non-neg. number.
+	}
 \end{frame}
 
-\begin{frame}{Solution to Question (b): Continued}
+\begin{frame}{Solution to Question (b): Continue}
 	\small
-	Case 2: $y \neq \argmax_{k} f_k(\xv)$, then the hinge loss: 
-	\begin{align*}
-		L(y, \fx) 
-		&= \max_k(\fkx - \fyx + \id_{y\neq k}) \\
-		&= \max_{k \neq y}(\fkx - \fyx + 1)
-	\end{align*}
 	\uncover<2->{
-		Let's say $k^* = \argmax_{k} f_k(\xv) \neq y$, then it follows that
+		For Case 2 where $k^* \neq y$, it follows that
 		\begin{align*}
 			L(y, \fx) 
-			&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ > 1} \\
+			&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ \geq 0} \\
 			&= \max\{0, f_{k^*}(\xv) - \fyx + 1\} \\
 			&\leq \max\{0, f_{k^*}(\xv) - \fyx + 1\} + \underbrace{\max\{0, f_1(\xv) - \fyx + 1\} + \ldots + \max\{0, f_g(\xv) - \fyx + 1\}}_{\forall j \in \Yspace \ \text{and } j \neq y \ \text{and } j \neq k^*} \\
 			&= \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
@@ -246,7 +265,7 @@ Therefore, it is proven that the equation holds in two cases.
 		\begin{align*}
 			m_{y, k}(\xv) \geq 1 \ \forall k \neq y  
 			&\Rightarrow \fyx - \fkx  \geq 1 \ \forall k \neq y \\
-			&\Rightarrow \fkx - \fyx \geq -1 \ \forall k \neq y \\
+			&\Rightarrow \fkx - \fyx \leq -1 \ \forall k \neq y \\
 			&\Rightarrow \max \{0, 1 + \fkx - \fyx \} = 0 \ \forall k \neq y \\
 			&\Rightarrow \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \} = 0
 		\end{align*}
