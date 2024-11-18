@@ -105,21 +105,30 @@
 
 \textbf{Solution}: Let $a, b, x,$ and $y$ denote the realizations of $A, B, X$ and $Y$, respectively.
 
+\uncover<2->{
 Note that each event $(a,b)$ is associated with \textbf{exactly one} event $(x,y)$. Why?
+}
 
+\uncover<3->{
 Because given a pair $(x, y)$, $a = 0.5 (x + y)$ and $b = 0.5 (x - y)$ are unique. 
+}
+
+\uncover<4->{
 So the joint probability
 \begin{align*}
 	p_{AB}(a, b) = p_{XY}(x, y) = \frac{1}{6} \cdot \frac{1}{2} = \frac{1}{12}
 \end{align*}
+}
 
+\uncover<5->{
 So, the joint entropy:
 \begin{align*}
 	H(X, Y) &= - \sum_{x, y} p_{X, Y}(x,y) \log_2 p_{X, Y}(x, y) \\ 
 	&= - 12 \cdot \frac{1}{12} \log_2 \frac{1}{12} \\ 
 	&= 2 + \log_2 3
 \end{align*}
-	
+}
+
 \end{frame}
 
 \begin{frame}{Exercise 1 (a): Continued}
