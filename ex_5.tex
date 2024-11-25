@@ -64,7 +64,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{November 12, 2023}
+\date{November 26, 2024}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -221,7 +221,7 @@
 		&= 2p  - 2\sqrt{p} \cdot \E[\Xnorm] \\
 		&= 2p - 2\sqrt{p}\cdot \E[\Xnorm - \sqrt{p} + \sqrt{p}] \qquad \text{Step (iv)} \\
 		&= 2p - 2p - 2\sqrt{p} \cdot \E[\Xnorm - \sqrt{p}] \\
-		&= -2\sqrt{p} \cdot \underbrace{\E[\Xnorm - \sqrt{p}]}_{\leq \frac{1}{\sqrt{p}} \quad \text{(from (b))}} \\
+		&= -2\sqrt{p} \cdot \underbrace{\E[\Xnorm - \sqrt{p}]}_{\in \left[-\frac{1}{\sqrt{p}},  \frac{1}{\sqrt{p}}\right]} \qquad \text{(from (b))} \\
 		&\leq 2\sqrt{p} \cdot \frac{1}{\sqrt{p}} = 2.
 	\end{align*}
 \end{frame}
@@ -229,7 +229,7 @@
 \begin{frame}{Question 1 (d)}
 	Now let $\Xp = (X_1^\prime, \ldots, X_p^\prime)^T \sim \mathcal{N}(0, \id)$ be another multivariate normally distributed vector with mean vector zero and covariance matrix being the identity matrix of dimension $p \times p$. Further, assume that $X$ and $X^\prime$ are independent, so that $Z:= \frac{X - \Xp}{\sqrt{2}} \sim \mathcal{N}(0, \id)$. Conclude from the previous that 
 	\begin{align*}
-		\left| \E \left[|| X - \Xp||_2 - \sqrt{2p} \right] \right| \leq \frac{2}{p} \qquad \text{and} \qquad \Var{||X - \Xp ||_2} \leq 4.
+		\left| \E \left[|| X - \Xp||_2 - \sqrt{2p} \right] \right| \leq \sqrt{\frac{2}{p}} \qquad \text{and} \qquad \Var{||X - \Xp ||_2} \leq 4.
 	\end{align*}
 \end{frame}
 
@@ -248,7 +248,7 @@
 	}
 	
 	\uncover<3->{
-		It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \frac{2}{p} \Rightarrow |\E[\sqrt{2} \underbrace{||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
+		It follows from (1) that $$ \sqrt{2} \cdot |\E[||Z||_2 - \sqrt{p}]| \leq \sqrt{\frac{2}{p}} \Rightarrow |\E[\underbrace{\sqrt{2} ||Z||_2}_{||X - \Xp||_2} - \sqrt{2p}]| \leq \sqrt{\frac{2}{p}}.$$
 	}
 \end{frame}
 
