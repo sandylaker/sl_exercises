@@ -114,7 +114,7 @@
 	
 	Assume that $\Xmat^T \Xmat = \Imat$, which holds if $\Xmat$ has orthonormal columns. Show that the minimizer $\thetah_{L0} = (\thetah_{L0, 1}, \ldots, \thetah_{L0, p})^T$ is given by 
 	$$
-		\thetah_{L0, i} = \thetahi \id_{\thetahi > \sqrt{2 \lambda}}, \qquad i = 1, \ldots, p,
+		\thetah_{L0, i} = \thetahi \id_{|\thetahi| > \sqrt{2 \lambda}}, \qquad i = 1, \ldots, p,
 	$$
 	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk. For this purpose, using the following steps:
 	
