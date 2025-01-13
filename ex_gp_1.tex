@@ -43,6 +43,11 @@
 \newcommand{\ko}{k_1}
 \newcommand{\kzxxp}{\kz(\xv, \xvp)}
 \newcommand{\koxxp}{\ko(\xv, \xvp)}
+\newcommand{\Imat}{\bm{I}}
+\newcommand{\Kij}{K_{i,j}}
+\newcommand{\vv}{\bm{v}}
+\newcommand{\dv}{\bm{d}}
+
 
 \title[]{\textbf{Exercise of Supervised Learning:\\Gaussian Processes 1}}
 
@@ -120,12 +125,84 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 (a) Show that if we choose a \textbf{uniform distribution} over the parameter vector $\thetav$ as the prior belief, i.e., $q(\thetav) \propto 1$, then the maximum a posteriori estimate coincides with the \textbf{empirical risk minimizer for the L2-loss} (over linear models). 	
 \end{frame}
 
+\begin{frame}{1 (a): Construct Posterior from Bayes' Rule}
+	\begin{equation*}
+		\begin{aligned}
+			\underbrace{p(\thetav | \Xmat, \yv)}_{\text{posterior}} &= \frac{p(\thetav, \yv| \Xmat)}{p(\yv | \Xmat)} \\
+			&= \frac{\overbrace{p(\yv | \Xmat, \thetav)}^{\text{likelihood}} \overbrace{q(\thetav)}^{prior} }{\underbrace{p(\yv | \Xmat)}_{\text{marginal}}}
+		\end{aligned}
+	\end{equation*}
+	
+	\begin{itemize}
+			\item For a linear model, $\yv | \Xmat, \thetav \sim \Norm(\Xmat \thetav, \sigma^2 \Imat)$. Will be computed on the next slide.
+			\item In 1(a), we choose a \textbf{uniform prior}, indicating $q(\thetav) \propto 1$.
+			\item $p(\yv | \Xmat)$ does \textbf{not} depend on $\thetav$. $\leadsto$ Treated as  constant when maxing the posterior of $\thetav$.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{1 (a): The Likelihood $p(\yv | \Xmat, \thetav)$}
+	\begin{equation*}
+		\begin{aligned}
+			p(\yv | \Xmat, \thetav) &\propto \exp \left[ - \frac{1}{2\sigma^2} (\yv - \Xmat\thetav)^\top (\yv - \Xmat \thetav) \right] \\
+			&= \exp \left[- \frac{||\yv - \Xmat \thetav||^2}{2 \sigma^2}\right] \\
+			&= \exp \left[ -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}  \right].
+		\end{aligned}
+	\end{equation*}
+	In addition, we know that $q(\thetav) \propto 1$ and we don't care $p(\yv | \Xmat)$.
+	
+	Now, we plug these information into the form of $p(\thetav | \Xmat, \yv)$.
+\end{frame}
+
+\begin{frame}{1 (a): MAP Estimate}
+	\small
+	\begin{equation*}
+			p(\thetav | \Xmat, \yv) \propto p(\yv | \Xmat, \thetav) \cdot q(\thetav) 
+			\propto \exp \left[ -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}  \right].
+	\end{equation*}
+	Now we compute the maximum a posterior estimate as:
+	\begin{equation*}
+		\begin{aligned}
+			\thetavh &= \argmax_{\thetav} p(\thetav | \Xmat, \yv) \\
+				&= \argmax_{\thetav} \log (p(\thetav | \Xmat, \yv)) \qquad \text{($\log$ is a monotone increasing func.)} \\
+				&= \argmax_{\thetav}  -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} \\
+				&= \argmin_{\thetav} \frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} \\
+				&= \argmin_{\thetav} \sum_{i=1}^n (\yi - \thetav^\top \xi)^2.
+		\end{aligned}
+	\end{equation*}
+Therefore, in 1 (a), maximum a posteriori estimate $\Leftrightarrow$ ERM for the L2-loss.
+\end{frame}
+
 \begin{frame}{Exercise 1(b)}
 	Show that if we choose a \textbf{Gaussian distribution} over the parameter vectors $\thetav$ as the prior belief, i.e., 
 	\begin{equation*}
 		q(\thetav) \propto \exp \left[ - \frac{1}{2 \tau^2} \thetav^\top \thetav \right], \quad \tau > 0,
 	\end{equation*}
-	then the maximum a posteriori eestimate coincides for a specific choice of $\tau$ with the \textbf{regularized} empirical risk miminizer for the L2-loss with L2 penalty (over the linear models), i.e., the Ridge regression.
+	then the maximum a posteriori estimate coincides for a specific choice of $\tau$ with the \textbf{regularized} empirical risk miminizer for the L2-loss with L2 penalty (over the linear models), i.e., the Ridge regression.
+\end{frame}
+
+\begin{frame}{1 (b): Posterior with A Gaussian Prior}
+\begin{equation*}
+	\begin{aligned}
+		p(\thetav | \Xmat, \yv) &\propto p(\yv | \Xmat, \thetav) q(\thetav) \\
+		&\propto \exp \left[-\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}- \frac{1}{2 \tau^2} \thetav^\top \thetav \right] \\
+		&\propto \exp \left[-\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} - \frac{||\thetav||_2^2}{2 \tau^2} \right].
+	\end{aligned}
+\end{equation*}
+Next, we compute $\argmax_{\thetav} p(\thetav | \Xmat, \yv)$. That is, $\argmax_{\thetav} \log p(\thetav | \Xmat, \yv)$.
+\end{frame}
+
+\begin{frame}{1 (b): MAP Estimate}
+\begin{equation*}
+	\begin{aligned}
+		\thetavh &= \argmax_{\thetav} \log p(\thetav | \Xmat, \yv) \\
+		&= \argmax_{\thetav} -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} - \frac{||\thetav||_2^2}{2 \tau^2} \\
+		&= \argmin_{\thetav} \frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} + \frac{||\thetav||_2^2}{2 \tau^2} \\
+		&= \argmin_{\thetav} \sum_{i=1}^n(\yi - \thetav^\top \xi)^2 + \frac{\sigma^2}{\tau^2} ||\thetav||_2^2. \qquad \text{(Because $\times \sigma^2$ doesn't change the argmin)}
+	\end{aligned}
+\end{equation*}
+
+We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\Leftrightarrow$ L2-loss with L2 penalty.
+	
 \end{frame}
 
 \begin{frame}{Exercise 1(c)}
@@ -134,6 +211,27 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 		q(\thetav) \propto \exp \left[ - \frac{\sumip |\thetai|}{\tau} \right], \quad \tau > 0,
 	\end{equation*}
 	then the maximum a posteriori estimate coincides for a specific choice of $\tau$ with the regularized empirical risk minimizer for the L2-loss with L1 penalty (over the linear models), i.e., the Lasso regression.
+\end{frame}
+
+\begin{frame}{1 (c): Posterior with A Laplace Prior}
+	\begin{equation*}
+		\begin{aligned}
+			p(\thetav | \Xmat, \yv) &\propto p(\yv | \Xmat, \thetav) q(\thetav) \\
+			&\propto \exp \left[-\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}- \frac{||\thetav||_1}{\tau} \right]. \\
+		\end{aligned}
+	\end{equation*}
+\end{frame}
+
+\begin{frame}{1 (c): MAP Estimate}
+	\begin{equation*}
+		\begin{aligned}
+			\thetavh &= \argmax_{\thetav} \log p(\thetav | \Xmat, \yv) \\
+			&= \argmax_{\thetav} -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} - \frac{||\thetav||_1}{\tau} \\
+			&= \argmin_{\thetav} \frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2} + \frac{||\thetav||_1}{\tau} \\
+			&= \argmin_{\thetav} \sum_{i=1}^n(\yi - \thetav^\top \xi)^2 + \frac{2 \sigma^2}{\tau} ||\thetav||_1 \qquad \text{(Because $\times \sigma^2$ doesn't change the argmin)}
+		\end{aligned}
+	\end{equation*}
+	We define $\lambda = \frac{2 \sigma^2}{\tau}$, and then the MAP estimate $\Leftrightarrow$ L2-loss with L1 penalty.
 \end{frame}
 
 \begin{frame}{Exercise 2: Covariance Functions}
@@ -154,9 +252,144 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 	\end{enumerate}
 \end{frame}
 
+\begin{frame}{2 (a): Proof via Kernel Matrix}
+	\small
+	Construct of the kernel matrix $\Kmat \in \mathbb{R}^{n \times n}$ from $\D = \{\xv^{(1)}, \ldots, \xv^{(n)} \}$.
+	
+	Each element $\Kij = \kxxp$. In the current case $\kxxp = \sigma_0^2$ , we have $\Kij = \sigma_0^2$. In other words, 
+	\begin{equation*}
+		\Kmat = \begin{pmatrix}
+			\sigma_0^2 & \ldots & \sigma_0^2 \\
+			\vdots & \ddots & \vdots \\
+			\sigma_0^2 & \ldots & \sigma_0^2 \\
+		\end{pmatrix}
+	\end{equation*}
+	\textbf{Note:} kernel matrix $\Kmat$ is NOT kernel function $k(\cdot, \cdot)$. Don't claim ``$k(\cdot, \cdot)$ is P.S.D.'' in the exam. 
+	 
+	 Now, We need to prove that $\Kmat$ is P.S.D.
+	\begin{enumerate}
+		\item \textbf{Prove $\Kmat$ is symmetric}. 
+		\item \textbf{Prove that $\forall \ \vv \in \mathbb{R}^n, \vv^\top \Kmat \vv \geq 0$.}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (a): How to Prove That A Matrix Is P.S.D.}
+\small
+	\begin{enumerate}
+		\item Since $\Kij = \sigma_0^2$ for all $i,j$, we have $\Kmat^\top = \Kmat$, thus $\Kmat$ is symmetric.
+		\item For any $\vv = (v_1, v_2, \ldots, v_n)^\top$, we need to prove $ \vv^\top \Kmat \vv \geq 0$.
+		\begin{enumerate}
+			\item Naive way: First compute $(\Kmat \vv)$ and then $\vv^\top (\Kmat \vv)$. 
+			\begin{align*}
+				\Kmat \vv &= \sigma_0^2(\sum_i v_i, \sum_i v_i, \ldots, \sum_i v_i )^\top \\
+				\vv^\top \Kmat \vv &= \sigma_0^2 [v_1 (\sum_i v_i) + v_2 (\sum_i v_i) + \ldots + v_n (\sum_i v_i)] = \sigma_0^2(v_1 + v_2 + \ldots + v_n) (\sum_i v_i) \\
+				&= \sigma_0^2 (v_1 + \ldots + v_n) (\sum_i v_i) = \sigma_0^2 (\sum_i v_i) (\sum_i v_i) = \sigma_0^2 (\sum_i v_i)^2 \geq 0.
+			\end{align*}
+			\item Faster way: $\Kmat = \sigma_0^2\Imat \Imat^\top$, where $\Imat = (1, 1, \ldots, 1)^\top$. So, $\vv^\top \Kmat \vv = \sigma_0^2 \vv^\top \Imat \Imat^\top \vv = \sigma_0^2 (\Imat^\top \vv)^2 \geq 0$.
+		\end{enumerate}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (a): Proof via Transformed Feature Map}
+	Alternatively, we can prove $\kxxp = \sigma_0^2$ is a valid cov. func. via writing $\kxxp$ as \textbf{an inner product of two transformed feature maps}.
+	
+	This requires to explicitly construct the feature map $\phi(\xv) \in \mathbb{R}^d$ for some $d$.
+	
+	In the current case, we can write 
+	\begin{align*}
+		\phi(\xv) = \sigma_0.
+	\end{align*}
+	So that 
+	\begin{align*}
+		\kxxp & = \sigma_0^2 \\
+		&= \langle \sigma_0, \sigma_0 \rangle \\
+		&= \langle \phi(\xv), \phi(\xvp) \rangle  \\
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Proof of $\kxxp = \sigma_0^2 + \xv^\top \xvp$}
+	\begin{align*}
+		\kxxp = \underbrace{\sigma_0^2}_{:= k_0(\xv, \xvp)} + \underbrace{\xv^\top \xvp}_{:= k_1(\xv, \xvp)}
+	\end{align*}
+	\begin{enumerate}
+		\item We have shown that $k_0$ is a valid cov. func.
+		\item $k_1$ is a inner product $\langle \phi(\xv), \phi(\xvp) \rangle$, where $\phi(\xv) := \xv$. So, $k_1$ is a valid cov. func.
+		\item Their sum $k_0 + k_1$ is also a cov. func.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Proof of $\kxxp = (\sigma_0^2 + \xv^\top \xv)^p$}
+	
+	We define $k_2(\xv, \xvp) =\sigma_0^2 + \xv^\top \xv$, so $k_3 = (\sigma_0^2 + \xv^\top \xv)^p = k_2^p$.
+	
+	\begin{enumerate}
+		\item We have shown that $k_2$ is a cov. func.
+		\item $k_3 = k_2^p$ is a polynomial of $k_2$ with only one $p$-order item $k_2^p$, and \textbf{the polynomial coefficient $1$ is positive}. So $k_3 = k_2^p$ is a cov. func.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Proof of $\kxxp = \exp\left(- \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$}
+\small
+	We can write
+	\begin{align*}
+		\kxxp &= \exp\left(- \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right) \\
+		&=\exp \left( - \frac{\xv^\top \xv - 2 \xv^\top \xvp + \xv^{\prime \top} \xvp}{2 \ell^2} \right) \\
+		&= \underbrace{\exp \left(-\frac{\xv^\top \xv}{2 \ell^2} \right)}_{:= t(\xv)}\cdot 
+		\underbrace{\exp \left(\frac{\xv^\top \xvp}{\ell^2} \right)}_{:=k_4(\xv, \xvp)} \cdot \underbrace{\exp \left( - \frac{\xv^{\prime \top} \xvp}{2 \ell^2} \right)}_{:= t(\xvp)}.\\ 
+	\end{align*}
+	where we defined a function $t(\cdot)$.
+	
+	Furthermore, $\xv^\top \xvp$ is cov. func., so $\frac{\xv^\top \xvp}{\ell^2}$ is a kernel, so $\exp(\frac{\xv^\top \xvp}{\ell^2})$ is a cov. func. 
+	
+	Therefore, $\kxxp = t(\xv) \cdot k_4(\xv, \xvp) \cdot t(\xvp)$ is a cov. func.
+\end{frame}
+
 \begin{frame}{Exercise 2 (b)}
 	(b): Are these covariance functions stationary or isotropic? Justify your answer.
 \end{frame}
 
+\begin{frame}{2 (b): Stationary and Isotropic}
+	\begin{enumerate}
+		\item $k(\cdot, \cdot)$ is stationary if $k(\xv, \xv + \dv) = k(\zero, \dv)$.
+		\item $k(\cdot, \cdot)$ is isotropic if it is a function of $||\xv - \xvp||$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (b): Constant functions}
+	\begin{enumerate}
+		\item $\kxxp = \sigma_0^2$ is stationary since $k(\xv, \xv + \dv) = \sigma_0^2  = k(\zero, \dv)$.
+		\item $\kxxp = \sigma_0^2$ is isotropic since $ \kxxp = \sigma_0^2||\xv - \xvp ||^0$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (b): $\kxxp = \sigma_0^2 + \xv^\top \xvp$}
+	\begin{enumerate}
+		\item $\kxxp = \sigma_0^2 + \xv^\top \xvp$ is NOT stationary, since
+		\begin{align*}
+			k(\xv, \xv + \dv) &= \sigma_0^2 + \xv^\top \xv + \xv^\top \dv \\
+			k(\zero, \dv) &= \sigma_0^2.
+		\end{align*}
+		\item It is NOT isotropic, since it cannot be written as a func. of $|| \xv - \xvp||$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (b): Polynomial Cov. Func.}
+	Similar to linear covariance functions, the polynomial covariance function is NOT stationary and NOT isotropic. (Prove this on your own.)
+\end{frame}
+
+\begin{frame}{2 (b): $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$}
+	\begin{enumerate}
+		\item $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$ is stationary, since $k(\xv, \xv + \dv) = \exp \left( - \frac{||\dv||_2^2}{2 \ell^2} \right) = k(\zero, \dv)$.
+		\item It is isotropic, since it is a function of $||\xv - \xvp||$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{2 (b): Matern and Exponential Cov. Func.}
+	Similar to the argument of squared exponential conv. func. $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$.
+	\begin{enumerate}
+		\item Matern cov. func. is stationary and isotropic.
+		\item Exponential cov. func. is stationary and isotropic.
+	\end{enumerate}
+\end{frame}
 
 \end{document}
