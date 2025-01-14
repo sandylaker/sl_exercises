@@ -145,7 +145,7 @@
 		\item<2-> Two cases: 
 			\begin{itemize}
 				\item correct prediction: $\yi = \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = 1$
-				\item incorrect prediction: $\yi = \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = -1$
+				\item incorrect prediction: $\yi \neq \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = -1$
 			\end{itemize}
 		\item<3-> $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$. That is, identify all the wrong predicted samples, sum up their weights.
 		\item<4-> The association can be symbolized as: $\Wm \leftarrow \wtmi \leftarrow \wmi \leftarrow \errm \leftarrow \gammahm$. Our goal: $\Wm \leftarrow \gammahm$.
