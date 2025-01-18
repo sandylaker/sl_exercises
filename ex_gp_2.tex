@@ -1,0 +1,268 @@
+%% LaTeX Beamer presentation template (requires beamer package)
+%% see http://bitbucket.org/rivanvx/beamer/wiki/Home
+%% idea contributed by H. Turgut Uyar
+%% template based on a template by Till Tantau
+%% this template is still evolving - it might differ in future releases!
+
+%% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
+
+\documentclass[aspectratio=169]{beamer}
+ 
+\mode<presentation>
+{
+\usetheme{NYU}
+
+\setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage[T1]{fontenc}
+\usepackage{comment}
+%usepackage{appendixnumberbeamer}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{pgfpages}
+% citations
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{,}{,}
+\def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
+\input{latex-math/basic-math.tex}
+\input{latex-math/basic-ml.tex}
+\input{latex-math/ml-gp.tex}
+
+\renewcommand{\N}{\mathcal{N}}
+\renewcommand{\R}{\mathbb{R}}
+\newcommand{\kij}{\bm{K}_{ij}}
+\renewcommand{\kxij}{k(x^{(i)}, x^{(j)})}
+\newcommand{\fvs}{\fv_{*}}
+\newcommand{\xvs}{\xv_{*}}
+\newcommand{\ssqiinv}{(\sigma^2 \id)^{-1}}
+\newcommand{\kinv}{\Kmat^{-1}}
+\newcommand{\kpinv}{\Kmat_{\text{post}}^{-1}}
+\newcommand{\tfv}{\tilde{\bm{f}}}
+\newcommand{\bv}{\bm{b}}
+\newcommand{\Kpost}{\bm{K}_{\text{post}}}
+\newcommand{\fpost}{\fv_{\text{post}}}
+\newcommand{\ys}{y_{*}}
+\newcommand{\xs}{x_{*}}
+\newcommand{\ms}{m_{*}}
+\newcommand{\av}{\bm{a}}
+
+\title[]{\textbf{Exercise of Supervised Learning: \\ Gaussian Processes Part 2}}
+
+%\subtitle{}
+
+% - Use the \inst{?} command only if the authors have different
+%   affiliation.
+%\author{F.~Author\inst{1} \and S.~Another\inst{2}}
+\author{Yawei Li} 
+
+% - Use the \inst command only if there are several affiliations.
+% - Keep it simple, no one is interested in your street address.
+\institute[LMU]
+{
+\\
+  \texttt{yawei.li@stat.uni-muenchen.de}
+}
+
+\date{February 4, 2025}
+
+
+% This is only inserted into the PDF information catalog. Can be left
+% out.
+\subject{Subject}
+
+
+
+% If you have a file called "university-logo-filename.xxx", where xxx
+% is a graphic format that can be processed by latex or pdflatex,
+% resp., then you can add a logo as follows:
+
+% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
+% \logo{\pgfuseimage{university-logo}}
+
+
+
+% Delete this, if you do not want the table of contents to pop up at
+% the beginning of each subsection:
+%\AtBeginSubsection[]
+%{
+%\begin{frame}<beamer>
+%\frametitle{Outline}
+%\tableofcontents[currentsection,currentsubsection]
+%\end{frame}
+%}
+
+% If you wish to uncover everything in a step-wise fashion, uncomment
+% the following command:
+
+%\beamerdefaultoverlayspecification{<+->}
+
+\begin{document}
+
+
+
+\begin{frame}[noframenumbering, plain]
+\titlepage
+
+\end{frame}
+
+\begin{frame}{Exercise 1: Gaussian Posterior Process}
+Assume your data follows the following law:
+\begin{align*}
+	\yv = \fv + \epsv, \quad \epsv \sim \N(\zero, \sigma^2 \id),
+\end{align*}
+with $\fv = \fx \in \R^n$ being a realization of a Gaussian process (GP), for which we a priori assume 
+\begin{equation*}
+	\fx \sim \gp.
+\end{equation*}
+$\xv$ here only consists of 1 feature that is observed for $n$ data points.
+
+(a) Derive / define the prior distribution of $\fv$.
+\end{frame}
+
+\begin{frame}{1 (a): Prior Distribution of $\fv$}
+	\begin{itemize}
+		\item $\fv \sim \N(\mv, \Kmat)$.
+		\item $\mv = m (\xv)$.
+		\item $\kij = \kxij$. 
+		\item NB: Note the (in-)finite Gaussian property of a GP.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b)}
+	(b) Derive the posterior distribution of $\fv | \yv$.
+\end{frame}
+
+\begin{frame}{1 (b): Likelihood and Prior}
+\small
+The likelihood is:
+	\begin{equation*}
+		\begin{aligned}
+			p(\yv | \fv)
+			&\propto \exp \left( -\frac{1}{2} (\yv - \fv)^\top (\sigma^2 \id)^{-1} (\yv - \fv) \right).
+		\end{aligned}
+	\end{equation*}
+The prior is:
+	\begin{align*}
+		p(\fv) \propto \exp\left( - \frac{1}{2}(\fv - \mv)^\top \Kmat^{-1} (\fv - \mv) \right).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{1 (b): Posterior}
+\small
+	So the posterior is:
+\begin{align*}
+	p(\fv | \yv) & \propto p(\yv | \fv) \cdot p(\fv) \\
+	&\propto \exp\left( -\frac{1}{2} (\yv - \fv)^\top (\sigma^2 \id)^{-1} (\yv - \fv) \right) \cdot \exp\left( - \frac{1}{2}(\fv - \mv)^\top \Kmat^{-1} (\fv - \mv) \right) \\
+	&\propto \exp \left( -\frac{1}{2} \left(  \fv^\top \ssqiinv\fv - 2 \fv^\top \ssqiinv \yv + \fv^\top \kinv \fv - 2 \fv^\top \kinv \mv \right) \right) \\
+	&\propto \exp \left( -\frac{1}{2} \left( \fv^\top (\ssqiinv + \kinv) \fv \  -2\cdot  \fv^\top (\ssqiinv \yv + \kinv \mv) \right) \right) \\
+	& \propto \exp \bigg( -\frac{1}{2}\fv^\top \underbrace{(\ssqiinv + \kinv)}_{=: \kpinv} \fv \ + \ \fv^\top \underbrace{(\ssqiinv \yv + \kinv \mv)}_{=:\tfv}  \bigg) \\
+	&\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right)
+\end{align*}
+\end{frame}
+
+\begin{frame}{1 (b): Complete the Square}
+\small
+	\begin{align*}
+		p(\fv | \yv) &\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right) \\
+	\end{align*}
+	Recall the technique of \textbf{completing the square}: 
+	\begin{itemize}
+		\item Scalar: $a x^2 + b x + c = a(x + \frac{b}{2a})^2 + (c - \frac{b^2}{4a})$
+		\item Matrix / vector: $\xv^\top \Amat \xv + \xv^\top \bv +c = (\xv + \frac{1}{2} \Amat^{-1} \bv)^\top \Amat (\xv + \frac{1}{2} \Amat^{-1} \bv) + (c - \frac{1}{4} \bv^\top \Amat^{-1} \bv)$ for a \textbf{symmetric} matrix $\Amat$.
+	\end{itemize}
+	In our case: $\Amat = -\frac{1}{2} \kpinv$, and $\bv = \tfv$, and $c=0$ or an arbitary const. So, 
+	$$\xv + \frac{1}{2} \Amat^{-1} \bv = \fv + \frac{1}{2}(-\frac{1}{2} \kpinv)^{-1} \tfv = \fv - \Kpost \tfv$$
+	
+	and we omit $c - \frac{1}{4} \bv^\top \Amat^{-1}\Amat \bv $ because
+	\begin{itemize}
+		\item It is a constant w.r.t. $\fv$.
+		\item the $\exp$ and $\propto$ operators.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{1 (b): Complete the Square}
+	\begin{align*}
+		p(\fv | \yv) &\propto \exp \bigg( (\fv - \Kpost \tfv )^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \underbrace{\Kpost \tfv}_{:= \fpost})\bigg) \\ &\propto \exp \bigg( (\fv - \fpost)^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \fpost)\bigg)
+	\end{align*}
+	Hence,
+	\begin{align*}
+		\fv | \yv \sim \N(\fpost, \Kpost).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (c)}
+	(c) Derive the posterior predictive distribution $\ys | \xs, \xv, \yv$ for a new sample $\xs$ from the sample data-generating process.
+\end{frame}
+
+\begin{frame}{1 (c): Derive Predictive Posterior from Joint Distribution}
+	Na\"ively, we can compute 
+	\begin{align*}
+		p(\ys | \xs, \xv, \yv) =\int p(\ys | \xs, \xv, \yv, \fv) \cdot p(\fv | \yv, \xv) \mathsf{d} \fv.
+	\end{align*}
+	This is cumbersome. Alternative, we can use the fact that 
+	\begin{align*}
+		\text{if } \begin{pmatrix}
+			\av \\
+			\bv \\
+		\end{pmatrix} 
+		\sim \N 
+		\left( 
+			\begin{pmatrix}
+				\muv_{a} \\
+				\muv_{b} \\
+			\end{pmatrix}, 
+			\begin{pmatrix}
+				\Sigma_{aa} & \Sigma_{ab} \\
+				\Sigma_{ab}^\top & \Sigma_{bb} \\
+			\end{pmatrix}
+		\right), 
+		\ \text{then } \quad  \av | \bv \sim \N(\muv_{a|b}, \Sigma_{a|b})
+	\end{align*}
+	where 
+	\begin{align*}
+		\muv_{a|b} &= \muv_a + \Sigma_{ab} \Sigma_{bb}^{-1}(\bv - \muv_b) \\
+		\Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
+	\end{align*}
+\end{frame}
+
+\begin{frame}{1 (c) Derive Predictive Posterior from Joint Distribution}
+	The joint distribution of $(\yv, \ys)$:
+	
+	\textbf{Note: here is $\yv$ instead of $\fv$, and $\yv = \fv + \epsv$.  So we have $\sigma^2$ in the in the cov. matrix.}
+	\begin{align*}
+		\begin{pmatrix}
+			\yv \\
+			\ys 
+		\end{pmatrix}
+		\sim \N \left(
+		\begin{pmatrix}
+			\mv \\
+			\ms
+		\end{pmatrix},
+		\begin{pmatrix}
+			\Kmat + \sigma^2 \id & \Kstar \\
+			\Kstar^\top  & \Kstarstar + \sigma^2 
+		\end{pmatrix}
+		\right),
+	\end{align*}
+	
+	Therefore, the conditional distribution $\ys | \xs, \xv, \yv $ is also a Gaussian:
+	\begin{align*}
+		\ys | \xs, \xv, \yv \sim \N(\ms + \Kstar^\top(\Kmat + \sigma^2 \id)^{-1}(\yv -\mv), \Kstarstar + \sigma^2 - \Kstar^\top (\Kmat +\sigma^2 \id)^{-1} \Kstar).
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Exercise 1 (d)}
+	Implement the GP with squared exponential kernel, zero mean function and $\ell = 1$ from scratch for $n=2$ observations $(\yv, \xv)$. Do this as efficiently as possible by explicitly calculating all expensive computations by hand. Do the same for the posterior predictive distribution of $\ys$. Test your implementation using simulated data.
+	
+	\textbf{Show the standard solution.}
+\end{frame}
+
+\end{document}
