@@ -56,7 +56,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{January 12, 2024}
+\date{January 21, 2025}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -114,7 +114,7 @@
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
-	(b) Given only the 3 samples $\yv = (1, 2, 4)^T \qquad \lhd$ 
+	(b) Given only the 3 samples $\yv = (1, 2, 4)\top \qquad \lhd$ 
 	
 	and two features 
 	$$\Xmat = (\xv_1, \xv_2) = 
@@ -147,12 +147,12 @@
 	(b) (ii) Derive the pseudo residual $\rtilde{1}$.
 	\begin{itemize}
 		\item<2-> From (a) we know $\tilde{r} (f) = \partial L(y,f) / \partial f = (\log_2(y) - f)$.
-		\item<3-> Denote $\fhv{0} = \left(\fh^{[0]}(\xv^{(1)}), \fh^{[0]}(\xv^{(2)}), \fh^{[0]}(\xv^{(3)}) \right)^T = (1, 1, 1)^T$
+		\item<3-> Denote $\fhv{0} = \left(\fh^{[0]}(\xv^{(1)}), \fh^{[0]}(\xv^{(2)}), \fh^{[0]}(\xv^{(3)}) \right)\top = (1, 1, 1)\top$
 		\item<4-> So 
 			\begin{align*}
-				\rtilde{1} &= \left(\log_2(y^{(1)}), \log_2(y^{(2)}), \log_2(y^{(3)})\right)^T - \fhv{0} \\
-				&= (0, 1, 2)^T - (1, 1, 1)^T \\
-				&= (-1, 0, 1)^T.
+				\rtilde{1} &= \left(\log_2(y^{(1)}), \log_2(y^{(2)}), \log_2(y^{(3)})\right)\top - \fhv{0} \\
+				&= (0, 1, 2)\top - (1, 1, 1)\top \\
+				&= (-1, 0, 1)\top.
 			\end{align*}
 	\end{itemize}
 \end{frame}
@@ -162,7 +162,7 @@
 	\begin{itemize}
 		\item<2-> $\Rt{1}, t = 1, 2$ will split using $\xv_1$, as $\xv_2$ carries no information.
 		\item<3-> Note that $x_1^{(1)} = x_1^{(2)}$.
-		\item<4-> Recall that $\rtilde{1} = (-1, 0, 1)^T$, and $\Rt{1}, t=1, 2$ aim to fit this pseudo residual.
+		\item<4-> Recall that $\rtilde{1} = (-1, 0, 1)\top$, and $\Rt{1}, t=1, 2$ aim to fit this pseudo residual.
 		\item<5-> $R_1 = - 0.5 \cdot \id_{x_1 \geq 0.5}$, for which $-0.5$ stems from $\frac{1}{2}(\tilde{r}^{[1](1)} + \tilde{r}^{[1](2)})$ because $\xv_1^{(1)} , \xv_1^{(2)} \geq 0.5$.
 		\item<6-> $R_2 = 1 \cdot \id_{x_1 < 0.5}$, for which $1$ stems from $\tilde{r}^{[1](3)}$ because only $\xv_1^{(3)} < 0.5$.
 	\end{itemize}
@@ -171,13 +171,13 @@
 \begin{frame}{Solution to Exercise 1 (b): Continued}
 	(b) (iv) Derive the boosting model $\fhx{1}$ (i.e., $\fhv{1}$).
 	\begin{itemize}
-		\item<2-> Recall that $R_1^{[1]} = - 0.5 \id_{x_1 \geq 0.5}$ and $R_2^{[1]} = 1 \cdot \id_{x_2 < 0.5}$ , and learning rate $\alpha = 1$.
-		\item<3-> So the update direction given by the regression stump is $(-0.5, -0.5, 1)^T$.
+		\item<2-> Recall that $R_1^{[1]} = - 0.5 \id_{x_1 \geq 0.5}$ and $R_2^{[1]} = 1 \cdot \id_{x_1 < 0.5}$ , and learning rate $\alpha = 1$.
+		\item<3-> So the update direction given by the regression stump is $(-0.5, -0.5, 1)\top$.
 		\item<4-> Therefore, 
 			\begin{align*}
-				\fhv{1} &= \fhv{0} + 1 \cdot (- 0.5, - 0.5, 1)^T \\
-				&= (1, 1, 1)^t + (-0.5, -0.5, 1)^T \\
-				&= (0.5, 0.5, 2)^T
+				\fhv{1} &= \fhv{0} + 1 \cdot (- 0.5, - 0.5, 1)\top \\
+				&= (1, 1, 1)^\top + (-0.5, -0.5, 1)^\top \\
+				&= (0.5, 0.5, 2)^\top
 			\end{align*}
 	\end{itemize}
 \end{frame}
@@ -187,9 +187,9 @@
 	\begin{itemize}
 		\item Similar as the previous step, 
 			\begin{align*}
-				\rtilde{2} & = \left(log_2(y^{(1)}), \log_2(y^{(2)}), \log_2 (y^{(3)}) \right)^T - \fhv{1} \\
-				&= (0, 1, 2)^T - (0.5, 0.5, 2)^T \\
-				&= (-0.5, 0.5, 0)^T
+				\rtilde{2} & = \left(log_2(y^{(1)}), \log_2(y^{(2)}), \log_2 (y^{(3)}) \right)^\top - \fhv{1} \\
+				&= (0, 1, 2)\top - (0.5, 0.5, 2)\top \\
+				&= (-0.5, 0.5, 0)\top
 			\end{align*}
 	\end{itemize}
 \end{frame}
@@ -203,10 +203,10 @@
 
 	\vspace{10pt}
 	\begin{itemize}
-		\item<2-> Recall that $\rtilde{2} = (-0.5, 0.5, 0)^T$, which needs to be fit by $R_1^{[2]}$ and $R_2^{[2]}$. 
+		\item<2-> Recall that $\rtilde{2} = (-0.5, 0.5, 0)\top$, which needs to be fit by $R_1^{[2]}$ and $R_2^{[2]}$. 
 		\item<3-> Similar as before, we split based on $\xv_1$, and $\xv^{(1)}, \xv^{(2)}$ goes to $R_1^{[2]}$, while $\xv^{(3)}$ goes to $R_2^{[2]}$.
-		\item<4-> Therefore $R_1^{[2]} = \frac{-0.5 + 0.5}{2} \cdot \id_{x_1 \geq 0.5} = 0$, and $R_2^{[2]} = 0 \cdot \id_{x_2 < 0} = 0$.
-		\item<5-> So the update direction is $(0, 0, 0)^T$, implying that no information can be used to improve the model.
+		\item<4-> Therefore $R_1^{[2]} = \frac{-0.5 + 0.5}{2} \cdot \id_{x_1 \geq 0.5} = 0$, and $R_2^{[2]} = 0 \cdot \id_{x_1 < 0.5} = 0$.
+		\item<5-> So the update direction is $(0, 0, 0)\top$, implying that no information can be used to improve the model.
 	\end{itemize}
 \end{frame}
 
