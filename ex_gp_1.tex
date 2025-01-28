@@ -66,7 +66,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{January 21, 2025}
+\date{January 28, 2025}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -128,15 +128,19 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 \begin{frame}{1 (a): Construct Posterior from Bayes' Rule}
 	\begin{equation*}
 		\begin{aligned}
+			\only<1->{
 			\underbrace{p(\thetav | \Xmat, \yv)}_{\text{posterior}} &= \frac{p(\thetav, \yv| \Xmat)}{p(\yv | \Xmat)} \\
+			}
+			\only<2->{
 			&= \frac{\overbrace{p(\yv | \Xmat, \thetav)}^{\text{likelihood}} \overbrace{q(\thetav)}^{prior} }{\underbrace{p(\yv | \Xmat)}_{\text{marginal}}}
+			}
 		\end{aligned}
 	\end{equation*}
 	
 	\begin{itemize}
-			\item For a linear model, $\yv | \Xmat, \thetav \sim \Norm(\Xmat \thetav, \sigma^2 \Imat)$. Will be computed on the next slide.
-			\item In 1(a), we choose a \textbf{uniform prior}, indicating $q(\thetav) \propto 1$.
-			\item $p(\yv | \Xmat)$ does \textbf{not} depend on $\thetav$. $\leadsto$ Treated as  constant when maxing the posterior of $\thetav$.
+			\item<3-> For a linear model, $\yv | \Xmat, \thetav \sim \Norm(\Xmat \thetav, \sigma^2 \Imat)$. Will be computed on the next slide.
+			\item<4-> In 1(a), we choose a \textbf{uniform prior}, indicating $q(\thetav) \propto 1$.
+			\item<5-> $p(\yv | \Xmat)$ does \textbf{not} depend on $\thetav$. $\leadsto$ Treated as  constant when maxing the posterior of $\thetav$.
 	\end{itemize}
 \end{frame}
 
@@ -148,9 +152,12 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 			&= \exp \left[ -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}  \right].
 		\end{aligned}
 	\end{equation*}
-	In addition, we know that $q(\thetav) \propto 1$ and we don't care $p(\yv | \Xmat)$.
+	\uncover<2->{
 	
-	Now, we plug these information into the form of $p(\thetav | \Xmat, \yv)$.
+	In addition, recall that the prior $q(\thetav) \propto 1$ and we don't care the marginal $p(\yv | \Xmat)$.
+	
+	Now, we plug these information into $p(\thetav | \Xmat, \yv) = \frac{p(\yv | \Xmat, \thetav) q(\thetav)}{p(\yv|\Xmat)} \propto p(\yv | \Xmat, \thetav) q(\thetav)$.
+	}
 \end{frame}
 
 \begin{frame}{1 (a): MAP Estimate}
@@ -159,6 +166,7 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 			p(\thetav | \Xmat, \yv) \propto p(\yv | \Xmat, \thetav) \cdot q(\thetav) 
 			\propto \exp \left[ -\frac{\sum_{i=1}^n(\yi - \thetav^\top \xi)^2}{2\sigma^2}  \right].
 	\end{equation*}
+	\uncover<2->{
 	Now we compute the maximum a posterior estimate as:
 	\begin{equation*}
 		\begin{aligned}
@@ -170,6 +178,7 @@ Assume we are interested in the so-called maximum a posteriori estimate of $\the
 		\end{aligned}
 	\end{equation*}
 Therefore, in 1 (a), maximum a posteriori estimate $\Leftrightarrow$ ERM for the L2-loss.
+}
 \end{frame}
 
 \begin{frame}{Exercise 1(b)}
@@ -276,16 +285,16 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 \begin{frame}{2 (a): How to Prove That A Matrix Is P.S.D.}
 \small
 	\begin{enumerate}
-		\item Since $\Kij = \sigma_0^2$ for all $i,j$, we have $\Kmat^\top = \Kmat$, thus $\Kmat$ is symmetric.
-		\item For any $\vv = (v_1, v_2, \ldots, v_n)^\top$, we need to prove $ \vv^\top \Kmat \vv \geq 0$.
+		\item<1-> Since $\Kij = \sigma_0^2$ for all $i,j$, we have $\Kmat^\top = \Kmat$, thus $\Kmat$ is symmetric.
+		\item<2-> For any $\vv = (v_1, v_2, \ldots, v_n)^\top$, we need to prove $ \vv^\top \Kmat \vv \geq 0$.
 		\begin{enumerate}
-			\item Naive way: First compute $(\Kmat \vv)$ and then $\vv^\top (\Kmat \vv)$. 
+			\item<3-> Naive way: First compute $(\Kmat \vv)$ and then $\vv^\top (\Kmat \vv)$. 
 			\begin{align*}
 				\Kmat \vv &= \sigma_0^2(\sum_i v_i, \sum_i v_i, \ldots, \sum_i v_i )^\top \\
 				\vv^\top \Kmat \vv &= \sigma_0^2 [v_1 (\sum_i v_i) + v_2 (\sum_i v_i) + \ldots + v_n (\sum_i v_i)] = \sigma_0^2(v_1 + v_2 + \ldots + v_n) (\sum_i v_i) \\
 				&= \sigma_0^2 (v_1 + \ldots + v_n) (\sum_i v_i) = \sigma_0^2 (\sum_i v_i) (\sum_i v_i) = \sigma_0^2 (\sum_i v_i)^2 \geq 0.
 			\end{align*}
-			\item Faster way: $\Kmat = \sigma_0^2\Imat \Imat^\top$, where $\Imat = (1, 1, \ldots, 1)^\top$. So, $\vv^\top \Kmat \vv = \sigma_0^2 \vv^\top \Imat \Imat^\top \vv = \sigma_0^2 (\Imat^\top \vv)^2 \geq 0$.
+			\item<4-> Faster way: $\Kmat = \sigma_0^2\Imat \Imat^\top$, where $\Imat = (1, 1, \ldots, 1)^\top$. So, $\vv^\top \Kmat \vv = \sigma_0^2 \vv^\top \Imat \Imat^\top \vv = \sigma_0^2 (\Imat^\top \vv)^2 \geq 0$.
 		\end{enumerate}
 	\end{enumerate}
 \end{frame}
@@ -307,7 +316,7 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 	\end{align*}
 \end{frame}
 
-\begin{frame}{Proof of $\kxxp = \sigma_0^2 + \xv^\top \xvp$}
+\begin{frame}{2 (a): Proof of $\kxxp = \sigma_0^2 + \xv^\top \xvp$}
 	\begin{align*}
 		\kxxp = \underbrace{\sigma_0^2}_{:= k_0(\xv, \xvp)} + \underbrace{\xv^\top \xvp}_{:= k_1(\xv, \xvp)}
 	\end{align*}
@@ -318,7 +327,7 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 	\end{enumerate}
 \end{frame}
 
-\begin{frame}{Proof of $\kxxp = (\sigma_0^2 + \xv^\top \xv)^p$}
+\begin{frame}{2 (a): Proof of $\kxxp = (\sigma_0^2 + \xv^\top \xv)^p$}
 	
 	We define $k_2(\xv, \xvp) =\sigma_0^2 + \xv^\top \xv$, so $k_3 = (\sigma_0^2 + \xv^\top \xv)^p = k_2^p$.
 	
@@ -328,7 +337,7 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 	\end{enumerate}
 \end{frame}
 
-\begin{frame}{Proof of $\kxxp = \exp\left(- \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$}
+\begin{frame}{2 (a): Proof of $\kxxp = \exp\left(- \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$}
 \small
 	We can write
 	\begin{align*}
@@ -357,19 +366,19 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 
 \begin{frame}{2 (b): Constant functions}
 	\begin{enumerate}
-		\item $\kxxp = \sigma_0^2$ is stationary since $k(\xv, \xv + \dv) = \sigma_0^2  = k(\zero, \dv)$.
-		\item $\kxxp = \sigma_0^2$ is isotropic since $ \kxxp = \sigma_0^2||\xv - \xvp ||^0$.
+		\item<1-> $\kxxp = \sigma_0^2$ is stationary since $k(\xv, \xv + \dv) = \sigma_0^2  = k(\zero, \dv)$.
+		\item<2-> $\kxxp = \sigma_0^2$ is isotropic since $ \kxxp = \sigma_0^2||\xv - \xvp ||^0$.
 	\end{enumerate}
 \end{frame}
 
 \begin{frame}{2 (b): $\kxxp = \sigma_0^2 + \xv^\top \xvp$}
 	\begin{enumerate}
-		\item $\kxxp = \sigma_0^2 + \xv^\top \xvp$ is NOT stationary, since
+		\item<1-> $\kxxp = \sigma_0^2 + \xv^\top \xvp$ is NOT stationary, since
 		\begin{align*}
 			k(\xv, \xv + \dv) &= \sigma_0^2 + \xv^\top \xv + \xv^\top \dv \\
 			k(\zero, \dv) &= \sigma_0^2.
 		\end{align*}
-		\item It is NOT isotropic, since it cannot be written as a func. of $|| \xv - \xvp||$.
+		\item<2-> It is NOT isotropic, since it cannot be written as a func. of $|| \xv - \xvp||$.
 	\end{enumerate}
 \end{frame}
 
@@ -379,8 +388,8 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 
 \begin{frame}{2 (b): $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$}
 	\begin{enumerate}
-		\item $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$ is stationary, since $k(\xv, \xv + \dv) = \exp \left( - \frac{||\dv||_2^2}{2 \ell^2} \right) = k(\zero, \dv)$.
-		\item It is isotropic, since it is a function of $||\xv - \xvp||$.
+		\item<1-> $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$ is stationary, since $k(\xv, \xv + \dv) = \exp \left( - \frac{||\dv||_2^2}{2 \ell^2} \right) = k(\zero, \dv)$.
+		\item<2-> It is isotropic, since it is a function of $||\xv - \xvp||$.
 	\end{enumerate}
 \end{frame}
 
@@ -388,7 +397,9 @@ We define $\lambda = \frac{\sigma^2}{\tau^2}$, then the maximum a posteriori $\L
 	Similar to the argument of squared exponential conv. func. $\kxxp = \exp\left( - \frac{||\xv - \xvp||_2^2}{2 \ell^2}\right)$.
 	\begin{enumerate}
 		\item Matern cov. func. is stationary and isotropic.
+		$$\kxxp = \frac{1}{2^\nu} \left( \frac{\sqrt{2 \nu}}{\ell} || \xv - \xvp|| \right)^\nu K_\nu \left( \frac{\sqrt{2 \nu}}{\ell} || \xv - \xvp|| \right)$$
 		\item Exponential cov. func. is stationary and isotropic.
+		$$\kxxp = \exp \left( - \frac{||\xv - \xvp ||}{\ell} \right)$$
 	\end{enumerate}
 \end{frame}
 
