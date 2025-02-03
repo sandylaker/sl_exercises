@@ -128,10 +128,10 @@ $\xv$ here only consists of 1 feature that is observed for $n$ data points.
 
 \begin{frame}{1 (a): Prior Distribution of $\fv$}
 	\begin{itemize}
-		\item $\fv \sim \N(\mv, \Kmat)$.
-		\item $\mv = m (\xv)$.
-		\item $\kij = \kxij$. 
-		\item NB: Note the (in-)finite Gaussian property of a GP.
+		\item<1-> $\fv \sim \N(\mv, \Kmat)$.
+		\item<2-> $\mv = m (\xv)$.
+		\item<3-> $\kij = \kxij$. 
+		\item<4-> NB: Note the (in-)finite Gaussian property of a GP: no matter which finite collection of points you choose from the domain of the process, the corresponding values of the processes are jointly Gaussian.
 	\end{itemize}
 \end{frame}
 
@@ -140,7 +140,11 @@ $\xv$ here only consists of 1 feature that is observed for $n$ data points.
 \end{frame}
 
 \begin{frame}{1 (b): Likelihood and Prior}
-\small
+\uncover<1->{
+	The posterior can be derived from the likelihood and prior using Bayes rule:
+	$$\yv = \fv + \epsv, \quad \epsv \sim \N(\zero, \sigma^2 \id)$$
+}
+\uncover<2->{
 The likelihood is:
 	\begin{equation*}
 		\begin{aligned}
@@ -148,10 +152,13 @@ The likelihood is:
 			&\propto \exp \left( -\frac{1}{2} (\yv - \fv)^\top (\sigma^2 \id)^{-1} (\yv - \fv) \right).
 		\end{aligned}
 	\end{equation*}
-The prior is:
+}
+\uncover<3->{
+	The prior is:
 	\begin{align*}
 		p(\fv) \propto \exp\left( - \frac{1}{2}(\fv - \mv)^\top \Kmat^{-1} (\fv - \mv) \right).
 	\end{align*}
+}
 \end{frame}
 
 \begin{frame}{1 (b): Posterior}
@@ -159,42 +166,54 @@ The prior is:
 	So the posterior is:
 \begin{align*}
 	p(\fv | \yv) & \propto p(\yv | \fv) \cdot p(\fv) \\
-	&\propto \exp\left( -\frac{1}{2} (\yv - \fv)^\top (\sigma^2 \id)^{-1} (\yv - \fv) \right) \cdot \exp\left( - \frac{1}{2}(\fv - \mv)^\top \Kmat^{-1} (\fv - \mv) \right) \\
-	&\propto \exp \left( -\frac{1}{2} \left(  \fv^\top \ssqiinv\fv - 2 \fv^\top \ssqiinv \yv + \fv^\top \kinv \fv - 2 \fv^\top \kinv \mv \right) \right) \\
-	&\propto \exp \left( -\frac{1}{2} \left( \fv^\top (\ssqiinv + \kinv) \fv \  -2\cdot  \fv^\top (\ssqiinv \yv + \kinv \mv) \right) \right) \\
-	& \propto \exp \bigg( -\frac{1}{2}\fv^\top \underbrace{(\ssqiinv + \kinv)}_{=: \kpinv} \fv \ + \ \fv^\top \underbrace{(\ssqiinv \yv + \kinv \mv)}_{=:\tfv}  \bigg) \\
-	&\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right)
+	\only<2->{
+		&\propto \exp\left( -\frac{1}{2} (\yv - \fv)^\top (\sigma^2 \id)^{-1} (\yv - \fv) \right) \cdot \exp\left( - \frac{1}{2}(\fv - \mv)^\top \Kmat^{-1} (\fv - \mv) \right) \\
+	}
+	\only<3->{
+		&\propto \exp \left( -\frac{1}{2} \left(  \fv^\top \ssqiinv\fv - 2 \fv^\top \ssqiinv \yv + \fv^\top \kinv \fv - 2 \fv^\top \kinv \mv \right) \right) \\
+		&\propto \exp \left( -\frac{1}{2} \left( \fv^\top (\ssqiinv + \kinv) \fv \  -2\cdot  \fv^\top (\ssqiinv \yv + \kinv \mv) \right) \right) \\
+	}
+	\only<4->{
+		& \propto \exp \bigg( -\frac{1}{2}\fv^\top \underbrace{(\ssqiinv + \kinv)}_{=: \kpinv} \fv \ + \ \fv^\top \underbrace{(\ssqiinv \yv + \kinv \mv)}_{=:\tfv}  \bigg) \\
+	}
+	\only<5->{
+		&\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right)
+	}
 \end{align*}
 \end{frame}
 
 \begin{frame}{1 (b): Complete the Square}
 \small
 	\begin{align*}
-		p(\fv | \yv) &\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right) \\
+		p(\fv | \yv) &\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right)
 	\end{align*}
 	Recall the technique of \textbf{completing the square}: 
 	\begin{itemize}
 		\item Scalar: $a x^2 + b x + c = a(x + \frac{b}{2a})^2 + (c - \frac{b^2}{4a})$
 		\item Matrix / vector: $\xv^\top \Amat \xv + \xv^\top \bv +c = (\xv + \frac{1}{2} \Amat^{-1} \bv)^\top \Amat (\xv + \frac{1}{2} \Amat^{-1} \bv) + (c - \frac{1}{4} \bv^\top \Amat^{-1} \bv)$ for a \textbf{symmetric} matrix $\Amat$.
 	\end{itemize}
-	In our case: $\Amat = -\frac{1}{2} \kpinv$, and $\bv = \tfv$, and $c=0$ or an arbitary const. So, 
-	$$\xv + \frac{1}{2} \Amat^{-1} \bv = \fv + \frac{1}{2}(-\frac{1}{2} \kpinv)^{-1} \tfv = \fv - \Kpost \tfv$$
+	\uncover<2->{
+		In our case: $\Amat = -\frac{1}{2} \kpinv$, and $\bv = \tfv$, and $c=0$ or an arbitary const. So, 
+		$$\xv + \frac{1}{2} \Amat^{-1} \bv = \fv + \frac{1}{2}(-\frac{1}{2} \kpinv)^{-1} \tfv = \fv - \Kpost \tfv$$
 	
-	and we omit $c - \frac{1}{4} \bv^\top \Amat^{-1}\Amat \bv $ because
-	\begin{itemize}
-		\item It is a constant w.r.t. $\fv$.
-		\item the $\exp$ and $\propto$ operators.
-	\end{itemize}
+		and we omit $c - \frac{1}{4} \bv^\top \Amat^{-1}\Amat \bv $ because
+		\begin{itemize}
+			\item It is a constant w.r.t. $\fv$.
+			\item the $\exp$ and $\propto$ operators.
+		\end{itemize}
+	}
 \end{frame}
 
 \begin{frame}{1 (b): Complete the Square}
 	\begin{align*}
 		p(\fv | \yv) &\propto \exp \bigg( (\fv - \Kpost \tfv )^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \underbrace{\Kpost \tfv}_{:= \fpost})\bigg) \\ &\propto \exp \bigg( (\fv - \fpost)^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \fpost)\bigg)
 	\end{align*}
-	Hence,
-	\begin{align*}
-		\fv | \yv \sim \N(\fpost, \Kpost).
-	\end{align*}
+	\uncover<2->{
+		Hence,
+		\begin{align*}
+			\fv | \yv \sim \N(\fpost, \Kpost).
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c)}
@@ -202,39 +221,44 @@ The prior is:
 \end{frame}
 
 \begin{frame}{1 (c): Derive Predictive Posterior from Joint Distribution}
+	\small
 	Na\"ively, we can compute 
 	\begin{align*}
 		p(\ys | \xs, \xv, \yv) =\int p(\ys | \xs, \xv, \yv, \fv) \cdot p(\fv | \yv, \xv) \mathsf{d} \fv.
 	\end{align*}
-	This is cumbersome. Alternative, we can use the fact that 
-	\begin{align*}
-		\text{if } \begin{pmatrix}
-			\av \\
-			\bv \\
-		\end{pmatrix} 
-		\sim \N 
-		\left( 
-			\begin{pmatrix}
-				\muv_{a} \\
-				\muv_{b} \\
-			\end{pmatrix}, 
-			\begin{pmatrix}
-				\Sigma_{aa} & \Sigma_{ab} \\
-				\Sigma_{ab}^\top & \Sigma_{bb} \\
-			\end{pmatrix}
-		\right), 
-		\ \text{then } \quad  \av | \bv \sim \N(\muv_{a|b}, \Sigma_{a|b})
-	\end{align*}
-	where 
-	\begin{align*}
-		\muv_{a|b} &= \muv_a + \Sigma_{ab} \Sigma_{bb}^{-1}(\bv - \muv_b) \\
-		\Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
-	\end{align*}
+	This is cumbersome. 
+	\uncover<2->{
+		Alternative, we can use the fact that 
+		\begin{align*}
+			\text{if } \begin{pmatrix}
+				\av \\
+				\bv \\
+			\end{pmatrix} 
+			\sim \N 
+			\left( 
+				\begin{pmatrix}
+					\muv_{a} \\
+					\muv_{b} \\
+				\end{pmatrix}, 
+				\begin{pmatrix}
+					\Sigma_{aa} & \Sigma_{ab} \\
+					\Sigma_{ab}^\top & \Sigma_{bb} \\
+				\end{pmatrix}
+			\right), 
+			\ \text{then } \quad  \av | \bv \sim \N(\muv_{a|b}, \Sigma_{a|b})
+		\end{align*}
+	}
+	\uncover<3->{
+		where 
+		\begin{align*}
+			\muv_{a|b} &= \muv_a + \Sigma_{ab} \Sigma_{bb}^{-1}(\bv - \muv_b) \\
+			\Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
+		\end{align*}
+	}
 \end{frame}
 
-\begin{frame}{1 (c) Derive Predictive Posterior from Joint Distribution}
+\begin{frame}[t]{1 (c) Derive Predictive Posterior from Joint Distribution}
 	The joint distribution of $(\yv, \ys)$:
-	
 	\textbf{Note: here is $\yv$ instead of $\fv$, and $\yv = \fv + \epsv$.  So we have $\sigma^2$ in the in the cov. matrix.}
 	\begin{align*}
 		\begin{pmatrix}
@@ -253,10 +277,12 @@ The prior is:
 		\right),
 	\end{align*}
 	
-	Therefore, the conditional distribution $\ys | \xs, \xv, \yv $ is also a Gaussian:
-	\begin{align*}
-		\ys | \xs, \xv, \yv \sim \N(\ms + \Kstar^\top(\Kmat + \sigma^2 \id)^{-1}(\yv -\mv), \Kstarstar + \sigma^2 - \Kstar^\top (\Kmat +\sigma^2 \id)^{-1} \Kstar).
-	\end{align*}
+	\uncover<2->{
+		Therefore, the conditional distribution $\ys | \xs, \xv, \yv $ is also a Gaussian:
+		\begin{align*}
+			\ys | \xs, \xv, \yv \sim \N(\ms + \Kstar^\top(\Kmat + \sigma^2 \id)^{-1}(\yv -\mv), \Kstarstar + \sigma^2 - \Kstar^\top (\Kmat +\sigma^2 \id)^{-1} \Kstar).
+		\end{align*}
+	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
