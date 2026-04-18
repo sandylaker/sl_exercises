@@ -6,7 +6,7 @@
 
 %% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
 
-\documentclass[aspectratio=169, handout]{beamer}
+\documentclass[aspectratio=169]{beamer}
  
 \mode<presentation>
 {
@@ -25,6 +25,9 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{pgfpages}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\setbeamertemplate{blocks}[rounded][shadow=false]
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -54,7 +57,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{October 22, 2024}
+\date{April 23, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -101,7 +104,7 @@ Consider the regression learning setting, i.e., $\Yspace = \mathbb{R}$, and assu
 
 \textbf{Disclaimer: In the following we always assume that $\var(m(Y))$ exists.}
 
-(a) Consider the hypothesis space of a constant models $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} | f(\xv) = \thetab \ \forall \xv \in \Xspace \}$, where $\Xspace$ is the feature space. Show that 
+(a) Consider the hypothesis space of a constant models $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} | f(\xv) = \thetav \ \forall \xv \in \Xspace \}$, where $\Xspace$ is the feature space. Show that 
 $$
 	\hat{f}(\xv) = m^{-1}\left( \frac{1}{n} \sum_{i=1}^n m(\yi) \right)
 $$
@@ -111,25 +114,25 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 
 \begin{frame}{Solution to Question (a)}
 	\begin{enumerate}
-		\item<1-> $f$ is a \textbf{constant model}: $f(\xv) = \thetab$ for all $\xv$.
+		\item<1-> $f$ is a \textbf{constant model}: $f(\xv) = \thetav$ for all $\xv$.
 		\item<2-> The empirical risk can be formulated as:
-			$$\riske(f) = \sumin \left(m(\yi) - m(f(\xi)) \right)^2 = \sumin \left(m(\yi) - m(\thetab) \right)^2.$$
-		\item<3-> $\riske(f)$ is \textbf{strictly convex} (because MSE loss and $m$ is strictly monotone). So the minimum is unique, and can be computed by solving $\partial{\riske(f)} / \partial \thetab = \bm{0}.$
+			$$\riske(f) = \sumin \left(m(\yi) - m(f(\xi)) \right)^2 = \sumin \left(m(\yi) - m(\thetav) \right)^2.$$
+		\item<3-> $\riske(f)$ is \textbf{strictly convex} (because MSE loss and $m$ is strictly monotone). So the minimum is unique, and can be computed by solving $\partial{\riske(f)} / \partial \thetav = \bm{0}.$
 	\end{enumerate}
 \end{frame}
 
 \begin{frame}{Solution to Question (a): Continued}
-	Goal: Compute the optimal $\thetab$ by solving $\partial{\riske(f)} / \partial \thetab = \bm{0}.$
+	Goal: Compute the optimal $\thetav$ by solving $\partial{\riske(f)} / \partial \thetav = \bm{0}.$
 	
 	\begin{enumerate}
 		\small
-		\item<1-> Compute the derivative: $$\frac{\partial \riske(f)}{\partial \thetab} = 2 \sumin (m(\yi) - m(\thetab)) \cdot \frac{\partial m(\thetab)}{\partial \thetab} = 0$$
-		\item<2-> Using the fact that $\frac{\partial m(\thetab)}{\partial \thetab}$ is constant for all $i$, we obtain:
+		\item<1-> Compute the derivative: $$\frac{\partial \riske(f)}{\partial \thetav} = 2 \sumin (m(\yi) - m(\thetav)) \cdot \frac{\partial m(\thetav)}{\partial \thetav} = 0$$
+		\item<2-> Using the fact that $\frac{\partial m(\thetav)}{\partial \thetav}$ is constant for all $i$, we obtain:
 			\begin{align*}
-				\only<3->{\sumin (m(\yi) - m(\thetab)) &= 0 \\ }
-				\only<4->{\Rightarrow \sumin m(\yi) &= \sumin m(\thetab) \\ }
-				\only<5->{\Rightarrow m(\thetab) &= \frac{1}{n} \sumin m(\yi) \\}
-				\only<6->{\Rightarrow \thetab^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right) \qquad \lhd}
+				\only<3->{\sumin (m(\yi) - m(\thetav)) &= 0 \\ }
+				\only<4->{\Rightarrow \sumin m(\yi) &= \sumin m(\thetav) \\ }
+				\only<5->{\Rightarrow m(\thetav) &= \frac{1}{n} \sumin m(\yi) \\}
+				\only<6->{\Rightarrow \thetav^* &= m^{-1}\left(\frac{1}{n} \sumin m(\yi) \right) \qquad \lhd}
 			\end{align*}
 	\end{enumerate}
 \end{frame}
@@ -155,31 +158,108 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 \begin{frame}{Solution to Question (b): Continued}
 	\small
 	Now take a look at the second term: $-2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right]$.
-	\vspace{10pt}
-	
-	Because $y, y^{(1)}, \ldots, y^{(n)}$ are i.i.d. with $\Exy[m(\yi)] = \Exy[m(y)]$, we have 
-	\begin{align*}
-		\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] &= \frac{1}{n} \cdot \Exy \left[m(y) \sumin m(\yi) \right] \\
-		\only<1->{&= \frac{1}{n} \cdot \Exy[m(y)] \Exy \left[\sumin m(\yi) \right] \\}
-		\only<2->{&= \frac{1}{n} \cdot \Exy[m(y)] \cdot n \cdot \Exy[m(y)] \\}
-		\only<3->{&= \Exy[m(y)]^2.}
-	\end{align*}
-	
+	\vspace{5pt}
+
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\begin{align*}
+			 &\Exy \left[m(y) \cdot \tfrac{1}{n} \sumin m(\yi) \right] \\
+			 &\quad = \tfrac{1}{n} \cdot \Exy \left[m(y) \sumin m(\yi) \right] \\
+			 &\quad = \tfrac{1}{n} \cdot \Exy[m(y)] \, \Exy \left[\sumin m(\yi) \right] \\
+			\only<2->{&\quad = \tfrac{1}{n} \cdot \Exy[m(y)] \cdot n \cdot \Exy[m(y)] \\}
+			\only<4->{&\quad = \Exy[m(y)]^2.}
+		\end{align*}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\only<3->{
+			\footnotesize
+			\textbf{Why $\Exy\left[\sumin m(\yi)\right] = n \cdot \Exy[m(y)]$?}
+			\begin{itemize}
+				\setlength\itemsep{3pt}
+				\item Linearity: pull $\Exy$ inside the sum.
+				\item $(i)$ just labels different draws; all $y^{(i)}$ share $y$'s distribution, so $\Exy[m(\yi)] = \Exy[m(y)]$.
+				\item Sum of $n$ equal terms $= n \cdot \Exy[m(y)]$.
+			\end{itemize}
+			\vspace{3pt}
+			\emph{Analogy:} expected sum of $n$ dice rolls is $n \times 3.5$.
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (b): Continued}
+\begin{frame}{Solution (b): third term $\Exy\big[\big(\tfrac{1}{n}\sumin m(\yi)\big)^2\big]$}
 	\small
-	Now take a look at the third term: $\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right]$.
-	\vspace{10pt}
-	
-	Similarily, we have
-	\begin{align*}
-		&\Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
-		\only<2->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi) m(y^{(j)}) ] \right) \\}
-		\only<3->{&= \frac{1}{n^2} \left(\sumin \Exy[m(\yi)^2] + \sumin \sum_{j\neq i}\Exy[m(\yi)] \cdot \Exy[ m(y^{(j)})] \right) \quad \rhd \text{\tiny(The square is within E due to dependency of (i) and (i))}\\}
-		\only<4->{&= \frac{1}{n^2}\left( n \Exy[m(y)^2] + n(n-1) \Exy[m(y)]^2 \right) \quad \rhd\\}
-		\only<5->{&=\frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2}
-	\end{align*}
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+		\begin{align*}
+			 &\Exy \Big[\big(\tfrac{1}{n}\sumin m(\yi)\big)^2\Big] \\
+			\only<2->{&= \tfrac{1}{n^2} \Exy\Big[\sum_{i,j=1}^n m(\yi) m(\yi[j])\Big] \\}
+			\only<3->{&= \tfrac{1}{n^2}\Big( \textcolor{red}{\sumin \Exy[m(\yi)^2]} \\ &\qquad + \textcolor{blue}{\sumin \sum_{j\neq i} \Exy[m(\yi) m(\yi[j])]} \Big)}
+		\end{align*}
+
+		\only<3->{
+			{\scriptsize $\rhd$ Split into \textcolor{red}{diagonal} ($i=j$, squared) and \textcolor{blue}{off-diagonal} ($i \neq j$, cross) terms.}
+		}
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\only<2->{
+			\footnotesize
+			\textbf{Example ($n=3$).} Let $m_i := m(\yi)$.
+			$$\Big(\tfrac{m_1+m_2+m_3}{3}\Big)^2 = \tfrac{1}{9}\sum_{i,j=1}^3 m_i m_j$$
+
+			Expand all 9 pairs $(i,j)$:
+			$$
+			\begin{array}{ccc}
+				\textcolor{red}{m_1^2} & \textcolor{blue}{m_1 m_2} & \textcolor{blue}{m_1 m_3} \\
+				\textcolor{blue}{m_2 m_1} & \textcolor{red}{m_2^2} & \textcolor{blue}{m_2 m_3} \\
+				\textcolor{blue}{m_3 m_1} & \textcolor{blue}{m_3 m_2} & \textcolor{red}{m_3^2}
+			\end{array}
+			$$
+			Group by color:
+			\begin{itemize}
+				\setlength\itemsep{2pt}
+				\item \textcolor{red}{Diagonal} ($i=j$, $n$ terms) $\rightsquigarrow \textcolor{red}{\sum_i m_i^2}$
+				\item \textcolor{blue}{Off-diag.} ($i\neq j$, $n(n{-}1)$ terms) $\rightsquigarrow \textcolor{blue}{\sum_i \sum_{j\ne i} m_i m_j}$
+			\end{itemize}
+		}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution (b): third term, cont.}
+	\small
+	Continuing from the grouping form:
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+		\begin{align*}
+			 &\phantom{=}\, \tfrac{1}{n^2}\Big(\sumin \Exy[m(\yi)^2] \\
+			 &\phantom{=} \qquad + \sumin \sum_{j\neq i} \Exy[m(\yi) m(\yi[j])] \Big) \\
+			\only<2->{&= \tfrac{1}{n^2}\Big(\sumin \Exy[m(\yi)^2] \\ &\qquad + \sumin \sum_{j\neq i} \Exy[m(\yi)]\,\Exy[m(\yi[j])] \Big) \\}
+			\only<3->{&= \tfrac{1}{n^2}\big( n \Exy[m(y)^2] + n(n{-}1) \Exy[m(y)]^2 \big) \\}
+			\only<4->{&= \tfrac{1}{n} \Exy[m(y)^2] + \big(1 - \tfrac{1}{n}\big) \Exy[m(y)]^2}
+		\end{align*}
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\only<2->{
+			\footnotesize
+			\textbf{Cross term: independence trick.}
+
+			For $i \neq j$, $m(\yi)$ and $m(\yi[j])$ are \emph{independent} RVs, so
+			$$\Exy[m(\yi) m(\yi[j])] = \Exy[m(\yi)]\,\Exy[m(\yi[j])].$$
+		}
+
+		\only<3->{
+			\vspace{5pt}
+			\footnotesize
+			\textbf{Collapse by i.i.d.}
+			\begin{itemize}
+				\setlength\itemsep{2pt}
+				\item $n$ \textcolor{red}{diagonal} terms, each $=\Exy[m(y)^2]$ $\;\Rightarrow\; n \Exy[m(y)^2]$.
+				\item $n(n{-}1)$ \textcolor{blue}{off-diag.} terms, each $=\Exy[m(y)]^2$ $\;\Rightarrow\; n(n{-}1) \Exy[m(y)]^2$.
+			\end{itemize}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Solution to Question (b): Continued}
@@ -189,118 +269,444 @@ is the optimal constant model for the loss function above, where $m^{-1}$ is the
 		\risk_L(\hat{f}) &= \Exy[m(y)^2] -2 \cdot\Exy \left[m(y) \cdot \frac{1}{n} \sumin m(\yi) \right] + \Exy \left[\left(\frac{1}{n}\sumin m(\yi) \right) \left( \frac{1}{n}\sumin m(\yi) \right) \right] \\
 		\only<2->{&= \Exy[m(y)^2] - 2 \Exy[m(y)]^2 + \frac{1}{n} \Exy[m(y)^2] + (1 - \frac{1}{n}) \Exy[m(y)]^2 \\}
 		\only<3->{&= \left(1 + \frac{1}{n} \right) \left(\Exy[m(y)^2] - \Exy[m(y)]^2 \right)\\ }
-		\only<4->{&= \left(1 + \frac{1}{n} \right) \var(\my). \qquad \lhd}
+		\only<4->{&= \left(1 + \frac{1}{n} \right) \var(\my).}
 	\end{align*}
+
+	\only<4->{
+		\scriptsize
+		\textbf{Why does $\mathbb{E}_x$ vanish?}
+		\begin{itemize}
+			\setlength\itemsep{1pt}
+			\item Constant model $\Rightarrow$ integrands depend on $y$ only.
+			\item Marginalize: $\int p(x, y)\, dx = p(y)$.
+			\item Hence $\Exy[m(y)] = \mathbb{E}_y[m(y)]$; $\var(m(y))$ is over $y$.
+		\end{itemize}
+	}
 \end{frame}
 
 \begin{frame}{Question (c)}
+	\small
 	Derive that the risk minimizer $f^*$ is given by $f^*(\xv) = m^{-1} (\Eyx [m(y) | \xv])$.
-	\vspace{10pt}
-	
-	Hints:
-	\begin{itemize}
-		\item<2-> Consider unstricted hypothesis space $\Hspace = \{f: \Xspace \rightarrow \mathbb{R} \}$. 
-		\item<3-> Since $\Hspace$ is unrestricted, for each $\xv$, we can predict any value $c \in \mathbb{R}$ we want. $\leadsto$ Point-wise prediction.
-	\end{itemize}
+
+	\vspace{4pt}
+
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\footnotesize
+		\only<2->{
+			\begin{alertblock}{Q1: Which hypothesis space?}
+				What $\Hspace$ should we consider when deriving $f^*$?
+			\end{alertblock}
+		}
+
+		\only<3->{
+			\begin{exampleblock}{A1}
+				The \textbf{unrestricted} space of all functions: $\Hspace = \{f : \Xspace \rightarrow \mathbb{R} \}.$
+			\end{exampleblock}
+		}
+
+		\only<4->{
+			\begin{alertblock}{Q2: What does ``unrestricted'' imply? Why?}
+				What freedom does this give, and why does it matter?
+			\end{alertblock}
+		}
+
+		\only<5->{
+			\begin{exampleblock}{A2}
+				For \textbf{each} $\xv$, $f(\xv)$ can take any $c \in \mathbb{R}$ \emph{independently}. $\leadsto$ \textbf{Point-wise}: minimize risk separately at every $\xv$.
+			\end{exampleblock}
+		}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\only<5->{
+			\centering
+			\begin{tikzpicture}[scale=0.5]
+				\draw[->, thick] (-0.2,0) -- (7,0) node[right] {$\xv$};
+				\draw[->, thick] (0,-0.2) -- (0,4.8) node[above] {$f(\xv)$};
+				\foreach \x/\y/\i in {1/2.8/1, 2/1.3/2, 3/3.6/3, 4/0.7/4, 5/2.2/5, 6/4.0/6} {
+					\draw[dashed, gray!60] (\x,0) -- (\x,\y);
+					\filldraw[red!80!black] (\x,\y) circle (3pt);
+					\node[below] at (\x,-0.1) {\tiny $\xv_{\i}$};
+				}
+				\node[red!80!black, right] at (1.1,2.8) {\tiny $c_1$};
+				\node[red!80!black, right] at (6.1,4.0) {\tiny $c_i$};
+			\end{tikzpicture}
+
+			{\tiny Each $\xv_i$ gets its own optimal $c_i$ \\ --- no shared functional form.}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 
 \begin{frame}{Solution to Question (c)}
 	\uncover<1->{
-		By the law of total expectation, 
+		\textbf{Recall} (c): point-wise optimization $\Rightarrow$ decompose
+		$$\Exy[\,\cdot\,] = \mathbb{E}_{\xv}\big[\Eyx[\,\cdot \mid \xv ]\big].$$
+	}
+
+	\vspace{6pt}
+
+	\uncover<2->{
+		Apply the law of total expectation to the risk:
 		\begin{align*}
 			\risk_L(f) &= \Exy[L(y, f(\xv))] \\
-			&= \mathbb{E}_{\xv}[\Eyx[L(y, f(\xv)) \ | \ \xv ] ] \\ 
-			&= \mathbb{E}_{\xv}[\Eyx[(\my - m(f(\xv)))^2 \ | \ \xv ]].
+			&= \mathbb{E}_{\xv}\big[\Eyx[(\my - m(f(\xv)))^2 \mid \xv ]\big].
 		\end{align*}
 	}
-	
-	\uncover<2->{
-		Since we consider a point-wise prediction, we can omit the $\mathbb{E}_\xv$, and we focus on computing $f^*(\xv) = c$ given a \textbf{fixed} $\xv$. In other words, we solve the optimal $c$ for each $\xv$ separately.
-	}
-	\vspace{10pt}
-	
+
+	\vspace{6pt}
+
 	\uncover<3->{
-		To solve $f^*(\xv) = \argmin_{c} \Eyx[(\my - m(f(\xv)))^2 \ | \ \xv ]$, we adopt the same way as the solution of Question (a), obtaining
-		$$ f^*(\xv) = m^{-1}(\Eyx[\my \ | \ \xv ]).$$
+		To solve $f^*(\xv) = \argmin_{c} \Eyx[(\my - m(c))^2 \mid \xv ]$, same as (a):
+		$$ f^*(\xv) = m^{-1}(\Eyx[\my \mid \xv ]).$$
 	}
-	
 \end{frame}
 
 \begin{frame}{Question (d)}
+	\small
 	(d): What is the optimal \textbf{constant} model in terms of the (theoretical) risk for the loss above and what is the risk?
-	
-	\vspace{10pt}
-	\uncover<2->{
-		Note: in Question (c), we allow $f$ outputs different values $c$ for different $\xv$. In Question (d), we aim to search an optimal $\bar{f}(\xv) = c$ for all $\xv$.
-	}
+
+	\vspace{4pt}
+
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\footnotesize
+		\only<2->{
+			\begin{alertblock}{Q1}
+				Which hypothesis space $\Hspace$?
+			\end{alertblock}
+		}
+
+		\only<3->{
+			\begin{exampleblock}{A1}
+				\textbf{Constant} models: $\Hspace = \{f : f(\xv) = c \ \forall \xv \}$.
+			\end{exampleblock}
+		}
+
+		\only<4->{
+			\begin{alertblock}{Q2}
+				Empirical or theoretical risk?
+			\end{alertblock}
+		}
+
+		\only<5->{
+			\begin{exampleblock}{A2}
+				The \textbf{theoretical} risk $\risk_L(f) = \Exy[L(y, f(\xv))]$ (not empirical as in (a)).
+			\end{exampleblock}
+		}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\only<5->{
+			\centering
+			\begin{tikzpicture}[scale=0.5]
+				\draw[->, thick] (-0.2,0) -- (7,0) node[right] {$\xv$};
+				\draw[->, thick] (0,-0.2) -- (0,4.8) node[above] {$f(\xv)$};
+				\draw[red!80!black, thick] (0.5, 2.5) -- (6.5, 2.5);
+				\foreach \x/\i in {1/1, 2/2, 3/3, 4/4, 5/5, 6/6} {
+					\draw[dashed, gray!60] (\x,0) -- (\x,2.5);
+					\filldraw[red!80!black] (\x,2.5) circle (3pt);
+					\node[below] at (\x,-0.1) {\tiny $\xv_{\i}$};
+				}
+				\node[red!80!black, right] at (6.5,2.5) {\tiny $c$};
+			\end{tikzpicture}
+
+			{\tiny One $c$ for \textbf{all} $\xv$.}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Solution to Question (d)}
 	The (theoretical) risk for a constant model $\bar{f}(\xv) = c$ is:
-	\begin{align*}
-		\risk_L(\bar{f}) &= \mathbb{E}_{\xv} \left[ \Eyx \left[ (\my - m(\bar{f}(\xv)))^2 \right] \right]  \\
-			\only<2->{&= \int_{y} \int_{\xv} (\my - m(\bar{f}(\xv)))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
-			\only<3->{&= \int_{y} \int_{\xv} (\my - m(c))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
-			\only<4->{&= \int_{y} (\my - m(c))^2 p(y) \mathrm{d}y  \quad \rhd \\
-			&= \mathbb{E}_y \left[ (\my - m(c))^2 \right]}
-	\end{align*}
-	\only<5->{
-	Therefore, the optimal constant model is  
+
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\footnotesize
+		\begin{align*}
+			\risk_L(\bar{f}) &= \mathbb{E}_{\xv} \left[ \Eyx \left[ (\my - m(\bar{f}(\xv)))^2 \right] \right]  \\
+			\uncover<2->{&= \int_{y} \int_{\xv} (\my - m(\bar{f}(\xv)))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
+			\uncover<3->{&= \int_{y} \int_{\xv} (\my - m(c))^2 p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
+			\uncover<5->{&= \int_{y} (\my - m(c))^2 p(y) \mathrm{d}y \\}
+			\uncover<6->{&= \mathbb{E}_y \left[ (\my - m(c))^2 \right]}
+		\end{align*}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\vspace*{1.2em}
+		\only<4->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt,
+			     inner sep=8pt, fill=blue!4]
+			{\parbox{0.88\linewidth}{
+				\footnotesize
+				$(\my - m(c))^2$ is $\xv$-free $\Rightarrow$ pull out of $\int_\xv$, then marginalize:
+				\begin{align*}
+					&\int_\xv (\my{-}m(c))^2\, p(\xv, y)\, \mathrm{d}\xv \\
+					&= (\my{-}m(c))^2 \underbrace{\int_\xv p(\xv, y)\, \mathrm{d}\xv}_{=\, p(y)}
+				\end{align*}
+			}};
+			\end{tikzpicture}
+		}
+	\end{column}
+	\end{columns}
+
+	\only<7->{
+	Therefore, the optimal constant model is
 	$$\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$$
 	}
 \end{frame}
 
 \begin{frame}{Solution to Question (d): Continued}
-	The risk given $\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$ is:
-	$$\risk_{L}(\bar{f}) = \Exy[(\my - m(\bar{f}(\xv))^2] = \mathbb{E}_y[(\my - \mathbb{E}_y[\my])^2] = \var(\my) \quad \lhd $$
+	The \textbf{risk} of the optimal constant model $\bar{f}(\xv) = c = m^{-1}(\mathbb{E}_y[\my])$:
+
+	\vspace{6pt}
+
+	\begin{align*}
+		\risk_{L}(\bar{f}) &= \Exy[(\my - m(\bar{f}(\xv))^2] \\
+		\uncover<2->{&= \mathbb{E}_y[(\my - \mathbb{E}_y[\my])^2] \\}
+		\uncover<4->{&= \var(\my).}
+	\end{align*}
+
+	\vspace{6pt}
+
+	\only<3->{
+		\begin{tikzpicture}
+		\node[draw=blue!55!black, dashed, thick, rounded corners=5pt,
+		     inner sep=8pt, fill=blue!4]
+		{\parbox{0.92\linewidth}{
+			\footnotesize
+			\textbf{\textcolor{blue!55!black}{Definition of variance:}} for a random variable $Z$, $\var(Z) = \mathbb{E}[(Z - \mathbb{E}[Z])^2]$. Here $Z = m(y)$.
+		}};
+		\end{tikzpicture}
+	}
 \end{frame}
 
 \begin{frame}{Question (e)}
+	\small
+	(e): Recall the decomposition of the Bayes regret into the estimation and the approximation error. Show that the former is $\frac{1}{n}\var(\my)$, while the latter is $\var\left(\Eyx[\my \mid \xv] \right)$ for the optimal constant model $\hat{f}(\xv)$ if $\Hspace$ consists of the constant models.
 
-	(e): Recall the decomposition of the Bayes regret into the estimation and the approximation error. Show that the former is $\frac{1}{n}\var(\my)$, while the latter is $\var\left(\Eyx[\my \ | \ \xv] \right)$ for the optimal constant model $\hat{f}(\xv)$ if the hypothesis space $\Hspace$ consists of the constant models.
+	\vspace{6pt}
 
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+		\footnotesize
+		\only<2->{
+			Q1: What is the Bayes regret, and what are its two errors?
+		}
+
+		\vspace{4pt}
+
+		\only<3->{
+			A1: Bayes regret $= \risk_L(\hat f) - \risk_L^*$, splits as:
+
+			\vspace{4pt}
+			\begin{tikzpicture}
+			\node[draw=gray!55, solid, thick, rounded corners=4pt, inner sep=6pt]
+			{\parbox{0.92\linewidth}{
+				\textbf{Estimation error:}\\[2pt]
+				$\risk_L(\hat f) - \inf_{f \in \Hspace}\risk_L(f)$
+			}};
+			\end{tikzpicture}
+
+			\vspace{4pt}
+			\begin{tikzpicture}
+			\node[draw=gray!55, solid, thick, rounded corners=4pt, inner sep=6pt]
+			{\parbox{0.92\linewidth}{
+				\textbf{Approximation error:}\\[2pt]
+				$\inf_{f \in \Hspace}\risk_L(f) - \risk_L^*$
+			}};
+			\end{tikzpicture}
+		}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		\only<3->{
+			\centering
+			\begin{tikzpicture}[scale=0.72, every node/.style={font=\scriptsize}]
+				% Outer dashed rectangle --- full hypothesis space
+				\draw[dashed, gray!55, thick, rounded corners=5pt, fill=gray!4]
+					(-0.8, 0) rectangle (8, 5.6);
+				\node[anchor=north west, gray!40!black, font=\scriptsize] at (-0.65, 5.45)
+					{Full hypothesis space $\mathcal{F}$};
+
+				% Inner ellipse --- hypothesis space
+				\draw[violet!55!black, thick, fill=violet!12] (2.8, 2.1) ellipse (2.8cm and 1.7cm);
+				\node[violet!50!black, font=\tiny\bfseries] at (2.8, 3.35)
+					{Hypothesis space $\Hspace$};
+
+				% Points + labels
+				\filldraw[blue!70] (1.4, 1.5) circle (2.5pt);
+				\node[below=1pt, font=\scriptsize, black] at (1.7, 1.48) {$\hat f$\,(learned)};
+
+				\filldraw[orange!90!black] (4.3, 1.9) circle (2.5pt);
+				\node[right=2pt, font=\scriptsize, black] at (4.0, 1.5) {$\bar f$\,(best in $\Hspace$)};
+
+				\filldraw[red!70!black] (6.6, 4.4) circle (2.5pt);
+				\node[above left=1pt, font=\scriptsize, black] at (6.6, 4.4) {$f^*$\,(Bayes)};
+
+				% Arrows
+				\draw[->, blue!70, very thick] (1.55, 1.56) -- node[above, sloped, font=\tiny]{estimation err.} (4.17, 1.88);
+				\draw[->, red!65!black, very thick] (4.45, 2.05) -- node[below, sloped, font=\tiny]{approx. err.} (6.47, 4.3);
+			\end{tikzpicture}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (e)}
-	\begin{itemize}
-			\item<1-> Recall from Question (a) that $\hat{f}(\xv) = m^{-1}\left(\frac{1}{n} \sumin m(\yi\right)$ and $\risk_L(\hat{f}) = \left( 1 + \frac{1}{n} \right) \var(\my)$.
-			\item<2-> Recall from Question (d) that $\bar{f}(\xv) = \argmin_{f \in \Hspace} \risk_L(f)$ and $\risk_L(\bar{f}) = \var(\my)$.
-			\item<3-> Recall from (c) that the point-wise risk minimizer $f^*(\xv) = m^{-1}(\Eyx[\my \ | \xv]) = \argmin_{f} R_L(f)$ for an \textbf{unstricted} function space.
-			\item<4-> Remember to differentiate between these risk minimizers.
-			\item<5-> The Bayes regret can be decomposed as:
-				$$\risk_L(\hat{f}) - \risk_L^* = \underbrace{\left[ \risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) \right]}_{\text{estimation error}} + \underbrace{\left[ \inf_{f \in \Hspace} \risk_L(f) - \risk_L^* \right]}_{\text{approximation error}}$$
-		\end{itemize}
-\end{frame}
+\begin{frame}{Solution to Question (e): Roadmap}
+	\footnotesize
+	Three risk minimizers from earlier parts, connected by the two errors:
 
+	\vspace{6pt}
 
-\begin{frame}{Solution to Question (e): Continued}
-The estimation error is:
-	\begin{align*}
-		\risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) 
-		&= \risk_{L} (\fh) - \risk_L(\bar{f}) \\
-		&= \left(1 + \frac{1}{n}\right) \var(\my) - \var(\my) \\
-		&= \frac{1}{n} \var(\my).
-	\end{align*}
-\end{frame}
+	\begin{center}
+	\begin{tikzpicture}[every node/.style={align=left, font=\scriptsize}]
+		\node<1->[rounded corners, draw=gray!60, fill=red!8, inner sep=5pt, text width=3.5cm] (a) {
+			\textbf{From (a)} \\[2pt]
+			$\hat f(\xv) = m^{-1}\!\left(\tfrac{1}{n}\sumin m(\yi)\right)$ \\[2pt]
+			$\risk_L(\hat f) = (1{+}\tfrac{1}{n})\var(\my)$
+		};
+		\node<2->[rounded corners, draw=gray!60, fill=orange!8, inner sep=5pt, text width=3.1cm, right=1.2cm of a] (d) {
+			\textbf{From (d)} \\[2pt]
+			$\bar f = \argmin_{f \in \Hspace}\risk_L(f)$ \\[2pt]
+			$\risk_L(\bar f) = \var(\my)$
+		};
+		\node<3->[rounded corners, draw=gray!60, fill=green!8, inner sep=5pt, text width=3.5cm, right=1.6cm of d] (c) {
+			\textbf{From (c)} \\[2pt]
+			$f^*(\xv) = m^{-1}(\Eyx[\my \mid \xv])$ \\[2pt]
+			unrestricted min. of $\risk_L$
+		};
+		\draw<2->[->, thick] (a) --
+			node[above, font=\tiny]{estimation}
+			node[below, font=\tiny]{err.}
+			(d);
+		\draw<3->[->, thick] (d) --
+			node[above, font=\tiny]{approximation}
+			node[below, font=\tiny]{err.}
+			(c);
+	\end{tikzpicture}
+	\end{center}
 
-\begin{frame}{Solution to Question (e): Continued}
-	The approximation error is:
-	\begin{align*}
-		\inf_{f \in \Hspace} \risk_L(f) - \risk_L^*
-		\only<2->{&= \risk_L(\bar{f}) - \risk_L(f^*) \\}
-		\only<3->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(f^*(\xv))^2 \ | \ \xv] \right] \quad \text{(plug in (d))} \\}
-		\only<4->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - m(m^{-1}(\Eyx[\my \ | \  \xv])))^2 \ | \ \xv] \right] \quad \text{(plug in (c))} \\}
-		\only<5->{&= \var(\my) - \mathbb{E}_\xv \left[ \Eyx [(\my - \Eyx[\my \ | \  \xv])^2 \ | \ \xv] \right] \\}
-		\only<6->{&= \var(\my) - \mathbb{E}_\xv \left[ \var(\my \ | \ \xv) \right]  \\}
-		\only<7->{&= \var(\Eyx[\my \ | \ \xv])}
-	\end{align*}
-	\only<7->{
-		The last step holds because of the law of total variation:
-		$$
-			\var(Y) = \mathbb{E}_X[\var(Y \ | \ X)] + \var[\mathbb{E}_{Y \ | \ X} [Y \ | \ X]]
-		$$
+	\vspace{4pt}
+
+	\only<4->{
+		\begin{center}
+		\scalebox{0.7}{%
+		\begin{tikzpicture}[scale=0.72, every node/.style={font=\scriptsize}]
+			\draw[dashed, gray!55, thick, rounded corners=5pt, fill=gray!4]
+				(-0.8, 0) rectangle (8, 5.6);
+			\node[anchor=north west, gray!40!black, font=\scriptsize] at (-0.65, 5.45)
+				{Full hypothesis space $\mathcal{F}$};
+
+			\draw[violet!55!black, thick, fill=violet!12] (2.8, 2.1) ellipse (2.8cm and 1.7cm);
+			\node[violet!50!black, font=\tiny\bfseries] at (2.8, 3.35)
+				{Hypothesis space $\Hspace$};
+
+			\filldraw[blue!70] (1.4, 1.5) circle (2.5pt);
+			\node[below=1pt, font=\scriptsize, black] at (1.7, 1.48) {$\hat f$\,(learned)};
+
+			\filldraw[orange!90!black] (4.3, 1.9) circle (2.5pt);
+			\node[right=2pt, font=\scriptsize, black] at (4.0, 1.5) {$\bar f$\,(best in $\Hspace$)};
+
+			\filldraw[red!70!black] (6.6, 4.4) circle (2.5pt);
+			\node[above left=1pt, font=\scriptsize, black] at (6.6, 4.4) {$f^*$\,(Bayes)};
+
+			\draw[->, blue!70, very thick] (1.55, 1.56) -- node[above, sloped, font=\tiny]{estimation err.} (4.17, 1.88);
+			\draw[->, red!65!black, very thick] (4.45, 2.05) -- node[below, sloped, font=\tiny]{approx. err.} (6.47, 4.3);
+		\end{tikzpicture}%
+		}
+		\end{center}
 	}
+\end{frame}
+
+
+\begin{frame}{Solution (e): Part 1 of 2 --- Estimation Error}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\begin{align*}
+			&\risk_L(\hat{f}) - \inf_{f \in \Hspace} \risk_L(f) \\
+			\uncover<2->{&= \risk_{L} (\fh) - \risk_L(\bar{f}) \\}
+			\uncover<3->{&= \left(1 + \tfrac{1}{n}\right) \var(\my) - \var(\my) \\}
+			\uncover<4->{&= \boxed{\tfrac{1}{n} \var(\my)}}
+		\end{align*}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\vspace*{0.8em}
+		\only<2->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt, inner sep=7pt, fill=blue!4]
+			{\parbox{0.9\linewidth}{
+				\footnotesize
+				$\inf_{f \in \Hspace}\risk_L(f) = \risk_L(\bar f)$, since $\bar f$ is the in-class minimizer (from (d)).
+			}};
+			\end{tikzpicture}
+		}
+
+		\vspace{6pt}
+		\only<3->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt, inner sep=7pt, fill=blue!4]
+			{\parbox{0.9\linewidth}{
+				\footnotesize
+				$\risk_L(\hat f) = (1{+}\tfrac{1}{n})\var(\my)$ from (a);\\
+				$\risk_L(\bar f) = \var(\my)$ from (d).
+			}};
+			\end{tikzpicture}
+		}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution (e): Part 2 of 2 --- Approximation Error}
+	\footnotesize
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		\begin{align*}
+			&\inf_{f \in \Hspace} \risk_L(f) - \risk_L^* \\
+			\uncover<2->{&= \risk_L(\bar{f}) - \risk_L(f^*) \\}
+			\uncover<3->{&= \var(\my) - \mathbb{E}_\xv\!\left[\Eyx[(\my - m(f^*(\xv)))^2 \mid \xv]\right] \\}
+			\uncover<4->{&= \var(\my) - \mathbb{E}_\xv\!\left[\Eyx[(\my - \Eyx[\my \mid \xv])^2 \mid \xv]\right] \\}
+			\uncover<5->{&= \var(\my) - \mathbb{E}_\xv\!\left[\var(\my \mid \xv)\right] \\}
+			\uncover<6->{&= \boxed{\var(\Eyx[\my \mid \xv])}}
+		\end{align*}
+	\end{column}
+	\begin{column}{0.38\textwidth}
+		\vspace*{0.8em}
+		\only<3->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt, inner sep=7pt, fill=blue!4]
+			{\parbox{0.9\linewidth}{
+				\scriptsize
+				\textbf{\textcolor{blue!55!black}{From (d):}} $\risk_L(\bar f) = \var(\my)$.\\[2pt]
+				\textbf{\textcolor{blue!55!black}{Def.:}} $\risk_L(f^*) = \mathbb{E}_\xv[\Eyx[(\my - m(f^*))^2 \mid \xv]]$.
+			}};
+			\end{tikzpicture}
+		}
+
+		\vspace{4pt}
+		\only<4->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt, inner sep=7pt, fill=blue!4]
+			{\parbox{0.92\linewidth}{
+				\scriptsize
+				\textbf{\textcolor{blue!55!black}{From (c):}} $f^*(\xv) = m^{-1}(\Eyx[\my \mid \xv])$, so $m(f^*(\xv)) = \Eyx[\my \mid \xv]$.
+			}};
+			\end{tikzpicture}
+		}
+
+		\vspace{4pt}
+		\only<6->{
+			\begin{tikzpicture}
+			\node[draw=blue!55!black, dashed, thick, rounded corners=5pt, inner sep=7pt, fill=blue!4]
+			{\parbox{0.92\linewidth}{
+				\scriptsize
+				\textbf{\textcolor{blue!55!black}{Law of total variance:}}
+				$\var(Y) = \mathbb{E}_X[\var(Y \mid X)] + \var(\mathbb{E}[Y \mid X])$.
+			}};
+			\end{tikzpicture}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 
