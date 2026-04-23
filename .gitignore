@@ -36,6 +36,7 @@
 *.out
 *.pdf
 !ex_*.pdf
+!annotated_ex_*.pdf
 !example.pdf
 !organization.pdf
 *.pyg
