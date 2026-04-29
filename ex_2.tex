@@ -23,8 +23,14 @@
 \usepackage{comment}
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
 \usepackage{bm}
+\usepackage{colortbl}
+\usepackage{booktabs}
 \usepackage{pgfpages}
+\usepackage{tikz}
+\usetikzlibrary{overlay-beamer-styles}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -55,7 +61,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{November 3, 2023}
+\date{April 30, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -99,108 +105,316 @@
 
 
 \begin{frame}{Exercise 1: Risk Minimizers for 0-1-Loss}
-	Consider the classification learning setting, i.e., $\Yspace = \{1, \ldots, g\}$, and the hypothetis space is $\Hspace = \{h: \Xspace \rightarrow \Yspace \}$. The loss function of interest is the 0-1-loss:
+\small
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+	\textbf{Setting.} Classification with $\Yspace = \{1, \ldots, g\}$ and $\Hspace = \{h: \Xspace \rightarrow \Yspace \}$. The loss of interest is the 0-1-loss:
 	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \begin{cases}
-		1, \quad &\text{if} y \neq h(\xv), \\
-		0, \quad &\text{if} y = h(\xv).
+		1, & \text{if } y \neq h(\xv), \\
+		0, & \text{if } y = h(\xv).
 	\end{cases}
-	\qquad \lhd
 	$$
-	(a) Consider the hypothesis space of constant models $\Hspace = \{h: \Xspace \rightarrow \Yspace | h(\xv) = \thetab \in \Yspace \ \forall \xv \in \Xspace \}$, where $\Xspace$ is the feature space. Show that 
-	$$
-		\hat{h}(\xv) = \mathrm{mode} \left\{\yi \right\}
-	$$
-	is the empirical risk minimizer for the 0-1-loss in this case.
+
+	\vspace{2pt}
+	\textbf{Question (a).} Take the hypothesis space of \emph{constant models}
+	$$\Hspace = \{h \mid h(\xv) = \thetav \in \Yspace \ \forall \xv \in \Xspace \}.$$
+	Show that
+	$$\hat{h}(\xv) = \mathrm{mode} \left\{\yi \right\}$$
+	is the empirical risk minimizer for the 0-1-loss.
+\end{column}
+\begin{column}{0.46\textwidth}
+	\uncover<2->{
+		\textbf{Roadmap} {\footnotesize (general recipe for ERM w/ const.\ models)}\\[2pt]
+		{\color{gray}\hrule height 0.4pt}\vspace{4pt}
+		\begin{enumerate}
+			\item Write down the empirical risk $\riske(h)$.
+			\item Substitute $h(\xv) = \thetav$ (hypothesis is constant).
+			\item \textcolor{gray}{Check strict convexity in $\thetav$.} \\
+				  \textcolor{gray}{\footnotesize (not needed here)}
+			\item \textcolor{gray}{Set the gradient to $0$ and solve for $\thetav^\ast$.} \\
+				  \textcolor{gray}{\footnotesize (not needed here)}
+		\end{enumerate}
+	}
+\end{column}
+\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (a)}
+\begin{frame}{Solution (a) --- Steps 1 \& 2: write $\riske(h)$, then substitute $h(\xv) = \thetav$}
 \small
-The empirical risk is
-	\begin{align*}
-		\riske(h) &= \sumin \id_{\yi \neq h(\xi)} \\
-		&=\sumin 1 - \id_{\yi = h(\xi)} \quad \rhd \\
-	\end{align*}
+Recall the 0-1-loss:
+$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \begin{cases}
+	1, & \text{if } y \neq h(\xv), \\
+	0, & \text{if } y = h(\xv).
+\end{cases}$$
+
+Step 1 --- Write down the empirical risk.
+\vspace{-6pt}
+\begin{align*}
+	\riske(h) &= \sumin \id_{\yi \neq h(\xi)}.
+\end{align*}
+
 \uncover<2->{
-Therefore
-	\begin{align*}
-		\argmin_{h \in \Hspace} \riske(h) 
-		\only<2->{&= \argmin_{h \in \Hspace} \sumin 1 - \id_{\yi = h(\xi)} \\} 
-		\only<3->{&= \argmax_{h \in \Hspace} \sumin \id_{\yi = h(\xi)} \\}
-		\only<4->{&= \argmax_{\thetab \in \Yspace} \sumin \id_{\yi = \thetab} =\mathrm{mode} \left\{ \yi \right\} \qquad \rhd}
-	\end{align*}
+\vspace{-8pt}
+Step 2 --- Substitute $h(\xv) = \thetav$ (constant model):
+\vspace{-6pt}
+\begin{align*}
+	\riske(\thetav) &= \sumin \id_{\yi \neq \thetav}.
+\end{align*}
 }
-	
+
+\uncover<3->{
+\vspace{-4pt}
+\emph{Intuition:}
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+	\item $\riske(\thetav)$ = \# training points whose label $\neq \thetav$.
+	\item To minimize errors, pick $\thetav$ = most frequent $\yi$, i.e.\ the \textbf{mode}.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}{Solution (a) --- Instantiating the intuition}
+\small
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+Formalize ``pick the most frequent $\yi$'' as an argmin chain:
+\begin{align*}
+	\argmin_{\thetav \in \Yspace} \riske(\thetav)
+	&= \argmin_{\thetav \in \Yspace} \sumin \id_{\yi \neq \thetav} \\
+	\only<2->{&= \argmin_{\thetav \in \Yspace} \sumin \left(1 - \id_{\yi = \thetav}\right) \\}
+	\only<3->{&= \argmax_{\thetav \in \Yspace} \sumin \id_{\yi = \thetav} \\}
+	\only<4->{&= \mathrm{mode}\left\{ \yi \right\}.}
+\end{align*}
+\uncover<4->{
+Therefore $\hat{h}(\xv) = \mathrm{mode}\left\{ \yi \right\}$ is the empirical risk minimizer.
+}
+\end{column}
+\begin{column}{0.43\textwidth}
+\emph{Toy example:} $n = 5$ points, labels $\{1,1,1,0,0\}$.
+\vspace{2pt}
+
+\begin{center}
+\begin{tikzpicture}[
+	every node/.style={font=\scriptsize},
+	pt/.style={draw, circle, minimum size=14pt, inner sep=0pt},
+	row/.style={anchor=east, font=\scriptsize}
+]
+	% Data row
+	\node[row] at (-0.3, 0) {data $\yi$:};
+	\foreach \lab/\x in {1/0, 1/1, 1/2, 0/3, 0/4}
+		\node[pt, fill=gray!15] at (\x*0.75, 0) {\lab};
+
+	% theta = 1 row (appears at <2->)
+	\node[row, visible on=<2->] at (-0.3, -1.05) {$\thetav{=}1$:};
+	\foreach \x in {0,1,2}
+		\node[pt, fill=green!35, visible on=<2->] at (\x*0.75, -1.05) {1};
+	\foreach \x in {3,4}
+		\node[pt, fill=red!45, visible on=<2->] at (\x*0.75, -1.05) {1};
+	\node[anchor=west, visible on=<2->] at (4*0.75+0.35, -1.05) {$\riske=2$};
+
+	% theta = 0 row (appears at <3->)
+	\node[row, visible on=<3->] at (-0.3, -2.1) {$\thetav{=}0$:};
+	\foreach \x in {0,1,2}
+		\node[pt, fill=red!45, visible on=<3->] at (\x*0.75, -2.1) {0};
+	\foreach \x in {3,4}
+		\node[pt, fill=green!35, visible on=<3->] at (\x*0.75, -2.1) {0};
+	\node[anchor=west, visible on=<3->] at (4*0.75+0.35, -2.1) {$\riske=3$};
+\end{tikzpicture}
+\end{center}
+
+\vspace{2pt}
+\uncover<4->{
+\textcolor{green!55!black}{Green} = hit, \textcolor{red!70!black}{red} = miss. \\
+$2 < 3$, so $\thetav = 1 = \mathrm{mode}\{\yi\}$ wins.
+}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Question (b)}
-	(b) What is the optimal constant model in terms of the (theoretical) risk for the 0-1-loss and what is its risk?
-	\vspace{10pt}
-	
+\small
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+	\textbf{Question (b).} What is the optimal constant model in terms of the \emph{theoretical} risk for the 0-1-loss, and what is its risk?
+	\vspace{6pt}
+
+	\textbf{Recall.} Constant model:
+	$$\Hspace = \{h \mid h(\xv) = \thetav \in \Yspace \ \forall \xv \in \Xspace \}.$$
+
+	0-1-loss:
+	$L(y, h(\xv)) = \id_{y \neq h(\xv)}$.
+\end{column}
+\begin{column}{0.46\textwidth}
 	\uncover<2->{
-	Constant model: $$\hx = \theta$$
+		\textbf{Roadmap} {\footnotesize (same recipe, now for \emph{theoretical} risk)}\\[2pt]
+		{\color{gray}\hrule height 0.4pt}\vspace{4pt}
+		\begin{enumerate}
+			\item Write down the theoretical risk $\risk_L(h)$.
+			\item Substitute $h(\xv) = \thetav$ (hypothesis is constant).
+			\item Marginalize out $\xv$ (integrand no longer depends on $\xv$).
+			\item Minimize in $\thetav$ $\Rightarrow$ optimal $\thetav^\ast$; then plug back to get $\risk_L(\bar h)$.
+		\end{enumerate}
+	}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Solution (b) --- Steps 1--3: write $\risk_L$, substitute, marginalize out $\xv$}
+	\small
+	\setlength{\abovedisplayskip}{0pt}
+	\setlength{\belowdisplayskip}{0pt}
+	\setlength{\abovedisplayshortskip}{0pt}
+	\setlength{\belowdisplayshortskip}{0pt}
+	\vspace*{-1.2em}
+	\begin{align*}
+		\risk_L(h)
+		&= \int_y \int_\xv \id_{y \neq h(\xv)}\, p(\xv, y)\, \mathrm{d}\xv\, \mathrm{d}y
+		&& \text{\scriptsize (Step 1: write the theoretical risk)} \\
+		\only<2->{&= \int_y \int_\xv \id_{y \neq \thetav}\, p(\xv, y)\, \mathrm{d}\xv\, \mathrm{d}y
+		&& \text{\scriptsize (Step 2: substitute $h(\xv) = \thetav$)} \\}
+		\only<3->{&= \int_y \id_{y \neq \thetav}\, p(y)\, \mathrm{d}y
+		&& \text{\scriptsize (Step 3: integrand is $\xv$-free, marginalize)}}
+	\end{align*}
+
+\end{frame}
+
+\begin{frame}{Solution (b) --- Step 4: minimize in $\thetav$}
+	\small
+	\setlength{\abovedisplayskip}{0pt}
+	\setlength{\belowdisplayskip}{0pt}
+	\setlength{\abovedisplayshortskip}{0pt}
+	\setlength{\belowdisplayshortskip}{0pt}
+	\vspace*{-1.2em}
+
+	From Step 3:
+	\[
+		\risk_L(\thetav)
+		= \int_y \id_{y \neq \thetav}\,p(y)\,\mathrm{d}y
+		= \mathbb{E}[\id_{y \neq \thetav}]
+		= \Prob(y \neq \thetav),
+		\qquad \mathbb{E}[\id_A] = \Prob(A).
+	\]
+
+	\uncover<2->{
+	Use the complement:
+	\[
+		\risk_L(\thetav)
+		= \Prob(y \neq \thetav)
+		= 1 - \Prob(y = \thetav).
+	\]
+	}
+
+	\uncover<3->{
+	Minimizing risk therefore means choosing the most likely label:
+	\begin{align*}
+		\argmin_{\thetav \in \Yspace} \risk_L(\thetav)
+		&= \argmin_{\thetav \in \Yspace} \left(1 - \Prob(y = \thetav)\right) \\
+		&= \argmax_{l \in \Yspace} \Prob(y = l).
+	\end{align*}
 	}
 \end{frame}
 
-\begin{frame}{Solution to Question (b)}
+\begin{frame}{Solution (b) --- Step 4: plug back to get $\risk_L(\bar h)$}
 	\small
-	\begin{align*}
-		\risk_L(h) &= \int_y \int_\xv \id_{y \neq h(\xv)} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\
-		\only<2->{&= \int_y \int_\xv \id_{y \neq \thetab} p(\xv, y) \mathrm{d}\xv \mathrm{d}y \\}
-		\only<3->{&= \int_y \id_{y \neq \thetab} p(y) \mathrm{d}y \\}
-		\only<4->{&= \int_y \left( 1 - \id_{y = \thetab} \right) p(y) \mathrm{d}y = 1 - \int_y \id_{y=\thetab} p(y) \mathrm{d}y }
-	\end{align*}
-	\uncover<5->{
-		Therefore, $\argmin_{h} \risk_L(h) = \argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y$. 
-	}
-	\uncover<6->{
-		Futhermore, $\Yspace = \{1, \ldots, g\}$, 
-		it follows that $\argmax_{\thetab \in \Yspace} \int_y \id_{y = \thetab} p(y) \mathrm{d} y = \argmax_{\thetab \in \Yspace} \sumjg \id_{\thetab = j} \Prob (y=j)$. (Show example.)
-	}
-	
-	\uncover<7->{
-		Hence, the optimal constant model for the \textbf{theorerical} risk is 
-		$$\bar{h}(\xv) = \argmax_{l \in \Yspace} \Prob(y = l)$$
+
+	From Step~4, the optimal constant model is
+	\[
+		\bar h(\xv) \;=\; \argmax_{l \in \Yspace} \Prob(y = l),
+	\]
+	i.e.\ the label that attains the maximum of $\Prob(y = l)$, so
+	\[
+		\Prob\!\left(y = \bar{h}(\xv)\right) \;=\; \max_{l \in \Yspace} \Prob(y = l).
+	\]
+
+	\uncover<2->{
+	Plug into $\risk_L(\thetav) = 1 - \Prob(y = \thetav)$ (from Step~4):
+	\[
+		\risk_L(\bar h)
+		\;=\; 1 - \Prob\!\left(y = \bar{h}(\xv)\right)
+		\;=\; 1 - \max_{l \in \Yspace} \Prob(y = l).
+	\]
 	}
 \end{frame}
 
-\begin{frame}{Solution to Question (b): Continued}
+\begin{frame}{Summary of (b) --- General takeaways}
 	\small
-	Before we compute $\risk_{L}(\bar{h})$, we write 0-1-loss as follows:
-	$$L(y, h(\xv)) = \id_{y \neq h(\xv)} = \sum_{k \in \Yspace} \id_{k=y} \id_{k\neq h(\xv)} = \sum_{k \in \Yspace} \id_{k = y} L(k, h(x)).$$
-	Then, the risk of $\bar{h}$ is 
-	\begin{align*}
-		\only<2->{
-			\risk_L(\bar{h})
-			&= \Exy[L(y, \bar{h}(\xv))] \\
-		}
-		\only<3->{&= \Ex\left[ \Eyx \left[L(y, \bar{h}(\xv)) \ | \ \xv \right] \right] \\}
-		\only<4->{&= \Ex\left[ \Eyx \left[\sum_{k \in \Yspace} \id_{y=k} L(k, \bar{h}(\xv)) \ | \ \xv \right] \right] \\}
-		\only<5->{&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \quad \rhd \\}
-	\end{align*}
-\end{frame}
 
-\begin{frame}{Solution to Question (b): Continued}
-	\small
-	\begin{align*}
-		\risk_L(\bar{h})
-		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Eyx \left[\id_{y=k}  \ | \ \xv \right] \right] \\
-		&= \Ex\left[ \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Prob(y = k \ | \ \xv) \right] \\
-		&= \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Ex \left[ \Prob(y = k \ | \ \xv) \right] \\
-		& = \sum_{k \in \Yspace} L(k, \bar{h}(\xv)) \Prob(y = k) \\
-		&= \sum_{k \in \Yspace} \id_{k \neq \bar{h}(\xv)} \Prob(y=k) \\
-		&=  \sum_{k \in \Yspace} \id_{k \neq \argmax_{l \in \Yspace} \Prob(y=l)} \Prob(y=k) \\
-		&= 1 - \max_{l \in \Yspace} \Prob(y=l).
-	\end{align*}
+	\begin{itemize}
+		\setlength{\itemsep}{8pt}
+
+		\item \textbf{ERM and theoretical risk minimization share one recipe} (for constant models) --- write, substitute, simplify, minimize. The only difference is how you average:
+		\[
+			\underbrace{\tfrac{1}{n}\sumin L(\yi, h(\xi))}_{\riske(h)\ \text{(sample)}}
+			\;\;\longleftrightarrow\;\;
+			\underbrace{\E_{\xv, y}\!\left[L(y, h(\xv))\right]}_{\risk_L(h)\ \text{(population)}}.
+		\]
+		Here that yields $\;\text{mode}\{\yi\}\;\longleftrightarrow\;$ mode of $p(y)$.
+
+		\item \textbf{The loss selects the statistic} you end up estimating. \\
+		$0\text{-}1$ loss $\Rightarrow$ \emph{mode}; \quad L2 loss $\Rightarrow$ \emph{mean}; \quad L1 loss $\Rightarrow$ \emph{median}.
+
+		\item \textbf{Indicator trick:} $\E[\id_A] = \Prob(A)$. Turns $0\text{-}1$-loss integrals into probabilities --- keeps the algebra clean and makes the answer interpretable.
+
+		\item \textbf{Hypothesis class $\Hspace$ controls what you can exploit.} \\
+		Constant models drop $\xv$ $\Rightarrow$ only the \emph{marginal} $p(y)$ matters. A richer $\Hspace$ that depends on $\xv$ would let you target $p(y \mid \xv)$ pointwise (Bayes classifier).
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Question (c)}
-	(c) Derive the approximation error if the hypothesis space $\Hspace$ consists of the \textbf{constant models}.
-	\vspace{10pt}
-	
-	Recall that the approximation error is defined as 
-	$$\inf_{h \in \Hspace} \risk_L(h) - \riskbayes_L$$
-	and the Bayesian risk is 
-	$$\riskbayes_L = 1 - \Ex[\max_{l \in \Yspace} \Prob(y = l | \xv)])$$
+	\small
+
+	\textbf{Question (c).} Derive the approximation error if the hypothesis space $\Hspace$ consists of the \emph{constant models}.
+	\vspace{8pt}
+
+	\begin{enumerate}
+		\setlength{\itemsep}{6pt}
+		\item How is the approximation error defined?
+		\uncover<2->{\\[2pt]
+			\textcolor{gray}{$\displaystyle\inf_{h \in \Hspace} \risk_L(h) \;-\; \riskbayes_L$}
+		}
+
+		\item What do the two terms mean?
+		\uncover<3->{\\[2pt]
+			\textcolor{gray}{$\inf_{h \in \Hspace} \risk_L(h)$: best risk \emph{inside} $\Hspace$. \quad $\riskbayes_L$: best risk over \emph{all} $h$ (Bayes-optimal).}
+		}
+
+		\item Which $\Hspace$ are we using here?
+		\uncover<4->{\\[2pt]
+			\textcolor{gray}{Constant models --- same setup as (a) and (b).}
+		}
+
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Question (c) --- Using (a) and (b) for both terms}
+	\small
+
+	\emph{First term (from (b)):}
+	\[
+		\inf_{h \in \Hspace} \risk_L(h) \;=\; 1 - \max_{l \in \Yspace} \Prob(y = l).
+	\]
+
+	\uncover<2->{
+	\emph{Second term --- tower property:}
+	\[
+		\riskbayes_L
+		\;=\; \E_{\xv, y}\!\left[\id_{y \neq h^\ast(\xv)}\right]
+		\;=\; \E_\xv\!\left[\,\E_{y \mid \xv}\!\left[\id_{y \neq h^\ast(\xv)} \,\big|\, \xv\right]\right].
+	\]
+	}
+
+	\uncover<3->{
+	Minimize the inner expectation pointwise --- this is (b) with $p(y \mid \xv)$ in place of $p(y)$:
+	\[
+		\E_{y \mid \xv}\!\left[\id_{y \neq h^\ast(\xv)} \,\big|\, \xv\right] \;=\; 1 - \max_{l \in \Yspace} \Prob(y = l \mid \xv).
+	\]
+	}
+
+	\uncover<4->{
+	\emph{Take expectation over $\xv$:}
+	\[
+		\riskbayes_L \;=\; 1 - \E_\xv\!\left[\max_{l \in \Yspace} \Prob(y = l \mid \xv)\right].
+	\]
+	}
 \end{frame}
 
 \begin{frame}{Solution to (c)}
@@ -216,69 +430,260 @@ Therefore
 	(d) Assume now $g=2$ (binary classification) and consider now the hypothesis space of probabilistic classifiers $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, that is, $\pi(\xv)$ (or $1 - \pi(\xv)$) is an estimate of the posterior distribution $p_{y | \xv} (1 | \xv)$ (or $p_{y | \xv} (0 | \xv)$). Furthermore, consider the probabilistic 0-1-loss
 	$$
 	L(y, \pi(\xv)) = \begin{cases}
-		1, \quad & \text{if ($\pi(\xv) \geq 1/2$ and $y=0$) or ($\pi(\xv) < 1/ 2$ and $y = 1$),} \qquad \rhd(interpret)\\
+		1, \quad & \text{if ($\pi(\xv) \geq 1/2$ and $y=0$) or ($\pi(\xv) < 1/ 2$ and $y = 1$),}\\
 		0, \quad & \text{else.}
 	\end{cases}
 	$$
-	Is the minimum of $\Exy[L(y, \pix)]$ unique over $\pi \in \Hspace$? Is the posterior distribution $p_{y|x}$ a resp. the minimizer of $\Exy[L(y, \pix)]$? Discuss the corresponding (dis-)advantanges of your findings.
-\end{frame}
-
-\begin{frame}{Solution to Question (d)}
 	\begin{itemize}
-		\item<1-> We can rewrite the 0-1-loss as $$L(y, \pix) = \id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix <1/2} \id_{y=1}.$$
-		\item<2-> Since $\Hspace = \{\pi: \Xspace \to [0, 1] \}$, we can optimize $\pi$ for each point $\xv$.
-		\item<3-> In other words, for $\Exy[L(y, \pix)] = \Ex[\Eyx[L(y, \pix) \ | \ \xv]]$. we optimize $\Eyx[L(y, \pix) \ | \ \xv]$ for each $\xv$.
+		\item[(i)] Is the minimum of $\Exy[L(y, \pix)]$ unique over $\pi \in \Hspace$?
+		\item[(ii)] Is the posterior distribution $p_{y|x}$ a resp. the minimizer of $\Exy[L(y, \pix)]$? Discuss the corresponding (dis-)advantanges of your findings.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}{Solution to Question (d) --- Setup}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+		\textbf{Step 1: Indicator form.}
+		\[
+			\begin{array}{c|cc}
+				 & y = 0 & y = 1 \\ \hline
+				\pix \geq 1/2 & \cellcolor{red!20}\mathbf{1} & 0 \\
+				\pix < 1/2 & 0 & \cellcolor{blue!20}\mathbf{1}
+			\end{array}
+		\]
+		Sum the two ``$L=1$'' cells:
+		\[
+			L(y, \pix) = {\color{red!70!black}\id_{\pix \geq 1/2}\,\id_{y=0}} + {\color{blue!70!black}\id_{\pix < 1/2}\,\id_{y=1}}.
+		\]
+	\end{column}
+	\begin{column}{0.43\textwidth}
+		\uncover<2->{
+			\textbf{Step 2: Pointwise.}\\[2pt]
+			$\Hspace = \{\pi : \Xspace \to [0,1]\}$ $\Rightarrow$ choose $\pi(\xv)$ independently at each $\xv$.
+		}
+		\vspace{10pt}
+
+		\uncover<3->{
+			\textbf{Step 3: Tower property.}
+			\[
+				\Exy[L] = \Ex\!\left[\Eyx[L \mid \xv]\right].
+			\]
+			Minimize $\Eyx[L \mid \xv]$ pointwise.
+		}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution to Question (d) --- Roadmap}
+	\small
+	\vspace{4pt}
+	\textcolor{gray}{\footnotesize From Step~3 we need to minimize $\Eyx[L \mid \xv]$ at each $\xv$. Think through three guiding questions:}
+	\vspace{14pt}
+
+	\begin{center}
+	\begin{tikzpicture}[
+		every node/.style={font=\footnotesize},
+		qbox/.style={
+			rectangle, rounded corners=5pt, draw=black!55, line width=0.6pt,
+			minimum height=2.1cm, text width=3.3cm, align=center,
+			top color=white, bottom color=black!6
+		},
+		arr/.style={->, thick, >=latex, draw=black!55}
+	]
+		\node[qbox] at (0,    0) (q1) {\textbf{Q1.}\\[3pt] How can we write $\Eyx[L \mid \xv]$ in \emph{closed form} as a function of $\pix$?};
+		\node[qbox] at (5.0,  0) (q2) {\textbf{Q2.}\\[3pt] Given that closed form, which $\pix$ \emph{minimizes} it?};
+		\node[qbox] at (10.0, 0) (q3) {\textbf{Q3.}\\[3pt] Does the posterior $p_{y \mid \xv}$ achieve the minimum?\\ Is it \emph{unique}?};
+
+		\draw[arr] (q1) -- (q2);
+		\draw[arr] (q2) -- (q3);
+	\end{tikzpicture}
+	\end{center}
 
 \end{frame}
 
-\begin{frame}{Solution to Question (d): Continued}
-	\begin{align*}
-		\Eyx[L(y, \pix) \ | \ \xv]
-		&= \Eyx[\id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\
-		\only<2->{& = \Eyx[\id_{\pix \geq 1/2} \id_{y=0} \ | \ \xv] + \Eyx[ \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] \\}
-		\only<3->{&= \id_{\pix \geq 1/2} \cdot \Eyx[\id_{y=0} \ | \ \xv] + \id_{\pix < 1/2} \cdot \Eyx[\id_{y=1} \ | \ \xv] \quad \rhd \\}
-		\only<4->{&= \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). \\}
-	\end{align*}
+\begin{frame}{Solution to Question (d) --- Compute $\Eyx[L \mid \xv]$}
+	\setlength{\abovedisplayskip}{4pt}
+	\setlength{\belowdisplayskip}{4pt}
+	\begin{columns}[T]
+	\begin{column}{0.66\textwidth}
+		\begin{flalign*}
+			& \Eyx[L(y, \pix) \ | \ \xv] & \\
+			&= \Eyx[\id_{\pix \geq 1/2} \id_{y=0} + \id_{\pix < 1/2} \id_{y=1} \ | \ \xv] & \\
+			\only<2->{&= \Eyx[\id_{\pix \geq 1/2} \id_{y=0} \ | \ \xv] + \Eyx[\id_{\pix < 1/2} \id_{y=1} \ | \ \xv] & \\}
+			\only<3->{&= \id_{\pix \geq 1/2} \cdot \Eyx[\id_{y=0} \ | \ \xv] + \id_{\pix < 1/2} \cdot \Eyx[\id_{y=1} \ | \ \xv] & \\}
+			\only<4->{&= \id_{\pix \geq 1/2}\, \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2}\, \Prob(y = 1 \ | \ \xv). &}
+		\end{flalign*}
+	\end{column}
+	\begin{column}{0.32\textwidth}
+		\uncover<3->{
+			\footnotesize
+			\textbf{Why} $\Eyx[\id_{y=l} \mid \xv] = \Prob(y = l \mid \xv)$?\\[4pt]
+			An indicator only takes values $\{0,1\}$:
+			\[
+				\id_{y=l} = \begin{cases} 1, & y = l, \\ 0, & y \neq l. \end{cases}
+			\]
+			So its conditional expectation is
+			\begin{align*}
+				\Eyx[\id_{y=l} \mid \xv]
+				&= 1 \cdot \Prob(y=l \mid \xv) \\
+				&\phantom{={}} + 0 \cdot \Prob(y \neq l \mid \xv) \\
+				&= \Prob(y = l \mid \xv).
+			\end{align*}
+		}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (d): Continued}
-	$$\Eyx[L(y, \pix) \ | \ \xv] = \id_{\pix \geq 1/2} \Prob(y = 0 \ | \ \xv) + \id_{\pix < 1/2} \Prob(y = 1 | \xv). $$
-	We can distinguish between two cases:
-	\begin{itemize}
-		\item<2-> If $\Prob(y=0 \ | \ \xv) \geq 1/ 2$, then any $\pix < 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
-		\item<3-> If $\Prob(y=0 \ | \ \xv) \leq 1/ 2$, then any $\pix \geq 1/2$ minimizes $\Eyx[L(y, \pix) \ | \ \xv]$.
-	\end{itemize}
-	
+\begin{frame}{Solution to Question (d) --- Cases}
+	\small
+	$$\Eyx[L \mid \xv] = \id_{\pix \geq 1/2}\, \Prob(y = 0 \mid \xv) + \id_{\pix < 1/2}\, \Prob(y = 1 \mid \xv).$$
+
+	\vspace{4pt}
+	\begin{columns}[T]
+	\begin{column}{0.48\textwidth}
+		\centering
+		\uncover<2->{
+			\textbf{Case 1.} $\Prob(y=0 \mid \xv) \geq 1/2$
+
+			\begin{tikzpicture}[scale=0.85, baseline]
+				\draw[->] (0,0) -- (4.6,0) node[right, font=\scriptsize] {$\pix$};
+				\draw[->] (0,0) -- (0,2.4) node[above, font=\scriptsize] {$\Eyx[L|\xv]$};
+				\draw (2,-0.06) -- (2,0.06);
+				\node[below, font=\scriptsize] at (0,-0.04) {$0$};
+				\node[below, font=\scriptsize] at (2,-0.04) {$\tfrac{1}{2}$};
+				\node[below, font=\scriptsize] at (4,-0.04) {$1$};
+				\draw[dashed, gray!60] (0,1) -- (4.2,1) node[right, font=\scriptsize, black!60] {$\tfrac{1}{2}$};
+				% step: low on [0,1/2), high on [1/2,1]
+				\fill[green!25] (0,0) rectangle (2,0.6);
+				\draw[very thick, blue!70!black] (0,0.6) -- (2,0.6);
+				\draw[very thick, blue!70!black] (2,1.8) -- (4,1.8);
+				\draw[dashed, blue!50] (2,0.6) -- (2,1.8);
+				\node[font=\scriptsize, blue!50!black] at (1,0.95) {$\Prob(y{=}1|\xv)$};
+				\node[font=\scriptsize, blue!50!black] at (3,2.1) {$\Prob(y{=}0|\xv)$};
+				\node[font=\scriptsize, green!45!black] at (1,0.3) {pick here};
+			\end{tikzpicture}
+
+			\footnotesize $\Rightarrow\;\pix < 1/2,\; \Eyx[L \mid \xv] = \Prob(y{=}1 \mid \xv)$
+		}
+	\end{column}
+	\begin{column}{0.48\textwidth}
+		\centering
+		\uncover<3->{
+			\textbf{Case 2.} $\Prob(y=0 \mid \xv) < 1/2$
+
+			\begin{tikzpicture}[scale=0.85, baseline]
+				\draw[->] (0,0) -- (4.6,0) node[right, font=\scriptsize] {$\pix$};
+				\draw[->] (0,0) -- (0,2.4) node[above, font=\scriptsize] {$\Eyx[L|\xv]$};
+				\draw (2,-0.06) -- (2,0.06);
+				\node[below, font=\scriptsize] at (0,-0.04) {$0$};
+				\node[below, font=\scriptsize] at (2,-0.04) {$\tfrac{1}{2}$};
+				\node[below, font=\scriptsize] at (4,-0.04) {$1$};
+				\draw[dashed, gray!60] (0,1) -- (4.2,1) node[right, font=\scriptsize, black!60] {$\tfrac{1}{2}$};
+				% step: high on [0,1/2), low on [1/2,1]
+				\fill[green!25] (2,0) rectangle (4,0.6);
+				\draw[very thick, blue!70!black] (0,1.8) -- (2,1.8);
+				\draw[very thick, blue!70!black] (2,0.6) -- (4,0.6);
+				\draw[dashed, blue!50] (2,1.8) -- (2,0.6);
+				\node[font=\scriptsize, blue!50!black] at (1,2.1) {$\Prob(y{=}1|\xv)$};
+				\node[font=\scriptsize, blue!50!black] at (3,0.95) {$\Prob(y{=}0|\xv)$};
+				\node[font=\scriptsize, green!45!black] at (3,0.3) {pick here};
+			\end{tikzpicture}
+
+			\footnotesize $\Rightarrow\;\pix \geq 1/2,\; \Eyx[L \mid \xv] = \Prob(y{=}0 \mid \xv)$
+		}
+	\end{column}
+	\end{columns}
+
+	\vspace{6pt}
 	\uncover<4->{
-		In other words:
-		$$
-			\pix = \begin{cases}
-				< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$, } \\
-				\geq 1/2, \quad &\text{if $\Prob(y=0 \ | \ \xv) < 1/2$.}
-			\end{cases}
-		$$
+		\centering
+		\textcolor{orange!75!black}{\small As a function of $\pix$, $\Eyx[L \mid \xv]$ is a step function with two levels --- pick $\pix$ on the side with the lower step.}
 	}
-	\uncover<5->{
-		The posterior distribution $p_{y | \xv} ( 1 \ | \ \xv)$ is quite naturally of this form, but it is not the only $\pi$ of this kind. As a consequence, the minimize is not unique. \qquad $\rhd$ (Plot $\pix$ vs. $\Prob(y=0 |\xv)$).
-	}
-
 \end{frame}
 
-\begin{frame}{Solution to Question (d): Continued}
-Using \textbf{probabilitisc 0-1-loss} to learn a \textbf{probabilistic} classifier.
+\begin{frame}{Solution to Question (d) --- Minimizer \& (non-)uniqueness}
+	Combining both cases, any minimizer satisfies
+	$$
+		\pix = \begin{cases}
+			< 1/2, \quad &\text{if $\Prob(y = 0 \ | \ \xv) \geq 1 / 2$,} \\
+			\geq 1/2, \quad &\text{if $\Prob(y=0 \ | \ \xv) < 1/2$.}
+		\end{cases}
+	$$
+	\uncover<2->{
+		\vspace{4pt}
+		The posterior $p_{y|\xv}(1 \mid \xv)$ is naturally of this form --- but it is \emph{not} the only $\pi$ of this kind: any choice on the correct side of $1/2$ works.
+	}
+	\uncover<3->{
+		\vspace{4pt}
+		\textbf{Conclusion (i):} the minimizer is \textbf{not unique}.
+	}
+\end{frame}
 
-Disadvantages:
-\begin{itemize}
-    \item<2-> For a probabilistic classifier, the objective is to approximate the true posterior distribution $p(y|\mathbf{x})$. However, minimizing the probabilistic 0-1 loss may yield an alternative form, diverging from $p(y|\mathbf{x})$.
-\end{itemize}
-\uncover<3->{
-    Advantages:
-    \begin{itemize}
-        \item At least, $\pi(\mathbf{x})$ exhibits the correct "form" in the sense that the class probabilities are on the correct side of $1/2$.
-    \end{itemize}
-}
+\begin{frame}{Solution to Question (d) --- Pros \& cons}
+	\small
+	Using probabilistic 0-1-loss to train a probabilistic classifier; let $p^* := p(y\!=\!1 \mid \xv)$ and assume $p^* > 1/2$:
 
+	\vspace{6pt}
+	\begin{center}
+		\textbf{All shaded $\pix$ are optimal --- same loss:}\\[4pt]
+		\begin{tikzpicture}[scale=1.4]
+			\fill[orange!25] (2.5,-0.15) rectangle (5,0.85);
+			\draw[->, thick] (-0.3,0) -- (5.5,0) node[right, font=\scriptsize] {$\pix$};
+			\foreach \x/\lab in {0/0, 2.5/{$1/2$}, 5/1}{
+				\draw (\x,-0.07) -- (\x,0.07);
+				\node[font=\scriptsize, below] at (\x,-0.07) {\lab};
+			}
+			\node[circle, fill=blue!70!black, inner sep=1.6pt] at (3.6,0.3) {};
+			\node[font=\scriptsize, blue!70!black, above] at (3.6,0.35) {$p^*$};
+			\node[circle, fill=purple!60!black, inner sep=1.6pt] at (2.75,0.3) {};
+			\node[font=\scriptsize, purple!60!black, above] at (2.75,0.35) {$0.55$};
+			\node[circle, fill=red!70!black, inner sep=1.6pt] at (4.95,0.3) {};
+			\node[font=\scriptsize, red!70!black, above] at (4.95,0.35) {$1.0$};
+		\end{tikzpicture}\\[2pt]
+		\footnotesize\textcolor{orange!75!black}{Posterior $p^*$ \emph{and} extremes (e.g.\ $1.0$) tie.}
+	\end{center}
+
+	\vspace{8pt}
+	\begin{columns}[T]
+	\begin{column}{0.48\textwidth}
+		\uncover<2->{
+			\textbf{\textcolor{green!45!black}{Pro.}} The optimum lands on the correct side of $1/2$ $\Rightarrow$ thresholding at $1/2$ predicts the more likely class given $\xv$, i.e.\ $\argmax_l p(y\!=\!l \mid \xv)$.
+		}
+	\end{column}
+	\begin{column}{0.48\textwidth}
+		\uncover<3->{
+			\textbf{\textcolor{red!70!black}{Con.}} All values on that side tie ($\pix = 1.0$ is as ``optimal'' as $\pix = p^*$) $\Rightarrow$ minimizing it does not recover the actual \emph{probability} $p^*$.
+		}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabular}{@{}p{0.04\textwidth}p{0.42\textwidth}p{0.46\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		(a) & $\hat h(\xv) = \mathrm{mode}\{\yi\}$ & Optimal empirical constant under 0-1 loss \\
+		(b) & $\bar h = \mathrm{mode}\,p(y),\; \risk_L(\bar h) = 1 - \max_l \Prob(y{=}l)$ & Theoretical-risk minimizer for constant $\Hspace$ \\
+		(c) & $\inf_{\Hspace}\risk_L - \riskbayes_L = \E_\xv[\max_l p(y{=}l|\xv)] - \max_l p(y{=}l)$ & Bayes risk + approximation error decomposition \\
+		(d) & Posterior is \emph{a} minimizer, but $\pix \equiv 1$ is too & 0-1 is \emph{proper} but \textbf{not strictly proper} \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
+
+	\vspace{4pt}
+	\uncover<2->{
+		\textbf{\textcolor{orange!75!black}{Take-aways}}
+		\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+			\item \textbf{Loss $\to$ statistic.} 0-1 $\to$ mode;\; Bernoulli/Brier $\to$ posterior;\; L1 $\to$ median.
+			\item \textbf{Why \emph{strictly} proper?\footnote{A loss is \emph{proper} if the posterior $p_{y|\xv}$ minimizes the conditional risk $\Eyx[L \mid \xv]$; \emph{strictly proper} if it is the \emph{unique} minimizer.}} (d) is the canonical failure --- 0-1 minimization doesn't pin down $p_{y|\xv}$; Bernoulli and Brier are introduced in the lecture precisely because they do.
+			\item \textbf{Constant models reveal $\Hspace$'s limit.} (c)'s approximation error = how much $p(y)$ misses vs.\ $p(y|\xv)$.
+		\end{itemize}
+	}
 \end{frame}
 
 \end{document}
