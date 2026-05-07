@@ -25,6 +25,46 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{pgfpages}
+\usepackage{listings}
+
+\definecolor{rkeyword}{rgb}{0.13, 0.29, 0.53}
+\definecolor{rstring}{rgb}{0.16, 0.50, 0.73}
+\definecolor{rcomment}{rgb}{0.42, 0.55, 0.42}
+\definecolor{rconst}{rgb}{0.60, 0.10, 0.55}
+\definecolor{rbg}{rgb}{0.97, 0.97, 0.97}
+
+\lstdefinelanguage{Rlang}{
+  morekeywords={function, return, if, else, for, in, while,
+                library, data, attach, apply, sum, mean, median,
+                var, sd, cov, cor, min, max, length, exp, log,
+                sqrt, optim, lm, glm, predict, cbind, rbind, rep,
+                seq, c, list, vector, matrix, data.frame,
+                curve, plot, points, lines, abline, print},
+  morekeywords=[2]{TRUE, FALSE, NULL, NA, Inf, NaN},
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]",
+  morestring=[b]',
+}
+
+\lstdefinestyle{Rstyle}{
+    language=Rlang,
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{rkeyword}\bfseries,
+    keywordstyle=[2]\color{rconst},
+    stringstyle=\color{rstring},
+    commentstyle=\color{rcomment}\itshape,
+    showstringspaces=false,
+    breaklines=true,
+    backgroundcolor=\color{rbg},
+    frame=single,
+    framerule=0pt,
+    rulecolor=\color{rbg},
+    xleftmargin=3pt,
+    xrightmargin=3pt,
+    aboveskip=2pt,
+    belowskip=2pt,
+}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -61,7 +101,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{November 10, 2023}
+\date{May 7, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,7 +147,7 @@
 \begin{frame}{Exercise 3: Connection between between MLE and ERM}
 \small
 	Suppose we are facing a regression task, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace \subseteq \mathbb{R}^p$. Let us assume that the relationship between the features and labels is specified by 
-	$$y = m^{-1}(m(\ftrue(\xv)) + \eps), \qquad \lhd$$
+	$$y = m^{-1}(m(\ftrue(\xv)) + \eps),$$
 	where $m: \mathbb{R} \to \mathbb{R}$ is a continuous strictly monotone function with $m^{-1}$ being its inverse function, and the errors are Gaussian, i.e., $\eps \sim \mathcal{N}(0, \sigma^2)$. In particular, for the data points $(\xv^{(1)}, y^{(1)}, \ldots, \xv^{(n)}, y^{(n)})$ it holds that
 	$$\yi = m^{-1}(m(\ftrue(\xv^{(i)})) + \epsi),$$
 	where $\eps^{(1)}, \ldots, \eps^{(n)}$ are i.i.d. with distribution $\mathcal{N}(0, \sigma^2)$.
@@ -119,45 +159,95 @@
 \end{frame}
 
 \begin{frame}{Solution: Question (a)}
-\uncover<1->{
-	We can use 
-	$$z^{(i)} = m(y^{(i)}).$$
+\small
+	\textcolor{gray}{\footnotesize Goal: transform $\yi \rightsquigarrow \zi$ such that $\zi \mid \xv^{(i)}$ is Gaussian.}
+	\vspace{10pt}
 
-	We know that $ \yi = m^{-1}(\mfruexi + \epsi)$, therefore $	\myi = \mfruexi + \epsi$.
-}
-\uncover<2->{
-	Hence, 
-	$$\zi = \mfruexi + \epsi, \quad \text{with } \eps^{(i)} \sim \mathcal{N}(0, \sigma^2). $$
-	Therefore, $\zi \ | \ \xv^{(i)}$ is normally distributed, i.e., $$\zi \ | \ \xv^{(i)} \sim  \mathcal{N}(\mfruexi, \sigma^2)$$.
-}
+	\begin{itemize}\setlength{\itemsep}{6pt}
+		\item<1-> Apply $m$:\quad $\yi = m^{-1}(\mfruexi + \epsi) \;\Longrightarrow\; \myi = \mfruexi + \epsi.$
+		\item<2-> Set\quad $\zi := \myi.$
+		\item<3-> Condition on $\xv^{(i)}$:\quad $\mfruexi$ fixed,\; $\epsi \sim \mathcal{N}(0, \sigma^2)$\; $\Rightarrow$\; $\zi \mid \xv^{(i)}$ shifted Gaussian.
+		\item<4-> $\Longrightarrow\; \zi \mid \xv^{(i)} \sim \mathcal{N}(\mfruexi,\, \sigma^2).$
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Question (b)}
-	Assume that the hypothesis space is 
-	$$\Hspace = \{ f(\cdot, \thetab): \Xspace \to \mathbb{R} | f(\cdot | \thetab) \text{ belongs to a certain functional family parameterized by } \thetab \in \Theta \},$$
-	where $\thetab = (\theta_1, \theta_2, \ldots, \theta_d))$ is a parameter vector, which is an element of a \textbf{parameter space} $\Theta$. Based on your findings (a), establish a relationship between minimizing the negative log-likelihood for $(\xv^{(1)}, z^{(1)}), 
+\small
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+	Assume that the hypothesis space is
+	\vspace{2pt}
+	\noindent\resizebox{\linewidth}{!}{$
+		\begin{aligned}
+			\Hspace = \{ f(\cdot, \thetav): \Xspace \to \mathbb{R} \mid f(\cdot | \thetav) & \text{ belongs to a certain functional} \\[-2pt]
+			& \text{family parameterized by } \thetav \in \Theta \},
+		\end{aligned}
+	$}
+	\vspace{2pt}
+	where $\thetav = (\theta_1, \theta_2, \ldots, \theta_d))$ is a parameter vector, which is an element of a \textbf{parameter space} $\Theta$. Based on your findings (a), establish a relationship between minimizing the negative log-likelihood for $(\xv^{(1)}, z^{(1)}),
 	\ldots (\xv^{(n)}, z^{(n)})$ and empirical loss minimizing over $\Hspace$ of the generalized L2-loss function of Exercise sheet 1, i.e., $L(y, \fx)) = (\my - \mfx)^2$.
+\end{column}
+\begin{column}{0.43\textwidth}
+	\textcolor{gray}{Roadmap --- two recipes to connect:}
+	\vspace{6pt}
+
+	\textbf{\textcolor{blue!60!black}{MLE on $(\xi, \zi)$.}}
+	\begin{enumerate}\setlength{\itemsep}{3pt}
+		\item<1-> Write the likelihood $\mathcal{L}(\thetav) = {\textstyle\prod_{i=1}^n} p(\zi \mid \xi, \thetav)$.
+		\item<2-> Take $-\log$ $\to$ NLL $-\ell(\thetav)$.
+	\end{enumerate}
+
+	\vspace{8pt}
+	\textbf{\textcolor{red!60!black}{ERM with generalized L2.}}
+	\begin{enumerate}\setlength{\itemsep}{3pt}
+		\item<3-> Empirical risk $\riske(f) = {\textstyle\sum_{i=1}^n} L(\yi, f(\xi))$.
+		\item<4-> Plug in $L(y, \fx) = (\my - \mfx)^2$.
+	\end{enumerate}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Solution to Question (b)}
-	\small
-	The likelihood for  $(\xv^{(1)}, z^{(1)}), \ldots (\xv^{(n)}, z^{(n)})$ is 
+\small
+\begin{columns}[T]
+\begin{column}{0.64\textwidth}
+	The likelihood for $(\xv^{(1)}, z^{(1)}), \ldots, (\xv^{(n)}, z^{(n)})$:
 	\begin{align*}
 		\only<1->{
-			\mathcal{L}(\thetab) 
-			&= \prodin p \left( \zi \ | \ f(\xi \ | \ \thetab), \sigma^2 \right)  \\}
-		\only<2->{&\propto \exp \left( -\frac{1}{2\sigma^2} \sumin \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \right).}
+			\mathcal{L}(\thetav)
+			&= {\textstyle\prod_{i=1}^n} p\!\left( \zi \mid f(\xi \mid \thetav),\, \sigma^2 \right)  \\}
+		\only<2->{&\propto \exp\!\left( -\tfrac{1}{2\sigma^2} {\textstyle\sum_{i=1}^n} \left[ \zi - m(f(\xi \mid \thetav)) \right]^2 \right).}
 	\end{align*}
-	\uncover<3->{
-		So the negative log-likelihood (NLL) is 
-	}
+	\uncover<3->{Take $-\log$ $\to$ NLL:}
 	\begin{align*}
-		\only<4->{- \ell(\thetab) &= - \log(\mathcal{L}(\thetab))\\}
-		\only<5->{&\propto \sumin  \left[ \zi - m(f(\xi \ | \ \thetab)) \right]^2 \\}
-		\only<6->{&= \sumin  \left[ \myi - m(f(\xi \ | \ \thetab)) \right]^2 }
+		\only<4->{- \ell(\thetav) &= - \log \mathcal{L}(\thetav) \\}
+		\only<5->{&\propto {\textstyle\sum_{i=1}^n} \left[ \zi - m(f(\xi \mid \thetav)) \right]^2 \\}
+		\only<6->{&= {\textstyle\sum_{i=1}^n} \left[ \myi - m(f(\xi \mid \thetav)) \right]^2.}
 	\end{align*}
-	
-	\uncover<7->{Therefore, the NLL is propotional to the empirical risk of $f(\cdot | \thetab)$ w.r.t. the generalized L2-Loss.}
+
+	\uncover<7->{\textbf{$\Rightarrow$} NLL $\propto$ empirical risk under generalized L2-loss.}
+\end{column}
+\begin{column}{0.34\textwidth}
+	\textbf{\textcolor{blue!60!black}{MLE.}}
+	\begin{enumerate}\setlength{\itemsep}{2pt}
+		\item Write likelihood\only<2->{\;\textcolor{green!50!black}{$\checkmark$}}
+		\item Take $-\log$ $\to$ NLL\only<4->{\;\textcolor{green!50!black}{$\checkmark$}}
+	\end{enumerate}
+
+	\vspace{6pt}
+	\textbf{\textcolor{red!60!black}{ERM target.}}
+	\begin{enumerate}\setlength{\itemsep}{2pt}
+		\item Empirical risk\\ ${\textstyle\sum_{i=1}^n} L(\yi, f(\xi))$
+		\item Plug in $(\my - \mfx)^2$\only<6->{\;\textcolor{green!50!black}{$\checkmark$}}
+	\end{enumerate}
+
+	\vspace{6pt}
+	\uncover<7->{
+		\centering
+		\textcolor{orange!75!black}{$\Rightarrow$ NLL $\equiv$ ERM (up to const.).}
+	}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Question (c)}
@@ -166,33 +256,153 @@
 	What would be a suitable hypothesis space $\Hspace$ if this conjecture holds?
 \end{frame}
 
-\begin{frame}{Solution to Question (c)}
+\begin{frame}{Solution to Question (c): setup \& decomposition}
 	\small
-	\begin{itemize}
-		\item<1-> The goal is to introduce a proper form for $f(\cdot | \thetab)$ so that $y = m^{-1}(m(f(x)) + \eps)$.
-		\item<2-> We use the transformation $m(\cdot) = \log(\cdot)$. So $m^{-1}(\cdot) = \exp(\cdot)$. 
-		\item<3-> The Forbes' conjectured model $y = \theta_1 \exp(\theta_2 x + \eps)$ can be written as 
-			\begin{align*}
-				\only<4->{y &= \theta_1 \exp(\theta_2 x + \eps) \\}
-				\only<5->{&= \exp(\log(\theta_1 \cdot \exp(\theta_2 x + \eps))) \\}
-				\only<6->{&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \log (\exp(\eps))] \\}
-				\only<7->{&= \exp[\log \theta_1 + \log(\exp(\theta_2 x)) + \eps] \\}
-				\only<8->{&= \exp[\log (\theta_1 \cdot \exp(\theta_2 x)) + \eps] \\}
-				\only<9->{&= m^{-1}(m(\theta_1 \cdot \exp(\theta_2 x)) + \eps).}
-			\end{align*}
-			\uncover<10->{
-			Therefore, $f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x)$ is a suitable functional form for the hypothesis. So 
-			$$\Hspace = \{ f(x \ | \ \thetab) = \theta_1 \exp(\theta_2 x) \ | \ \thetab \in \Theta \}.$$
-			(The standard solution uses $\Xspace = {1} \times \mathbb{R}$, i.e., $\xv = (x_1, x_2)^T = (1, x_2)^T$.)}
+	\begin{itemize}\setlength{\itemsep}{5pt}
+		\item<1-> \textbf{Framework recap:}\; $y = m^{-1}(m(f(\xv)) + \eps)$,\; $\eps \sim \mathcal{N}(0, \sigma^2)$.\;
+			Two ingredients:
+			\begin{itemize}\setlength{\itemsep}{0pt}
+				\item[$\circ$] $f$ --- deterministic regression function,\; $f \in \Hspace$ (what we choose);
+				\item[$\circ$] $m$ --- fixed link function (\emph{not} part of $\Hspace$);
+				\item[$\circ$] $\eps$ --- Gaussian noise, applied \emph{after} $m$.
+			\end{itemize}
+		\item<2-> \textbf{What Q(c) is really asking:}\; pick the form of $f(\cdot \mid \thetav)$ so that the framework reproduces Forbes' $y = \theta_1 \exp(\theta_2 x + \eps)$.
+		\item<3-> \textbf{Why $m = \log$?}\; Q(c) says $y \mid \xv$ log-normal $\Longleftrightarrow$ $\log y \mid \xv$ Gaussian.\;
+			Framework demands Gaussian residual after $m$\; $\Longrightarrow$\; $m = \log$,\; $m^{-1} = \exp$.
+		\item<4-> \textbf{Decompose:}\; with $m = \log$ the framework simplifies to
+			\[
+				y = \exp(\log f(\xv) + \eps) = f(\xv) \cdot \exp(\eps),
+			\]
+			\textcolor{gray}{\footnotesize i.e.\ deterministic signal $\times$ multiplicative noise. Match Forbes' to this shape next.}
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Solution to Question (c): Continued}
+\begin{frame}{Solution to Question (c): algebra}
+	\small
+	\textcolor{gray}{\footnotesize Target shape (from setup):\; $y = f(\xv) \cdot \exp(\eps)$.}
+	\vspace{6pt}
+	\begin{itemize}\setlength{\itemsep}{5pt}
+		\item<1-> \textbf{Reshape Forbes' into the target shape:}
+			\begin{align*}
+				y &= \theta_1 \exp(\theta_2 x + \eps) \\
+				\only<2->{&= \theta_1 \exp(\theta_2 x) \cdot \exp(\eps) \\}
+				\only<3->{&= \underbrace{\theta_1 \exp(\theta_2 x)}_{=\, f(x \mid \thetav)} \cdot \exp(\eps).}
+			\end{align*}
+		\item<4-> \textbf{Read off $f$ \& conclude:}
+			$$\Hspace = \{ f(x \mid \thetav) = \theta_1 \exp(\theta_2 x) : \thetav \in \Theta \}.$$
+		\item<5-> \textbf{Sanity check (reparam.):}\; $\beta_0 := \log\theta_1$,\; $\beta_1 := \theta_2$\;
+			$\Longrightarrow$\; $\log y = \beta_0 + \beta_1 x + \eps$\;
+			\textcolor{gray}{\footnotesize (linear Gaussian regression on $\log y$)}.
+	\end{itemize}
+\end{frame}
 
+\begin{frame}{Solution to Question (c): alternative --- linear in $\log y$}
+	\small
+	\begin{itemize}\setlength{\itemsep}{4pt}
+		\item<1-> \textbf{Apply $\log$ to both sides of Forbes':}
+			\[
+				y = \theta_1 \exp(\theta_2 x + \eps)
+				\;\Longleftrightarrow\;
+				\log y = \log\theta_1 + \theta_2 x + \eps.
+			\]
+			\textcolor{gray}{\footnotesize $\Longrightarrow$ ordinary linear regression on $z := \log y$.}
+		\item<2-> \textbf{Linear hypothesis space} (with $\xv = (1, x)^\top \in \Xspace = \{1\}\times\mathbb{R}$):
+			\[
+				\Hspace = \{ f(\xv \mid \thetav) = \log(\theta_1)\, x_1 + \theta_2\, x_2 : \thetav \in \Theta\}
+				= \{\, \xv^\top \thetav \,\}.
+			\]
+		\item<3-> \textbf{ERM = OLS:}\;
+			$\hat{\thetav} = (\log\hat\theta_1,\, \hat\theta_2)^\top = (\Xmat^\top \Xmat)^{-1} \Xmat^\top \bm{z}$,\;\;
+			$\bm{z} = (\log y^{(1)}, \ldots, \log y^{(n)})^\top$.
+		\item<4-> \textbf{Closed form (simple-regression case):}
+			\[
+				\hat\theta_2 = \frac{\sum_i (\xi_2 - \bar{x}_2)(\log\yi - \overline{\log y})}{\sum_i (\xi_2 - \bar{x}_2)^2},
+				\quad
+				\hat\theta_1 = \exp\!\bigl(\overline{\log y} - \hat\theta_2\, \bar{x}_2\bigr).
+			\]
+	\end{itemize}
+\end{frame}
 
-	\textbf{Show the code in the standard solution.}
+\begin{frame}[fragile]{Solution to Question (c): R code \& fit on Forbes' data}
+\scriptsize
+\begin{columns}[T]
+\begin{column}{0.58\textwidth}
+\begin{lstlisting}[style=Rstyle]
+library(MASS); data(forbes); attach(forbes)
+X <- cbind(rep(1, 17), bp); y <- pres
 
-	
+# (1) numeric ERM on Forbes' form
+f <- function(x, theta)
+  exp(theta[2]*x[2]) * theta[1] * x[1]
+emp_risk <- function(theta)
+  sum((log(y) - log(apply(X, 1, f, theta)))^2)
+hat_theta <- optim(c(0.4, 0.5), emp_risk,
+                   method = "L-BFGS-B",
+                   lower = c(0, -Inf),
+                   upper = c(Inf, Inf))$par
+print(hat_theta)
+## [1] 0.38050940 0.02059961
+
+# (2) closed-form OLS on log(y)
+hat_theta_2 <- cov(bp, log(pres)) / var(bp)
+hat_theta_1 <- exp(mean(log(pres))
+                   - hat_theta_2 * mean(bp))
+\end{lstlisting}
+\end{column}
+\begin{column}{0.40\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figures/forbes-fit-1.pdf}\\
+{\tiny Fig.~1 --- numeric ERM fit (red dots = data).}
+\vspace{4pt}
+\includegraphics[width=\linewidth]{figures/forbes-fit-2.pdf}\\
+{\tiny Fig.~2 --- numeric (black) vs.\ closed-form OLS (red).}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Solution to Question (c): observations}
+\small
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+	\begin{itemize}\setlength{\itemsep}{6pt}
+		\item<1-> Output:\; $\hat\theta_1 \approx 0.3805$,\; $\hat\theta_2 \approx 0.0206$.
+			\begin{itemize}\setlength{\itemsep}{0pt}
+				\item[$\circ$] $\hat\theta_2$\; $\to$\; log-slope $\approx 2\%$ per $1\,^\circ$F.
+				\item[$\circ$] $\hat\theta_1$\; $\to$\; scale $= f(0 \mid \thetav)$.
+			\end{itemize}
+		\item<2-> Numeric ERM\; $\equiv$\; closed-form OLS\; $\to$\; same $\hat\thetav$.
+		\item<3-> Fig.~1:\; ERM curve aligns with all 17 datapoints\; $\to$\; Forbes' shape fits well.
+		\item<4-> Fig.~2:\; ERM curve and OLS curve overlap on the same datapoints\; $\to$\; identical fit.
+		\item<5-> Takeaway:\; $m = \log$\; $\to$\; nonlinear $\rightsquigarrow$ OLS, closed form for free.
+	\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+	\centering
+	\includegraphics[width=\linewidth, height=3.2cm, keepaspectratio]{figures/forbes-fit-1.pdf}\\
+	{\tiny Fig.~1: ERM fit (black curve) on 17 datapoints (red dots).}
+	\vspace{2pt}
+	\includegraphics[width=\linewidth, height=3.2cm, keepaspectratio]{figures/forbes-fit-2.pdf}\\
+	{\tiny Fig.~2: ERM (black curve) overlaid with OLS (red curve), same 17 datapoints (black dots).}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Recap: link to the lecture material}
+\scriptsize
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{c|p{6.2cm}|p{6.2cm}}
+\textbf{Q} & \textbf{What the exercise teaches} & \textbf{Lecture material it builds on} \\
+\hline
+(a) &
+The substitution $\zi = m(\yi)$ exposes the hidden Gaussian:\; $\zi \mid \xv^{(i)} \sim \mathcal{N}(m(\ftrue(\xv^{(i)})), \sigma^2)$. The transformed labels obey the lecture's standard regression form. &
+Standard regression DGP $y = \ftrue(\xv) + \eps$ with $\eps \sim \mathcal{N}(0, \sigma^2)$. The lecture only treats the identity link $m = \mathrm{id}$, where the Gaussian noise lives directly on the $y$-scale. \\
+(b) &
+Define $\text{loss} := -\log p$. Then minimizing NLL \emph{is} empirical-risk minimization, so MLE and ERM are the same optimization. Plugging in the Gaussian density on $\zi$ produces the generalized L2 loss $L(y, f(\xv)) = (m(y) - m(f(\xv)))^2$. &
+The lecture's loss-as-negative-log-likelihood identity that fixes a loss for every noise model:\; Gaussian $\to$ L2,\; Laplace $\to$ L1,\; Bernoulli $\to$ log-loss. The exercise extends this catalogue with log-normal $\to$ generalized L2. \\
+(c) &
+Choosing $\Hspace$ $=$ choosing the functional form of $f(\cdot \mid \thetav)$. The hint $y \mid \xv$ log-normal pins $m = \log$;\; matching Forbes' to the framework yields $\Hspace = \{\theta_1 \exp(\theta_2 x) : \thetav \in \Theta\}$, fittable as OLS on $\log y$. &
+Hypothesis space as a parametric family $\{f_{\thetav} : \thetav \in \Theta\}$;\; convex losses for exponential-family / GLM models. The derivation follows the same MLE-to-loss pattern as the log-cosh $\leftrightarrow$ cosh-MLE example shown in the lecture. \\
+\end{tabular}
 \end{frame}
 
 \end{document}

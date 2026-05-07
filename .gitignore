@@ -39,6 +39,7 @@
 !annotated_ex_*.pdf
 !example.pdf
 !organization.pdf
+!figures/*.pdf
 *.pyg
 *.run.xml
 *.snm
