@@ -25,6 +25,84 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{pgfpages}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{listings}
+
+\definecolor{rkeyword}{rgb}{0.13, 0.29, 0.53}
+\definecolor{rstring}{rgb}{0.16, 0.50, 0.73}
+\definecolor{rcomment}{rgb}{0.42, 0.55, 0.42}
+\definecolor{rconst}{rgb}{0.60, 0.10, 0.55}
+\definecolor{rbg}{rgb}{0.97, 0.97, 0.97}
+
+\lstdefinelanguage{Rlang}{
+  morekeywords={function, return, if, else, for, in, while,
+                library, data, attach, apply, sum, mean, median,
+                var, sd, cov, cor, min, max, length, exp, log,
+                sqrt, optim, lm, glm, predict, cbind, rbind, rep,
+                seq, c, list, vector, matrix, data.frame, unlist,
+                sapply, sort, sample, unique, nrow, ncol, paste,
+                curve, plot, points, lines, abline, print, which,
+                set.seed},
+  morekeywords=[2]{TRUE, FALSE, NULL, NA, Inf, NaN},
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]",
+  morestring=[b]',
+}
+
+\lstdefinestyle{Rstyle}{
+    language=Rlang,
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{rkeyword}\bfseries,
+    keywordstyle=[2]\color{rconst},
+    stringstyle=\color{rstring},
+    commentstyle=\color{rcomment}\itshape,
+    showstringspaces=false,
+    breaklines=true,
+    backgroundcolor=\color{rbg},
+    frame=single,
+    framerule=0pt,
+    rulecolor=\color{rbg},
+    xleftmargin=3pt,
+    xrightmargin=3pt,
+    aboveskip=2pt,
+    belowskip=2pt,
+}
+
+\lstdefinestyle{Routstyle}{
+    basicstyle=\ttfamily\scriptsize,
+    backgroundcolor=\color{black!4},
+    frame=single,
+    framerule=0pt,
+    rulecolor=\color{black!4},
+    showstringspaces=false,
+    breaklines=true,
+    xleftmargin=3pt,
+    xrightmargin=3pt,
+    aboveskip=2pt,
+    belowskip=2pt,
+}
+
+\lstdefinestyle{Pystyle}{
+    language=Python,
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{rkeyword}\bfseries,
+    keywordstyle=[2]\color{rconst},
+    stringstyle=\color{rstring},
+    commentstyle=\color{rcomment}\itshape,
+    showstringspaces=false,
+    breaklines=true,
+    backgroundcolor=\color{rbg},
+    frame=single,
+    framerule=0pt,
+    rulecolor=\color{rbg},
+    xleftmargin=3pt,
+    xrightmargin=3pt,
+    aboveskip=2pt,
+    belowskip=2pt,
+    morekeywords=[2]{True, False, None},
+}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -54,7 +132,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{November 12, 2024}
+\date{May 13, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -107,59 +185,159 @@
 		h(\xv) = \argmax_{k \in \{1, \ldots, g \}} f_k(\xv).
 		\label{eq:1}
 	\end{align} 
-	The multiclass hinge loss is defined by $$L(y, \fx) = \max_k (\fkx - f_y(\xv) + \id_{y \neq k}). \qquad \rhd$$
+	The multiclass hinge loss is defined by $$L(y, \fx) = \max_k (\fkx - f_y(\xv) + \id_{y \neq k}).$$
 	(a) Show that 0-1-loss for a predictor $h$ as in (\ref{eq:1}) based on a model $f \in \Hspace$ is at most the multiclass hinge loss for $f$ i.e., $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
 \end{frame}
 
-\begin{frame}{Solution to Question (a)}
+\begin{frame}{Digest the loss \& roadmap for (a)}
 	\small
-	There are two cases: $y = \argmax_{k} f_k(\xv)$ or $y \neq \argmax_k \fkx$.
-	\vspace{10pt}
-	
-	\uncover<2->{
-		If $y = \argmax_{k} f_k(\xv)$, the 0-1-loss is 
-		\begin{align*}
-			L_{0-1}(y, \hx) = 0
-		\end{align*}
-		because $y = \argmax_k f_k(x)$. That is, the prediction via argmax is correct. 
-	}
-	
-	\uncover<3->{
-		Now we analyzie $L(y, \fx)$. We need to evaluate $\fkx - f_y(\xv) + \id_{y \neq k}$ for all $k \in [1, 2, \ldots, g]$, then we take the maximal number. Note that for $k = y$, we have 
-		$$\fkx - f_y(\xv) + \id_{y \neq k} = f_y(\xv) - f_y(\xv) + 0 = 0$$
-		So, it means the max over all $k$-s yields 0 or some larger number. Formally,  
-		\begin{align*}
-			L(y, \fx) 
-			&= \max_k (\fkx - f_y(\xv) + \id_{y \neq k}) \\
-			&\geq f_y(\xv) - f_y(\xv) + 0 = 0 \
-		\end{align*}
-		
-		So $L(y, \fx) \geq  L_{0, 1} (y, \hx)$ holds.
-	}
-	
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\textbf{Read the hinge loss term by term:}
+		$$L(y, \fx) = \max_k\big(\fkx - \fyx + \id_{y \neq k}\big).$$
+		\begin{itemize}
+			\item<1-> $\fkx - \fyx$: score gap of $k$ over true class $y$.
+			\item<2-> $\id_{y \neq k}$: $+1$ if $k \neq y$, $0$ if $k = y$.
+			\item<3-> $\max_k$: take the worst offender.
+			\item<4-> $k = y$ gives term $= 0$, so $L \geq 0$ \emph{always}.
+		\end{itemize}
+	\end{column}
+	\begin{column}{0.42\textwidth}
+		\centering
+		\begin{tikzpicture}[scale=0.65]
+			\draw[->] (-2.6,0) -- (2.4,0) node[right, font=\scriptsize] {$\fkx - \fyx$};
+			\draw[->] (0,-0.3) -- (0,2.9) node[above, font=\scriptsize] {term value};
+			\draw[very thick, blue] (-2.5, 0) -- (-1, 0) -- (1.7, 2.7);
+			\draw[dashed, gray] (-1, 0) -- (-1, 1);
+			\node[below, font=\scriptsize] at (-1, -0.05) {$-1$};
+			\draw[dashed, gray] (0, 1) -- (-0.2, 1);
+			\node[left, font=\scriptsize] at (-0.05, 1) {$1$};
+			\node[blue, anchor=west, font=\scriptsize] at (1.1, 1.4) {$1 + \Delta_k$};
+		\end{tikzpicture}\\
+		{\scriptsize One wrong-class term $1 + (\fkx - \fyx)$; floored at $0$ by the $k=y$ term.}
+	\end{column}
+	\end{columns}
+
+	\vspace{6pt}
+	\uncover<5->{\textbf{What (a) asks.}\ 0-1 loss is $0$ (correct) or $1$ (wrong). Want $L(y, \fx) \geq L_{0\text{-}1}(y, \hx)$ in both regimes.}
+
+	\vspace{6pt}
+	\uncover<6->{\textbf{Roadmap: split by whether $\argmax$ matches $y$.}}
+	\begin{itemize}
+		\item<6-> Case 1, $y = \argmax_k \fkx$: pick the trivial term $k = y$ inside the max; compare against $L_{0\text{-}1}$.
+		\item<7-> Case 2, $y \neq \argmax_k \fkx$: pick the offender $k^\star = \argmax_k \fkx$ inside the max; compare against $L_{0\text{-}1}$.
+	\end{itemize}
 \end{frame}
 
-\begin{frame}{Solution to Question (a): Continued}
+\begin{frame}{Solution to (a) --- Case 1: $y = \argmax_k \fkx$}
 	\small
-	
-	If $y \neq \argmax_{k} f_k(\xv)$, then
-	\begin{align*}
-		L(y, \fx) 
-			&= \max_k (\underbrace{\fkx - f_y(\xv)}_{> 0} + \underbrace{\id_{y \neq k}}_{= 1}) \\
-			&> 1.
-	\end{align*}
-	\uncover<2->{
-		The 0-1-loss is 
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		Prediction correct, so
 		\begin{align*}
-			L_{0-1}(y, \hx) = 1
+			L_{0\text{-}1}(y, \hx) = 0.
 		\end{align*}
-		because $y \neq \argmax_k f_k(x)$. That is, the prediction via argmax is incorrect. So $L(y, \fx) > L_{0, 1} (y, \hx)$.
-	}
-	
-	\vspace{10pt}
-	\uncover<3->{
-		Combining the two cases, we have proved that $$L_{0-1}(y, \hx) = \id_{y\neq \hx} \leq L(y, \fx).$$
-	}
+
+		\vspace{4pt}
+		\uncover<2->{
+			Plug $k = y$ into the max:
+			$$\fkx - \fyx + \id_{y \neq k} = 0 - 0 + 0 = 0.$$
+			Hence
+			\begin{align*}
+				L(y, \fx) = \max_k \big(\fkx - \fyx + \id_{y \neq k}\big) \geq 0.
+			\end{align*}
+		}
+
+		\vspace{4pt}
+		\uncover<3->{
+			$\Rightarrow L(y, \fx) \geq 0 = L_{0\text{-}1}(y, \hx).$ \quad $\checkmark$
+		}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=0-1 loss, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L_{0\text{-}1}(y, \hx) = \id_{y \neq \hx}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L(y, \fx) = \max_k\!\big(\fkx - \fyx + \id_{y \neq k}\big)$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		Predictor:\ $\hx = \argmax_k \fkx$.
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution to (a) --- Case 2: $y \neq \argmax_k \fkx$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		Prediction wrong, so
+		\begin{align*}
+			L_{0\text{-}1}(y, \hx) = 1.
+		\end{align*}
+
+		\vspace{4pt}
+		\uncover<2->{
+			Pick $k^\star = \argmax_k \fkx$. Then $f_{k^\star}(\xv) > \fyx$ and $\id_{y \neq k^\star} = 1$:
+			$$\underbrace{f_{k^\star}(\xv) - \fyx}_{> 0} + \underbrace{\id_{y \neq k^\star}}_{= 1} > 1.$$
+			Hence
+			\begin{align*}
+				L(y, \fx) = \max_k \big(\fkx - \fyx + \id_{y \neq k}\big) > 1.
+			\end{align*}
+		}
+
+		\vspace{4pt}
+		\uncover<3->{
+			$\Rightarrow L(y, \fx) > 1 = L_{0\text{-}1}(y, \hx).$ \quad $\checkmark$
+		}
+
+		\vspace{4pt}
+		\uncover<4->{
+			\textbf{Both cases combined:}\ $L_{0\text{-}1}(y, \hx) = \id_{y \neq \hx} \leq L(y, \fx).$ \quad $\blacksquare$
+		}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=0-1 loss, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L_{0\text{-}1}(y, \hx) = \id_{y \neq \hx}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L(y, \fx) = \max_k\!\big(\fkx - \fyx + \id_{y \neq k}\big)$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		Predictor:\ $\hx = \argmax_k \fkx$.
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Question (b)}
@@ -168,88 +346,342 @@
 	\emph{Hint}: Note that this upper bound is sometimes referred to as the multiclass hinge loss.
 \end{frame}
 
-\begin{frame}{Solution to Question (b)}
+\begin{frame}{Digest (b) \& how to reuse (a)}
 	\small
-	\uncover<1->{	
-	Let's assume $k^* = \argmax_k \fkx$. Note that $k^*$ can be $y$ or some other classes.
-	}
-	\vspace{10pt}
-	
-	\uncover<2->{
-	\textbf{Case 1}: If $k^* = y$, then $L(y, \fx) = f_{k^*}(\xv) - f_y(\xv) + 0 =0$. So,  $L(y, \fx) \leq \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$. (Sum of non-neg. number is also non-neg.)
-		So we have finished the proof for this case.
-	}
-	\vspace{10pt}
-	
-	\uncover<3->{
-	\textbf{Case 2}: If $k^* \neq y$, then $L(y, \fx) = f_{k^*}(\xv) - f_y(\xv) + 1 > 1$.  (Result from (a)).
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\textbf{Difference from (a).}
+		\begin{itemize}
+			\item<1-> (a): hinge upper-bounds 0-1.
+			\item<2-> (b): \emph{sum surrogate} upper-bounds hinge.
+			\item<3-> Same direction; swap $\max_k$ for $\sum_{k\neq y}\max\{0,\cdot\}$.
+		\end{itemize}
 
-	So in this case, we can write
-	\begin{align*}
-		L(y, \fx) &= \underbrace{f_{k^*}(\xv) - f_y(\xv) + 1}_{\geq 0} \\
-		&= \max\{0, f_{k^*}(\xv) - f_y(\xv) + 1 \}.
-	\end{align*}
-	}
-	
-	\uncover<4->{
-	But our goal is to compare $L(y, \fx)$ with $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$. So we need to add more terms of other $k$ with $k\neq k^*$. For other classes, we can apply the same fact that $\max \{0, 1 + \fkx - \fyx\} \geq 0$, as $\max\{0, \cdot\}$ always gives a non-neg. number.
-	}
+		\vspace{8pt}
+		\uncover<4->{\textbf{Reuse (a)'s case split.}}
+		\begin{itemize}
+			\item<4-> Same case split as (a), via $k^\star = \argmax_k \fkx$.
+			\item<5-> From (a): in case 2, the max in $L$ is attained at $k^\star$.
+			\item<6-> That $k^\star$-summand already sits inside RHS; the remaining summands are $\geq 0$, so RHS $\geq L$.
+		\end{itemize}
+	\end{column}
+	\begin{column}{0.4\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L(y, \fx) = \max_k\!\big(\fkx - \fyx + \id_{y \neq k}\big)$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Sum surrogate, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\uncover<7->{%
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Sandwich (a)+(b), fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			\centering
+			$L_{0\text{-}1} \,\overset{\text{(a)}}{\leq}\, L \,\overset{\text{(b)}}{\leq}\, \displaystyle\sum_{k\neq y}\max\{0,\cdot\}$\\[2pt]
+			{\scriptsize \emph{Smooth surrogate for 0-1.}}
+		\end{tcolorbox}}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (b): Continue}
+\begin{frame}{Solution to (b) --- Case 1: $y = k^\star$}
 	\small
-	\uncover<2->{
-		For Case 2 where $k^* \neq y$, it follows that
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		If $k^\star = y$, plug $k = k^\star = y$ into the max:
+		$$L(y, \fx) = f_{k^\star}(\xv) - \fyx + 0 = 0.$$
+
+		\vspace{6pt}
+		\uncover<2->{
+			RHS is a sum of $\max\{0,\cdot\} \geq 0$, hence non-negative:
+			$$L(y, \fx) = 0 \,\leq\, \sum_{k \neq y}\max\{0, 1 + \fkx - \fyx\}. \quad\checkmark$$
+		}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L(y, \fx) = \max_k\!\big(\fkx - \fyx + \id_{y \neq k}\big)$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Sum surrogate, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution to (b) --- Case 2: $y \neq k^\star$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		From (a): $L(y, \fx) = f_{k^\star}(\xv) - \fyx + 1 > 1$.
+
+		\vspace{4pt}
+		\uncover<2->{
 		\begin{align*}
-			L(y, \fx) 
-			&= \underbrace{f_{k^*}(\xv) - \fyx + 1}_{ \geq 0} \\
-			&= \max\{0, f_{k^*}(\xv) - \fyx + 1\} \\
-			&\leq \max\{0, f_{k^*}(\xv) - \fyx + 1\} + \underbrace{\max\{0, f_1(\xv) - \fyx + 1\} + \ldots + \max\{0, f_g(\xv) - \fyx + 1\}}_{\forall j \in \Yspace \ \text{and } j \neq y \ \text{and } j \neq k^*} \\
-			&= \sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
+			L(y, \fx)
+			&= \underbrace{f_{k^\star}(\xv) - \fyx + 1}_{\geq 0} \\
+			&= \max\{0,\, f_{k^\star}(\xv) - \fyx + 1\} \\
+			&\leq \max\{0, f_{k^\star}(\xv) - \fyx + 1\} \\
+			&\qquad + \underbrace{\textstyle\sum_{k \neq y,\, k^\star}\max\{0, \fkx - \fyx + 1\}}_{\geq 0} \\
+			&= \sum_{k \neq y}\max\{0,\, 1 + \fkx - \fyx\}. \quad\checkmark
 		\end{align*}
-		So, combining the two cases, $\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}$ is an upper bound for $L(y, \fx)$.
-	}
+		}
+
+		\vspace{4pt}
+		\uncover<3->{
+			\textbf{Both cases combined:}\ $L(y, \fx) \leq \sum_{k \neq y}\max\{0,\, 1 + \fkx - \fyx\}$. \quad$\blacksquare$
+		}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$L(y, \fx) = \max_k\!\big(\fkx - \fyx + \id_{y \neq k}\big)$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Sum surrogate, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Question (c)}
 	In the case of binary classification, i.e., $g=2$ and $\Yspace = \{-1, +1\}$, we use a single discriminant model $\fx = f_1(\xv) - f_{-1}(\xv)$ based on two scoring functions: $f_1, f_{-1}: \Xspace \to \mathbb{R}$ for the prediction by means of $\hx = \mathrm{sgn}(\fx)$. Here, $f_1$ is the score for the positive class and $f_{-1}$ is the score for the negative class. Show that the upper bound in (b) coincide with the binary hinge loss $L(y, \fx) = \max \{0, 1 - y \fx \}$.
 \end{frame}
 
-\begin{frame}{Solution to Question (c)}
-	Case 1: $y= + 1$. In this case,
-	\begin{align*}
-		\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx\}
-		&= \sum_{k \neq + 1} \max \{ 0, \fkx - f_1(\xv) + 1 \} \\
-		&= \max \{ 0, \underbrace{f_{-1}(\xv) - f_1(\xv)}_{:= - \fx} + 1 \} \\
-		&= \max \{ 0, 1 - \fx \} \\
-		&= \max \{ 0, 1 - y \cdot \fx \}
-	\end{align*}
-	So the equation holds in this case.
+\begin{frame}{Digest (c) \& how to reuse (b)}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
+		\textbf{Difference from (b).}
+		\begin{itemize}
+			\item<1-> Specialize: $g = 2$, $\Yspace = \{-1, +1\}$.
+			\item<2-> Single discriminant: $\fx = f_1(\xv) - f_{-1}(\xv)$.
+			\item<3-> Sum collapses to one $\max\{0,\cdot\}$ term (only one wrong class).
+			\item<4-> Target: that term $= \max\{0,\, 1 - y\fx\}$, the binary hinge.
+		\end{itemize}
+
+		\vspace{8pt}
+		\uncover<5->{\textbf{Reuse (b)'s surrogate.}}
+		\begin{itemize}
+			\item<5-> Start from $\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$; only one term survives.
+			\item<6-> Split by $y = +1$ vs.\ $-1$ to identify the wrong class.
+			\item<7-> Substitute $f_1 - f_{-1} = \fx$ to fold into $1 - y\fx$.
+		\end{itemize}
+	\end{column}
+	\begin{column}{0.4\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Starting point (from (b)), fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Target: binary hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\max\{0,\, 1 - y\fx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=violet!8, colframe=violet!55!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Binary setup, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$g = 2$,\ \ $\Yspace = \{-1, +1\}$\\
+			$\fx = f_1(\xv) - f_{-1}(\xv)$\\
+			$\hx = \mathrm{sgn}(\fx)$
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Question (c): Continued}
-	Case 2: $y = -1$. In this case,
-	\begin{align*}
-		\sum_{k \neq y} \max \{0, 1 + \fkx - \fyx \}
-		&= \sum_{k \neq -1} \max \{ 0, \fkx - f_{-1}(\xv) + 1 \} \\
-		&= \max \{ 0, f_1(\xv) - f_{-1}(\xv) + 1 \} \\
-		&= \max \{0, 1 + \fx \} \\
-		&= \max \{0, 1 - y\cdot \fx \}
-	\end{align*}
-	
-Therefore, it is proven that the equation holds in two cases.
+\begin{frame}{Solution to (c) --- Case 1: $y = +1$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		\begin{align*}
+			& \sum_{k \neq y}\max\{0, 1 + \fkx - \fyx\} \\
+			&= \sum_{k \neq +1}\max\{0,\, \fkx - f_1(\xv) + 1\} \\
+			&= \max\{0,\, \underbrace{f_{-1}(\xv) - f_1(\xv)}_{=\, -\fx} + 1\} \\
+			&= \max\{0,\, 1 - \fx\} \\
+			&= \max\{0,\, 1 - y\fx\}. \quad\checkmark
+		\end{align*}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Starting point (from (b)), fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Target: binary hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\max\{0,\, 1 - y\fx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=violet!8, colframe=violet!55!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Binary setup, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$g = 2$,\ \ $\Yspace = \{-1, +1\}$\\
+			$\fx = f_1(\xv) - f_{-1}(\xv)$\\
+			$\hx = \mathrm{sgn}(\fx)$
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Solution to (c) --- Case 2: $y = -1$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.62\textwidth}
+		\begin{align*}
+			& \sum_{k \neq y}\max\{0, 1 + \fkx - \fyx\} \\
+			&= \sum_{k \neq -1}\max\{0,\, \fkx - f_{-1}(\xv) + 1\} \\
+			&= \max\{0,\, \underbrace{f_1(\xv) - f_{-1}(\xv)}_{=\, \fx} + 1\} \\
+			&= \max\{0,\, 1 + \fx\} \\
+			&= \max\{0,\, 1 - y\fx\}. \quad\checkmark
+		\end{align*}
+
+		\vspace{4pt}
+		\uncover<2->{
+			\textbf{Both cases combined:}\ sum surrogate $=$ binary hinge $\max\{0, 1 - y\fx\}$. \quad$\blacksquare$
+		}
+	\end{column}
+	\begin{column}{0.36\textwidth}
+		\footnotesize
+		\begin{tcolorbox}[
+			colback=green!10, colframe=green!45!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Starting point (from (b)), fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\displaystyle\sum_{k\neq y}\max\{0, 1 + \fkx - \fyx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Target: binary hinge, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$\max\{0,\, 1 - y\fx\}$
+		\end{tcolorbox}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=violet!8, colframe=violet!55!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Binary setup, fonttitle=\footnotesize\bfseries,
+			boxsep=2pt
+		]
+			$g = 2$,\ \ $\Yspace = \{-1, +1\}$\\
+			$\fx = f_1(\xv) - f_{-1}(\xv)$\\
+			$\hx = \mathrm{sgn}(\fx)$
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Question (d)}
+	\small
 	Recall the statement of the lecture regarding the binary hinge loss:
-	\vspace{10pt}
-	
+
+	\vspace{4pt}
 	\emph{``... the hinge loss only equals zero for a margin $\geq 1$ encouraging confident (correct) predictions.''}
-	\vspace{10pt}
-	
-	Can we say something similar for the altenative multiclass hinge loss in (b)?
-	
-	Hint: multiclass hinge loss: $\sum_{k\neq y} \max \{0, 1 + \fkx - f_y(\xv) \}$, and all $\max\{0, \cdot\}$ terms are non-negative.
+
+	\vspace{6pt}
+	Can we say something similar for the alternative multiclass hinge loss in (b)?
+
+	\vspace{4pt}
+	\emph{Hint:} multiclass hinge loss: $\sum_{k\neq y} \max\{0, 1 + \fkx - f_y(\xv)\}$, and all $\max\{0, \cdot\}$ terms are non-negative.
+
+	\vspace{8pt}
+	\textbf{Think about:}
+	\begin{itemize}
+		\item ``Similar'' = an iff for when the loss vanishes. Hypothesize:\quad multiclass hinge $= 0 \;\iff\;$ \emph{???}
+		\item Binary: 1 margin, condition ``$\geq 1$''. Multiclass: how many margins per data point, and what replaces ``$\geq 1$''?
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Solution to Question (d)}
@@ -272,8 +704,272 @@ Therefore, it is proven that the equation holds in two cases.
 	}
 \end{frame}
 
-\begin{frame}{Question (e) and Solution to (e)}
-	\textbf{Show the standard solution.}
+\begin{frame}{Question \& Solution to (e): joint vs.\ one-vs-rest}
+	\footnotesize
+	\begin{columns}[T]
+	\begin{column}{0.52\textwidth}
+		\textbf{Question.} Linear scores $\fkx = \thetav_k^\top \xv$. Compare two ERM approaches:
+		\begin{itemize}
+			\item ERM with the multiclass sum surrogate from (b).
+			\item One-vs-rest: $g$ independent binary-hinge ERMs.
+		\end{itemize}
+
+		\vspace{6pt}
+		\textbf{Solution.}
+		\begin{itemize}
+			\item<2-> Multiclass: \emph{one} joint ERM minimising all $g - 1$ margins per data point \emph{simultaneously}.
+			\item<3-> One-vs-rest: \emph{$g$} separate binary ERMs, each handling one margin (class vs.\ rest) in isolation.
+			\item<4-> $\Rightarrow$ generally different parameters, different predictions.
+		\end{itemize}
+	\end{column}
+	\begin{column}{0.48\textwidth}
+		\centering
+		\begin{tikzpicture}[font=\tiny]
+			\onslide<2->{
+				\node[font=\scriptsize\bfseries] at (-1.4, 2.05) {Multiclass};
+				\draw[fill=cyan!10, rounded corners] (-2.5, 1.3) rectangle (-0.3, 1.85);
+				\node at (-1.4, 1.575) {Joint ERM};
+				\draw[->, semithick] (-1.4, 1.3) -- (-1.4, 0.9);
+				\node at (-1.4, 0.7) {$\hat{\thetav}_1, \ldots, \hat{\thetav}_g$};
+				\node[font=\tiny] at (-1.4, 0.4) {(jointly fit)};
+			}
+
+			\onslide<3->{
+				\node[font=\scriptsize\bfseries] at (1.7, 2.05) {One-vs-rest};
+				\draw[fill=orange!15, rounded corners] (0.3, 1.3) rectangle (0.95, 1.85);
+				\node at (0.625, 1.575) {ERM};
+				\draw[fill=orange!15, rounded corners] (1.1, 1.3) rectangle (1.75, 1.85);
+				\node at (1.425, 1.575) {ERM};
+				\node at (2.05, 1.575) {$\cdots$};
+				\draw[fill=orange!15, rounded corners] (2.4, 1.3) rectangle (3.05, 1.85);
+				\node at (2.725, 1.575) {ERM};
+
+				\draw[->, semithick] (0.625, 1.3) -- (0.625, 0.9);
+				\draw[->, semithick] (1.425, 1.3) -- (1.425, 0.9);
+				\draw[->, semithick] (2.725, 1.3) -- (2.725, 0.9);
+				\node at (0.625, 0.7) {$\hat{\thetav}_1$};
+				\node at (1.425, 0.7) {$\hat{\thetav}_2$};
+				\node at (2.725, 0.7) {$\hat{\thetav}_g$};
+				\node[font=\tiny] at (1.7, 0.4) {(fit separately)};
+			}
+		\end{tikzpicture}
+
+		\vspace{6pt}
+		\uncover<2->{%
+		\begin{tcolorbox}[
+			colback=cyan!8, colframe=cyan!55!blue,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Multiclass ERM (1 problem), fonttitle=\tiny\bfseries,
+			boxsep=2pt, fontupper=\tiny
+		]
+			$\displaystyle\min_{\thetav_1, \ldots, \thetav_g}\, \sum_i \sum_{k\neq y_i} \max\{0,\, 1 + (\thetav_k - \thetav_{y_i})^\top \xi\}$
+		\end{tcolorbox}}
+
+		\vspace{3pt}
+		\uncover<3->{%
+		\begin{tcolorbox}[
+			colback=orange!10, colframe=orange!70!red,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=One-vs-rest ERM ($g$ problems), fonttitle=\tiny\bfseries,
+			boxsep=2pt, fontupper=\tiny
+		]
+			For each $c \in \Yspace$:\ \ $\displaystyle\min_{\thetav_c}\, \sum_i \max\{0,\, 1 - y_i^{(c)} \thetav_c^\top \xi\}$,\ \ $y_i^{(c)} = +1$ if $y_i = c$, else $-1$.
+		\end{tcolorbox}}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Code (Python): one-vs-rest}
+	\scriptsize
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+		\begin{lstlisting}[style=Pystyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+import numpy as np
+from numpy.typing import NDArray
+from scipy.optimize import minimize
+
+
+# Vectorised empirical risk for binary hinge.
+# Z = [X | y] of shape (n, p + 1); margins is (n,).
+# All rows are handled in one matmul + elementwise op.
+def emp_risk_bin_hinge(theta: NDArray,
+                       Z: NDArray) -> float:
+    X, y = Z[:, :p], Z[:, p]
+    margins = y * (X @ theta)
+    return float(np.maximum(0.0, 1.0 - margins).sum())
+		\end{lstlisting}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		\begin{lstlisting}[style=Pystyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+# One-vs-rest fitting: g INDEPENDENT optims.
+# Output: theta_mat of shape (p, g);
+# column i = parameters of the i-th binary classifier.
+def one_vs_all_bin_theta(Z: NDArray) -> NDArray:
+    theta_mat = np.zeros((p, g))
+    for i in range(1, g + 1):
+        # codebook in one vectorised step
+        y_rec = np.where(Z[:, p] == i, 1.0, -1.0)
+        Z_coded = np.column_stack([Z[:, :p], y_rec])
+        theta_mat[:, i - 1] = minimize(
+            emp_risk_bin_hinge,
+            np.zeros(p),
+            args=(Z_coded,)).x
+    return theta_mat
+
+
+# Prediction: pick class with max score.
+def one_vs_all_bin_predict(theta_mat: NDArray,
+                           x: NDArray) -> int:
+    return int(np.argmax(x @ theta_mat)) + 1
+		\end{lstlisting}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Code (Python): multiclass (joint)}
+	\scriptsize
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+		\begin{lstlisting}[style=Pystyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+import numpy as np
+from numpy.typing import NDArray
+from scipy.optimize import minimize
+
+
+# Vectorised empirical risk for the multiclass sum surrogate.
+# Shapes: Theta is (p, g); scores (n, g); f_y (n,); margins (n, g).
+# The k=y entry of `margins` is always 1, so its max(0, .) = 1
+# per row; subtract n_loc to recover the sum over k != y only.
+def emp_risk_multiclass(Theta_flat: NDArray,
+                        Z: NDArray) -> float:
+    Theta   = Theta_flat.reshape(g, p).T
+    X, y    = Z[:, :p], Z[:, p].astype(int)
+    scores  = X @ Theta
+    n_loc   = X.shape[0]
+    f_y     = scores[np.arange(n_loc), y - 1]
+    margins = 1.0 + scores - f_y[:, None]
+    return float(np.maximum(0.0, margins).sum() - n_loc)
+		\end{lstlisting}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		\begin{lstlisting}[style=Pystyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+# Multiclass fitting: ONE joint optim over all p*g params.
+# Output: Theta of shape (p, g). All columns are coupled
+# by the joint optimisation.
+def multiclass_theta(Z: NDArray) -> NDArray:
+    Theta_flat = minimize(emp_risk_multiclass,
+                          np.zeros(p * g),
+                          args=(Z,)).x
+    return Theta_flat.reshape(g, p).T
+
+
+# Prediction: same argmax rule as one-vs-rest.
+# Difference is only in how Theta is fit.
+def multiclass_predict(Theta: NDArray,
+                       x: NDArray) -> int:
+    return int(np.argmax(x @ Theta)) + 1
+		\end{lstlisting}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Code (Python): setup, fit, compare on \texttt{iris}}
+	\scriptsize
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+		\begin{lstlisting}[style=Pystyle, basicstyle=\ttfamily\fontsize{5.5pt}{6.5pt}\selectfont]
+import numpy as np
+from sklearn.datasets import load_iris
+# load iris and prepend an all-ones intercept column
+iris = load_iris()
+X = np.hstack([np.ones((iris.data.shape[0], 1)), iris.data])
+y = iris.target + 1     # 1-based labels (parity w/ R)
+Z = np.column_stack([X, y])
+n, p = X.shape
+g = int(len(np.unique(y)))
+# train/test split (50 train, 100 test)
+rng = np.random.default_rng(5)
+train_ind = np.sort(rng.choice(n, size=50, replace=False))
+test_ind  = np.setdiff1d(np.arange(n), train_ind)
+# fit both
+theta_mat = one_vs_all_bin_theta(Z[train_ind])
+Theta     = multiclass_theta(Z[train_ind])
+print(Theta)
+# count agreements; print disagreements
+count = 0
+for j in test_ind:
+    p_ovr = one_vs_all_bin_predict(theta_mat, Z[j, :p])
+    p_mc  = multiclass_predict(Theta,        Z[j, :p])
+    if p_ovr != p_mc:
+        print(f"OvR: {p_ovr}, Multiclass: {p_mc}, "
+              f"True: {int(Z[j, p])}")
+    else:
+        count += 1
+print(count)
+		\end{lstlisting}
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\begin{lstlisting}[style=Routstyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+[[ 1.40942854  4.65434516 -6.0637737 ]
+ [ 0.22520719  0.1572596  -0.38247367]
+ [ 1.78485964  0.14583447 -1.93070101]
+ [-0.96581534 -0.59320725  1.55903284]
+ [-2.84883267 -1.59538011  4.44421608]]
+		\end{lstlisting}
+
+		\vspace{4pt}
+		\begin{lstlisting}[style=Routstyle, basicstyle=\ttfamily\fontsize{6pt}{7pt}\selectfont]
+OvR: 1, Multiclass: 2, True: 1
+OvR: 1, Multiclass: 2, True: 2
+98
+		\end{lstlisting}
+
+		\vspace{4pt}
+		{\scriptsize \emph{$98/100$ test predictions agree --- same data, same hypothesis class, but the two ERMs produce different fits.}}
+
+		\vspace{4pt}
+		\begin{tcolorbox}[
+			colback=yellow!10, colframe=yellow!60!black,
+			boxrule=0.5pt, arc=2pt,
+			left=4pt, right=4pt, top=2pt, bottom=2pt,
+			title=Note, fonttitle=\scriptsize\bfseries,
+			boxsep=2pt, fontupper=\scriptsize
+		]
+			Numbers differ from R reference ($95/100$): different RNG and \texttt{optim} defaults. Qualitative finding unchanged.
+		\end{tcolorbox}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Recap: link to the lecture material}
+	\scriptsize
+	\renewcommand{\arraystretch}{1.35}
+	\begin{tabular}{p{6.2cm}|p{6.2cm}}
+		\textbf{Exercise takeaway} & \textbf{Lecture connection} \\
+		\hline
+		\textbf{(a)} 0-1 loss $\leq$ multiclass hinge $L = \max_k(\fkx - \fyx + \id_{y \neq k})$; case-split on whether $\hx = y$.
+		&
+		0-1 loss is discontinuous and NP-hard to optimise $\Rightarrow$ a continuous convex \emph{surrogate} is needed; multiclass losses act on a score vector $\fx = (f_1, \ldots, f_g)$.
+		\\\hline
+		\textbf{(b)} Hinge $\leq \sum_{k \neq y}\max\{0, 1 + \fkx - \fyx\}$: replace $\max_k$ by a sum of clipped per-class margins.
+		&
+		Multiclass score-vector framework with the argmax predictor $\hx = \argmax_k \fkx$.
+		\\\hline
+		\textbf{(c)} For $g = 2$, $\fx = f_1 - f_{-1}$: the sum surrogate reduces to the binary hinge $\max\{0, 1 - y\fx\}$.
+		&
+		Binary hinge is the canonical convex 0-1 surrogate; zero exactly when the margin $y\fx \geq 1$.
+		\\\hline
+		\textbf{(d)} Surrogate $= 0 \iff $ all $g - 1$ margins $m_{y,k} = \fyx - \fkx \geq 1$ --- confident-correct prediction generalised to multiclass.
+		&
+		Binary version (lecture): hinge is zero only past the margin --- ``no bonus for points beyond margin $1$''.
+		\\\hline
+		\textbf{(e)} Joint multiclass ERM (one coupled optim over all $g-1$ margins) vs.\ one-vs-rest ($g$ independent binary ERMs) $\Rightarrow$ different fits on the same data.
+		&
+		One-vs-rest binary reduction: $g$ classifiers fit independently, prediction by $\argmax$; ERM as the empirical substitute for true-risk minimisation.
+		\\
+	\end{tabular}
 \end{frame}
 
 \end{document}
