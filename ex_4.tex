@@ -191,32 +191,14 @@
 
 \begin{frame}{Digest the loss \& roadmap for (a)}
 	\small
-	\begin{columns}[T]
-	\begin{column}{0.58\textwidth}
-		\textbf{Read the hinge loss term by term:}
-		$$L(y, \fx) = \max_k\big(\fkx - \fyx + \id_{y \neq k}\big).$$
-		\begin{itemize}
-			\item<1-> $\fkx - \fyx$: score gap of $k$ over true class $y$.
-			\item<2-> $\id_{y \neq k}$: $+1$ if $k \neq y$, $0$ if $k = y$.
-			\item<3-> $\max_k$: take the worst offender.
-			\item<4-> $k = y$ gives term $= 0$, so $L \geq 0$ \emph{always}.
-		\end{itemize}
-	\end{column}
-	\begin{column}{0.42\textwidth}
-		\centering
-		\begin{tikzpicture}[scale=0.65]
-			\draw[->] (-2.6,0) -- (2.4,0) node[right, font=\scriptsize] {$\fkx - \fyx$};
-			\draw[->] (0,-0.3) -- (0,2.9) node[above, font=\scriptsize] {term value};
-			\draw[very thick, blue] (-2.5, 0) -- (-1, 0) -- (1.7, 2.7);
-			\draw[dashed, gray] (-1, 0) -- (-1, 1);
-			\node[below, font=\scriptsize] at (-1, -0.05) {$-1$};
-			\draw[dashed, gray] (0, 1) -- (-0.2, 1);
-			\node[left, font=\scriptsize] at (-0.05, 1) {$1$};
-			\node[blue, anchor=west, font=\scriptsize] at (1.1, 1.4) {$1 + \Delta_k$};
-		\end{tikzpicture}\\
-		{\scriptsize One wrong-class term $1 + (\fkx - \fyx)$; floored at $0$ by the $k=y$ term.}
-	\end{column}
-	\end{columns}
+	\textbf{Read the hinge loss term by term:}
+	$$L(y, \fx) = \max_k\big(\fkx - \fyx + \id_{y \neq k}\big).$$
+	\begin{itemize}
+		\item<1-> $\fkx - \fyx$: score gap of $k$ over true class $y$.
+		\item<2-> $\id_{y \neq k}$: $+1$ if $k \neq y$, $0$ if $k = y$.
+		\item<3-> $\max_k$: take the worst offender.
+		\item<4-> $k = y$ gives term $= 0$, so $L \geq 0$ \emph{always}.
+	\end{itemize}
 
 	\vspace{6pt}
 	\uncover<5->{\textbf{What (a) asks.}\ 0-1 loss is $0$ (correct) or $1$ (wrong). Want $L(y, \fx) \geq L_{0\text{-}1}(y, \hx)$ in both regimes.}
