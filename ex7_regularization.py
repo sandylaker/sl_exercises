@@ -4,7 +4,7 @@ Covers the two sub-questions that produce figures:
   (a)(vi) soft-thresholding operator vs. OLS
   (d)     projected-orthonormal Lasso vs. coordinate-descent Lasso (RMSE boxplot)
 
-Run inside the miniforge `py312` env. Saves all figures to ./figure_ex7/.
+Run inside the miniforge `py312` env. Saves all figures to ./figures/.
 """
 import os
 
@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-OUT = "figure_ex7"
+OUT = "figures"
 os.makedirs(OUT, exist_ok=True)
 
 # =============================================================== (a)(vi) =====

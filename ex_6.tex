@@ -23,8 +23,37 @@
 \usepackage{comment}
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{bm}
+\usepackage{booktabs}
 \usepackage{pgfpages}
+\usepackage{tikz}
+\usepackage{listings}
+\definecolor{codekw}{rgb}{0.13,0.29,0.53}
+\definecolor{codestr}{rgb}{0.64,0.08,0.08}
+\definecolor{codecom}{rgb}{0.40,0.45,0.40}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\lstdefinestyle{pystyle}{
+	language=Python,
+	backgroundcolor=\color{codebg},
+	basicstyle=\ttfamily\scriptsize,
+	keywordstyle=\color{codekw}\bfseries,
+	stringstyle=\color{codestr},
+	commentstyle=\color{codecom}\itshape,
+	numberstyle=\tiny\color{codecom},
+	showstringspaces=false,
+	breaklines=true,
+	frame=single,
+	rulecolor=\color{black!20},
+	framesep=6pt,
+	xleftmargin=14pt,
+	xrightmargin=4pt,
+	numbers=left,
+	numbersep=8pt,
+	tabsize=4,
+	columns=fullflexible,
+	keepspaces=true,
+}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -58,7 +87,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 3, 2024}
+\date{June 3, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -104,141 +133,560 @@
 
 \begin{frame}{Exercise 1: L0 Regularization}
 	\small
-	Consider the regression learning setting, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace = \mathbb{R}^p$. Let the hypothesis space be the linear models: $$\Hspace = \{ \fx = \thetab^T \xv \ | \ \thetab \in \mathbb{R}^p \}.$$
+	Consider the regression learning setting, i.e., $\Yspace = \mathbb{R}$, and the feature space $\Xspace = \mathbb{R}^p$. Let the hypothesis space be the linear models: $$\Hspace = \{ \fx = \thetav^T \xv \ | \ \thetav \in \mathbb{R}^p \}.$$
 	
 	Suppose your loss function of interest is the L2 loss $L(y, \fx) = \frac{1}{2} (y - \fx)^2$. Consider the $L_0$-regularized empirical risk of a model $\fxt$: 
 	
 	$$
-		\riskrt = \risket + \lambda ||\thetab ||_0 = \frac{1}{2} \sum_{i=1}^n (\yi - \thetab^T \xi )^2 + \lambda \sum_{i=1}^p \thetainnz \qquad \lhd.
+		\riskrt = \risket + \lambda ||\thetav ||_0 = \frac{1}{2} \sum_{i=1}^n (\yi - \thetav^T \xi )^2 + \lambda \sum_{i=1}^p \thetainnz.
 	$$
 	
 	Assume that $\Xmat^T \Xmat = \Imat$, which holds if $\Xmat$ has orthonormal columns. Show that the minimizer $\thetah_{L0} = (\thetah_{L0, 1}, \ldots, \thetah_{L0, p})^T$ is given by 
 	$$
 		\thetah_{L0, i} = \thetahi \id_{|\thetahi| > \sqrt{2 \lambda}}, \qquad i = 1, \ldots, p,
 	$$
-	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk. For this purpose, using the following steps:
-	
+	where $\thetavh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk. For this purpose, using the following steps:
+
+\end{frame}
+
+\begin{frame}{Roadmap: what we want to show \& how}
+	\footnotesize
+	\begin{columns}[T]
+		\column{0.54\textwidth}
+		\textbf{Target identity:}\\
+		\centerline{$\thetah_{L0,i} = \thetah_i \cdot \id_{|\thetah_i| > \sqrt{2\lambda}}, \quad i = 1, \ldots, p.$}
+		Coordinate-wise \emph{hard thresholding} of the OLS solution $\thetavh$.
+
+		\smallskip
+		\centering
+		{\scriptsize \textbf{Before:} OLS estimate $\thetavh$}\\[-0.3em]
+		\begin{tikzpicture}[scale=0.55]
+			\useasboundingbox (-0.4,-2.2) rectangle (8.2,2.2);
+			\draw[->,gray!70] (-0.2,0) -- (6.3,0) node[right,black,font=\scriptsize] {dim};
+			\draw[dashed,red!70,semithick] (0,1) -- (6,1);
+			\draw[dashed,red!70,semithick] (0,-1) -- (6,-1);
+			\node[red!70,right=1pt,font=\scriptsize] at (6,1) {$+\sqrt{2\lambda}$};
+			\node[red!70,right=1pt,font=\scriptsize] at (6,-1) {$-\sqrt{2\lambda}$};
+			\foreach \i/\h in {1/0.5, 2/-0.3, 3/1.8, 4/0.2, 5/-1.7, 6/0.6, 7/1.5, 8/-1.3} {
+				\draw[blue!60,semithick] (\i*0.65, 0) -- (\i*0.65, \h);
+				\fill[blue] (\i*0.65, \h) circle (0.13);
+			}
+		\end{tikzpicture}
+
+		{\scriptsize $\downarrow$ apply hard threshold}
+
+		{\scriptsize \textbf{After:} $\thetah_{L0}$ (sparse)}\\[-0.3em]
+		\begin{tikzpicture}[scale=0.55]
+			\useasboundingbox (-0.4,-2.2) rectangle (8.2,2.2);
+			\draw[->,gray!70] (-0.2,0) -- (6.3,0) node[right,black,font=\scriptsize] {dim};
+			\draw[dashed,red!70,semithick] (0,1) -- (6,1);
+			\draw[dashed,red!70,semithick] (0,-1) -- (6,-1);
+			\node[red!70,right=1pt,font=\scriptsize] at (6,1) {$+\sqrt{2\lambda}$};
+			\node[red!70,right=1pt,font=\scriptsize] at (6,-1) {$-\sqrt{2\lambda}$};
+			\foreach \i/\h in {3/1.8, 5/-1.7, 7/1.5, 8/-1.3} {
+				\draw[blue!60,semithick] (\i*0.65, 0) -- (\i*0.65, \h);
+				\fill[blue] (\i*0.65, \h) circle (0.13);
+			}
+			\foreach \i in {1,2,4,6} {
+				\draw[gray!60,semithick] (\i*0.65, 0) circle (0.11);
+			}
+		\end{tikzpicture}
+
+		\column{0.44\textwidth}
+		\textbf{Roadmap of the proof:}
+		\begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
+			\item[\textbf{(i)}] \textit{Algebra.} Use $\Xmat^\top\Xmat = \Imat$ to rewrite $\riskrt$ as a per-coordinate sum in $\thetai$, $\thetahi$.
+			\item[\textbf{(ii)}] \textit{Separability.} Splits into $p$ independent 1D problems via $\sum_{i=1}^p g_i(\thetai)$.
+			\item[\textbf{(iii)}] \textit{Strong-signal regime} $|\thetahi| > \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$.
+			\item[\textbf{(iv)}] \textit{Compact case form.} Encode (iii) via the indicator $\id_{|\thetahi|>\sqrt{2\lambda}}$.
+			\item[\textbf{(v)}] \textit{Weak-signal regime} $|\thetahi| \leq \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$; assemble the full $\thetah_{L0}$.
+		\end{itemize}
+
+		\medskip
+		\textit{Why the threshold is $\sqrt{2\lambda}$:} it emerges in (iii)/(v) from balancing the quadratic gain $\tfrac{1}{2}\thetahi^2$ against the penalty $\lambda$.
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (i)}
 	(i) Derive that 
 	\begin{align*}
-		\argmin_{\thetab} \risket = \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \thetainnz.
+		\argmin_{\thetav} \risket = \argmin_{\thetav} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \thetainnz.
 	\end{align*}
 	
-	Note that $\thetai$ is from the minimizer $\thetabh$ of the unregularized empirical risk :
+	Note that $\thetai$ is from the minimizer $\thetavh$ of the unregularized empirical risk :
 	\begin{align*}
-		\thetabh = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv = \Xmat^T \yv
+		\thetavh = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv = \Xmat^T \yv
 	\end{align*}
 	because we assume that $\Xmat^T \Xmat = \Imat$.
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (i)}
 	\begin{align*}
-		\argmin_{\thetab} \riskr(\thetab) &= \argmin_{\thetab} \frac{1}{2} ||\Xmat\thetab - \yv||_2^2  + \lambda \sumip \thetainnz \\
+		\argmin_{\thetav} \riskr(\thetav) &= \argmin_{\thetav} \frac{1}{2} ||\Xmat\thetav - \yv||_2^2  + \lambda \sumip \thetainnz \\
 		\only<2->{
-		&= \argmin_{\thetab} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetab + \frac{1}{2} \thetab^T \Xmat^T \Xmat \thetab + \lambda \sumip \thetainnz \\}
-		\only<3->{&= \argmin_{\thetab} - \underbrace{\yv^T \Xmat}_{\thetabh^T} \thetab + \frac{1}{2} \thetab^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetab + \lambda \sumip \thetainnz \\}
-		\only<4->{&= \argmin_{\thetab} - \thetabh^T \thetab + \frac{1}{2} \thetab^T \thetab + \lambda \sumip \thetainnz \\}
-		\only<5->{&= \argmin_{\thetab} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz  \qquad \lhd \\}
+		&= \argmin_{\thetav} \frac{1}{2} \yv^T \yv - \yv^T \Xmat \thetav + \frac{1}{2} \thetav^T \Xmat^T \Xmat \thetav + \lambda \sumip \thetainnz \\}
+		\only<3->{&= \argmin_{\thetav} - \underbrace{\yv^T \Xmat}_{\thetavh^T} \thetav + \frac{1}{2} \thetav^T \underbrace{\Xmat^T \Xmat}_{= \Imat} \thetav + \lambda \sumip \thetainnz \\}
+		\only<4->{&= \argmin_{\thetav} - \thetavh^T \thetav + \frac{1}{2} \thetav^T \thetav + \lambda \sumip \thetainnz \\}
+		\only<5->{&= \argmin_{\thetav} \sumip - \thetahi \thetai + \frac{\thetai^2}{2} + \lambda \sumip \thetainnz \\}
 	\end{align*}
 \end{frame}
 
+\begin{frame}{Roadmap: where are we?}
+	\small
+	\begin{itemize}\setlength{\itemsep}{6pt}\setlength{\parskip}{0pt}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(i)}}] \textcolor{black!55}{\textit{Algebra.} Use $\Xmat^\top\Xmat = \Imat$ to rewrite $\riskrt$ as a per-coordinate sum in $\thetai$, $\thetahi$.}
+		\item[\structure{$\blacktriangleright$\,\textbf{(ii)}}] \textbf{\textit{Separability.} Splits into $p$ independent 1D problems via $\sum_{i=1}^p g_i(\thetai)$.}
+		\item[\textcolor{black!40}{(iii)}] \textcolor{black!40}{\textit{Strong-signal regime} $|\thetahi| > \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$.}
+		\item[\textcolor{black!40}{(iv)}] \textcolor{black!40}{\textit{Compact case form.} Encode (iii) via the indicator $\id_{|\thetahi|>\sqrt{2\lambda}}$.}
+		\item[\textcolor{black!40}{(v)}] \textcolor{black!40}{\textit{Weak-signal regime} $|\thetahi| \leq \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$; assemble the full $\thetah_{L0}$.}
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Exercise 1 (ii)}
-	(ii) Note that the minimization problem on the right-hand side of (i) can be written as $\sumip g_i(\theta)$, where 
+	(ii) Note that the minimization problem on the right-hand side of (i) can be written as $\sumip g_i(\theta)$, where
 		$$g_i(\theta) = -\thetahi \theta + \frac{\theta^2}{2} + \lambda \id_{|\theta| \neq 0}.$$
-		What is the advantage of this representation if we seek to find the $\thetab$ with entries $\theta_1, \ldots, \theta_p$ minimizing $\riskr(\thetab)$?
+		What is the advantage of this representation if we seek to find the $\thetav$ with entries $\theta_1, \ldots, \theta_p$ minimizing $\riskr(\thetav)$?
+
+	\bigskip
+	\begin{center}
+	{\setlength{\fboxsep}{7pt}\colorbox{black!8}{\parbox{0.92\textwidth}{
+		\footnotesize\textbf{Recall from (i):}
+		\[
+			\argmin_{\thetav} \risket \;=\; \argmin_{\thetav} \sum_{i=1}^p \left( -\thetahi \theta_i + \frac{\theta_i^2}{2} + \lambda \id_{|\theta_i| \neq 0} \right).
+		\]
+	}}}
+	\end{center}
 \end{frame}
 
 
 \begin{frame}{Solution to Exercise 1 (ii)}
-	Advantage: we can minimize each $g_i$ \textbf{separately} to obtain the optimal entries $\theta_1, \ldots, \theta_p$.
+	\small
+	\textbf{Advantage:} minimize each $g_i$ \textbf{separately}.
+
+	\smallskip
+	\begin{columns}[T]
+		\column{0.55\textwidth}
+		\textbf{Why?}
+		\begin{itemize}\setlength{\itemsep}{2pt}
+			\item Each $g_i$ involves \emph{only} $\theta_i$ (not $\theta_j$, $j \neq i$).
+			\item Coordinates \emph{decoupled}: moving $\theta_i$ doesn't touch any $g_j$.
+		\end{itemize}
+
+		\smallskip
+		\textbf{Key identity}\,---\,min of sum $=$ sum of mins:
+		\[
+			\min_{\theta_1, \ldots, \theta_p} \sum_{i=1}^p g_i(\theta_i) \;=\; \sum_{i=1}^p \min_{\theta_i} g_i(\theta_i).
+		\]
+
+		\smallskip
+		\textbf{Payoff:} $p$-D problem $\rightarrow$ $p$ 1-D problems; \\ solve $\min_\theta g_i(\theta)$ once, parametric in $\thetahi$.
+
+		\column{0.42\textwidth}
+		\centering
+		{\scriptsize \textbf{Decoupled subproblems}}\\[0.5em]
+		\begin{tikzpicture}[scale=0.7, font=\footnotesize]
+			\node[draw, rounded corners, fill=blue!8, minimum width=1.05cm, minimum height=0.7cm] (g1) at (0,0) {$g_1(\theta_1)$};
+			\node[draw, rounded corners, fill=blue!8, minimum width=1.05cm, minimum height=0.7cm] (g2) at (1.7,0) {$g_2(\theta_2)$};
+			\node at (3.0,0) {$\cdots$};
+			\node[draw, rounded corners, fill=blue!8, minimum width=1.05cm, minimum height=0.7cm] (gp) at (4.3,0) {$g_p(\theta_p)$};
+			\draw[->,thick,gray!70] (g1.south) -- node[right=1pt,gray,font=\scriptsize] {$\min_\theta$} ++(0,-0.7) node[below=2pt,black] {$\theta_1^*$};
+			\draw[->,thick,gray!70] (g2.south) -- ++(0,-0.7) node[below=2pt,black] {$\theta_2^*$};
+			\draw[->,thick,gray!70] (gp.south) -- ++(0,-0.7) node[below=2pt,black] {$\theta_p^*$};
+		\end{tikzpicture}\\[0.5em]
+		{\scriptsize \textcolor{black!60}{Each $g_i$ optimised in parallel,\\independently of the others.}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Roadmap: where are we?}
+	\small
+	\begin{itemize}\setlength{\itemsep}{6pt}\setlength{\parskip}{0pt}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(i)}}] \textcolor{black!55}{\textit{Algebra.} Use $\Xmat^\top\Xmat = \Imat$ to rewrite $\riskrt$ as a per-coordinate sum in $\thetai$, $\thetahi$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(ii)}}] \textcolor{black!55}{\textit{Separability.} Splits into $p$ independent 1D problems via $\sum_{i=1}^p g_i(\thetai)$.}
+		\item[\structure{$\blacktriangleright$\,\textbf{(iii)}}] \textbf{\textit{Strong-signal regime} $|\thetahi| > \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$.}
+		\item[\textcolor{black!40}{(iv)}] \textcolor{black!40}{\textit{Compact case form.} Encode (iii) via the indicator $\id_{|\thetahi|>\sqrt{2\lambda}}$.}
+		\item[\textcolor{black!40}{(v)}] \textcolor{black!40}{\textit{Weak-signal regime} $|\thetahi| \leq \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$; assemble the full $\thetah_{L0}$.}
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Exercise 1 (iii)}
-	(iii) Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$. 
-	
-	\emph{Hint:} Show that $g_i(\thetai) < 0 = g_i(0)$ and argue that the minimizer must have the same sign as $\thetahi$. (\textbf{Personally I find this hint is not so useful.})
-	
-	In other words, if $|\thetahi|$ is larger than the threshold, $\sqrt{2 \lambda}$, then the optimal $\theta^*_i$ is the consistent between the regularized and un-regularized empirical risk.
+	(iii) Consider the first case that $|\thetahi| > \sqrt{2 \lambda}$ and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = \thetahi$.
+
+	\bigskip
+	\emph{Hint:} Show that $g_i(\thetai) < 0 = g_i(0)$ and argue that the minimizer must have the same sign as $\thetahi$.\\
+	{\small (\textbf{Personally I find this hint is not so useful.})}
+
+	\bigskip
+	\textbf{In symbols:}
+	\[
+		\underbrace{|\thetahi| > \sqrt{2\lambda}}_{\text{strong signal}} \;\;\Longrightarrow\;\; \underbrace{\theta^*_i = \thetahi}_{\text{regularized $=$ unregularized}}
+	\]
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (iii)}
 	\small
-	We start with computing the $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
-	\begin{itemize}
-		\item<2-> Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.
-		\item<3-> Case 2: $\thetai \neq 0$. Then
-			\begin{align*}
-				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
-			\end{align*}
-			which is a quadratic function, and its minimizer is 
-			\begin{align*}
-				\thetai^* = \argmin_{\theta_i} g_i(\thetai) = \thetahi,
-			\end{align*}
-			and the minimal value of $g_i$ in this case is 
-			\begin{align*}
-				g_i(\thetai^*) = -\frac{\thetahi^2}{2} + \lambda.
-			\end{align*}
+	\begin{center}
+	{\setlength{\fboxsep}{6pt}\colorbox{black!8}{\parbox{0.92\textwidth}{
+		\centering\footnotesize
+		\textbf{Objective:}\ \ $g_i(\thetai) = -\thetahi\,\thetai + \dfrac{\thetai^2}{2} + \lambda\,\id_{|\thetai|\neq 0}.$
+	}}}
+	\end{center}
+
+	\smallskip
+	\begin{columns}[T]
+		\column{0.50\textwidth}
+		\textbf{Split $g_i(\thetai)$ at the jump $\thetai = 0$.}
+		\begin{itemize}\setlength{\itemsep}{6pt}
+			\item<2-> \textbf{Case 1:}\ $\thetai = 0$ \\
+				\(\displaystyle g_i(0) = 0.\)
+			\item<3-> \textbf{Case 2:}\ $\thetai \neq 0$, so $g_i$ is a smooth quadratic
+				\[ g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda. \]
+				Minimizer $\thetai^* = \thetahi$, with min value
+				\[ g_i(\thetahi) = -\frac{\thetahi^2}{2} + \lambda. \]
+		\end{itemize}
+
+		\column{0.46\textwidth}
+		\uncover<4->{
+			\textbf{Why compare?} The penalty $\lambda\,\id_{|\thetai|\neq 0}$ makes $g_i$ \emph{jump} at $0$\,---\,each case yields its own candidate minimum, so the global min is whichever is smaller.
+
+			\medskip
+			\textbf{Compare} using $|\thetahi|^2 > 2\lambda$:
+			\[
+				\underbrace{-\frac{\thetahi^2}{2} + \lambda}_{\text{Case 2 min}} \;<\; \underbrace{0\strut}_{=\,g_i(0)}
+			\]
+		}
+
+		\uncover<5->{
+			\medskip
+			\textbf{Conclusion:}\quad \fbox{$\thetai^* = \thetahi$\ \ when $|\thetahi| > \sqrt{2\lambda}$}.
+		}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Roadmap: where are we?}
+	\small
+	\begin{itemize}\setlength{\itemsep}{6pt}\setlength{\parskip}{0pt}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(i)}}] \textcolor{black!55}{\textit{Algebra.} Use $\Xmat^\top\Xmat = \Imat$ to rewrite $\riskrt$ as a per-coordinate sum in $\thetai$, $\thetahi$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(ii)}}] \textcolor{black!55}{\textit{Separability.} Splits into $p$ independent 1D problems via $\sum_{i=1}^p g_i(\thetai)$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(iii)}}] \textcolor{black!55}{\textit{Strong-signal regime} $|\thetahi| > \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$.}
+		\item[\structure{$\blacktriangleright$\,\textbf{(iv)}}] \textbf{\textit{Compact case form.} Encode (iii) via the indicator $\id_{|\thetahi|>\sqrt{2\lambda}}$.}
+		\item[\textcolor{black!40}{(v)}] \textcolor{black!40}{\textit{Weak-signal regime} $|\thetahi| \leq \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$; assemble the full $\thetah_{L0}$.}
 	\end{itemize}
-	\uncover<4->{
-		Which optimal $g_i$ is smaller? Case 1 or Case 2? It depends on $\lambda$. Note that we are given with $|\thetahi| > \sqrt{2 \lambda}$. So $-\frac{\thetahi^2}{2} + \lambda <  -\frac{2 \lambda}{2} + \lambda = 0.$
-		So the optimal $g_i$ in Case 2 is smaller. 
-	}
-	
-	\uncover<5->{So for the minimizer of $g_i$ it holds that $\thetai^* = \thetah_i$.}
 \end{frame}
 
 \begin{frame}{Exercise 1 (iv)}
-	(iv) Derive that $\thetai^* = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}$, by using (iii) (and also still considering the case $|\thetahi| > \sqrt{2\lambda}$).
-	
+	(iv) Derive that $\thetai^* = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}$, by using (iii).
+
+	\smallskip
+	\structure{\textit{Setting:}}\ \textbf{still considering the case $|\thetahi| > \sqrt{2\lambda}$.}
+
+	\bigskip
 	\uncover<2->{
-		\textbf{Solution}: In the solution of (iii) we have proven that 
+		\textbf{Solution}: In the solution of (iii) we have proven that
 		\begin{align*}
 			\thetai^* &= \thetahi \quad \text{if} \quad |\thetahi| > \sqrt{2 \lambda}, \\
 		\end{align*}
 	}
 	\uncover<3->{
-		The optimal $\thetai$ can be written as 
+		The optimal $\thetai$ can be written as
 		\begin{align*}
 			\thetai^* = \thetahi \cdot 1 = \thetahi \id_{|\thetahi| > \sqrt{2\lambda}}.
 		\end{align*}
 	}
 \end{frame}
 
+\begin{frame}{Roadmap: where are we?}
+	\small
+	\begin{itemize}\setlength{\itemsep}{6pt}\setlength{\parskip}{0pt}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(i)}}] \textcolor{black!55}{\textit{Algebra.} Use $\Xmat^\top\Xmat = \Imat$ to rewrite $\riskrt$ as a per-coordinate sum in $\thetai$, $\thetahi$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(ii)}}] \textcolor{black!55}{\textit{Separability.} Splits into $p$ independent 1D problems via $\sum_{i=1}^p g_i(\thetai)$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(iii)}}] \textcolor{black!55}{\textit{Strong-signal regime} $|\thetahi| > \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$.}
+		\item[\textcolor{black!55}{$\checkmark$\,\textbf{(iv)}}] \textcolor{black!55}{\textit{Compact case form.} Encode (iii) via the indicator $\id_{|\thetahi|>\sqrt{2\lambda}}$.}
+		\item[\structure{$\blacktriangleright$\,\textbf{(v)}}] \textbf{\textit{Weak-signal regime} $|\thetahi| \leq \sqrt{2\lambda}$: determine $\argmin_{\thetai} g_i$; assemble the full $\thetah_{L0}$.}
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Exercise 1 (v)}
+	\begin{center}
+	{\setlength{\fboxsep}{6pt}\colorbox{black!8}{\parbox{0.92\textwidth}{
+		\centering\footnotesize
+		\textbf{Objective:}\ \ $g_i(\thetai) = -\thetahi\,\thetai + \dfrac{\thetai^2}{2} + \lambda\,\id_{|\thetai|\neq 0}.$
+	}}}
+	\end{center}
+
+	\smallskip
 	(v) Consider the complementary case of (iii) and (iv), i.e., $|\thetahi| \leq \sqrt{2\lambda}$, and infer that for the minimizer $\thetai^*$ of $g_i$ it must hold that $\thetai^* = 0$.
-	
-	\emph{Hint: } What is $g_i(0)$? Consider $\tilde{g}_i(0) = \thetahi \theta + \frac{\theta^2}{2} + \lambda$ which is the smooth extenstion of $g_i$. What is the relationship between the minimizer of $g_i$ and the minimizer of $\tilde{g}_i$? 
-	
-	(\textbf{We do not need this hint in the solution presented in the subsequent slides)}
+
+	\bigskip
+	\emph{Hint:} What is $g_i(0)$? Consider $\tilde{g}_i(\theta) = -\thetahi\,\theta + \frac{\theta^2}{2} + \lambda$, the smooth extension of $g_i$. What is the relationship between the minimizer of $g_i$ and the minimizer of $\tilde{g}_i$?
+
+	{\small (\textbf{We do not need this hint in the solution presented in the subsequent slides.})}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (v)}
 	\small
-	Similarily, we start with computing $\argmin g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda \thetainnz$.
-	\begin{itemize}
-		\item<2->{Case 1: $\thetai = 0$. Then, $g_i(\thetai) = 0$.}
-		\item<3->{Case 2: $\thetai \neq 0$. Then
-			\begin{align*}
-				g_i(\theta_i) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda,
-			\end{align*}
-			We have shown that the minimizer in \textbf{this case} is $\theta_i^* = \thetahi$ and $ \min g_i(\thetai^*) = g_i(\thetahi) = - \frac{\thetahi^2}{2} + \lambda.$
+	\begin{center}
+	{\setlength{\fboxsep}{6pt}\colorbox{black!8}{\parbox{0.92\textwidth}{
+		\centering\footnotesize
+		\textbf{Objective:}\ \ $g_i(\thetai) = -\thetahi\,\thetai + \dfrac{\thetai^2}{2} + \lambda\,\id_{|\thetai|\neq 0}.$
+	}}}
+	\end{center}
+
+	\smallskip
+	\begin{columns}[T]
+		\column{0.50\textwidth}
+		\textbf{Same case split as (iii); the comparison flips.}
+		\begin{itemize}\setlength{\itemsep}{6pt}
+			\item<2-> \textbf{Case 1:}\ $\thetai = 0$ \\
+				\(\displaystyle g_i(0) = 0.\)
+			\item<3-> \textbf{Case 2:}\ $\thetai \neq 0$, so $g_i$ is a smooth quadratic
+				\[ g_i(\thetai) = \frac{\thetai^2}{2} - \thetahi \thetai + \lambda, \]
+				with minimizer $\thetai^* = \thetahi$ and min value
+				\[ g_i(\thetahi) = -\frac{\thetahi^2}{2} + \lambda. \]
+		\end{itemize}
+
+		\column{0.46\textwidth}
+		\uncover<4->{
+			\textbf{Compare} using $|\thetahi|^2 \leq 2\lambda$:
+			\[
+				\underbrace{-\frac{\thetahi^2}{2} + \lambda}_{\text{Case 2 min}} \;\geq\; \underbrace{0\strut}_{=\,g_i(0)}
+			\]
 		}
-	\end{itemize}
-	\uncover<4->{
-		Since we consider the constraint $|\thetahi| \leq \sqrt{2\lambda}$. Then in Case 2  $$g_i(\theta_i^*) \geq - \frac{2\lambda}{2} + \lambda = 0.$$
+
+		\uncover<5->{
+			\smallskip
+			$\Rightarrow$ Case 2 \textbf{not smaller} than Case 1; Case 1 wins.
+		}
+
+		\uncover<6->{
+			\medskip
+			\textbf{Conclusion:}\quad \fbox{$\thetai^* = 0$\ \ when $|\thetahi| \leq \sqrt{2\lambda}$}.
+		}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Putting it all together}
+	\small
+	From (iii) and (v), per coordinate $i$:
+
+	\smallskip
+	\textit{Strong:}\quad $|\thetahi| > \sqrt{2\lambda} \;\Longrightarrow\; \thetai^* = \thetahi$ \quad (here $\id_{|\thetahi|>\sqrt{2\lambda}} = 1$).
+
+	\smallskip
+	\textit{Weak:}\quad $|\thetahi| \leq \sqrt{2\lambda} \;\Longrightarrow\; \thetai^* = 0$ \quad (here $\id_{|\thetahi|>\sqrt{2\lambda}} = 0$).
+
+	\uncover<2->{
+		\bigskip
+		Glue via the indicator (step (iv)):
+		\[
+			\thetai^* = \thetahi \cdot \id_{|\thetahi|>\sqrt{2\lambda}}, \quad i = 1, \ldots, p.
+		\]
 	}
-	\uncover<5->{
-		So the minimal $g_i$ in Case 2 is \textbf{not smaller} than the minimal $g_i$ in Case 1. \textbf{(Plot $g_i(\theta_i)$ vs. $\theta_i$).}
-	}
-	\uncover<6->{
-		Therefore, combining two cases, for the minimizer $\thetai^*$ of $g_i$ it holds that $$\thetai^* = 0. \qquad$$
+
+	\uncover<3->{
+		\medskip
+		By separability (step (ii)), the joint minimizer assembles coordinate-wise:
+		\[
+			\boxed{\;\thetah_{L0,i} \;=\; \thetah_i \cdot \id_{|\thetah_i|>\sqrt{2\lambda}}, \quad i = 1, \ldots, p\;} \qquad \blacksquare
+		\]
 	}
 \end{frame}
 
-\begin{frame}{Exercise 2: Regularization}
-	\textbf{Directly show the standard solution.}
+\begin{frame}{Exercise 2 (a): simulate the data}
+	\structure{\textit{Task.}}\ \ Build a data set with one informative feature buried in noise.
+
+	\bigskip
+	Draw $n = 100$ observations from
+	\[
+		Y = \sin(x_1) + \varepsilon, \qquad \varepsilon \sim \mathcal{N}(0, \sigma^2),
+	\]
+	so the response depends on $x_1$ \emph{only}.
+
+	\bigskip
+	Add $p = 100$ further covariates $x_2, \ldots, x_{101}$ that are unrelated to $Y$.
+
+	\bigskip
+	{\setlength{\fboxsep}{6pt}\colorbox{black!8}{\parbox{0.92\textwidth}{\centering\footnotesize
+	$101$ candidate features, but $100$ of them are pure noise $\;\Longrightarrow\;$ the regime where regularization earns its keep.}}}
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (a): implementation (Python)}
+	\begin{lstlisting}[style=pystyle]
+import numpy as np
+
+rng = np.random.default_rng(42)
+n, p_add = 100, 100
+
+# feature matrix: n rows, (p_add + 1) columns
+X = rng.standard_normal((n, p_add + 1))
+
+# only the first column drives Y; the rest are pure noise
+Y = np.sin(X[:, 0]) + rng.normal(scale=0.5, size=n)
+\end{lstlisting}
+
+	\smallskip
+	\footnotesize
+	\structure{$\blacktriangleright$}\ \ \texttt{X} has shape $100 \times 101$; only column \texttt{0} is signal, columns \texttt{1--100} are noise. The Gaussian draw fixes the unspecified $\varepsilon$ to $\mathcal{N}(0, 0.5^2)$.
+\end{frame}
+
+\begin{frame}{Exercise 2 (b): what to demonstrate}
+	On the simulated data, use models of your choice to illustrate:
+	\begin{itemize}
+		\item under- and over-fitting;
+		\item $L1$, $L2$ and elastic-net regularization;
+		\item the underdetermined problem;
+		\item the bias--variance trade-off;
+		\item early stopping with a simple neural network.
+	\end{itemize}
+	\bigskip
+	{\setlength{\fboxsep}{6pt}\colorbox{black!8}{\parbox{0.92\textwidth}{\centering\footnotesize
+	The R reference uses \texttt{glmnet} and \texttt{keras}; we port each part to Python with \texttt{scikit-learn}.}}}
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (b): under- \& over-fitting}
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+
+def poly_fit(x, y, degree, x_eval):
+    pf = PolynomialFeatures(degree, include_bias=False)
+    Xp = pf.fit_transform(x[:, None])
+    m = LinearRegression().fit(Xp, y)
+    return m.predict(pf.transform(x_eval[:, None]))
+
+yhat1 = poly_fit(x1, Y, 1, xs)   # underfit
+yhat7 = poly_fit(x1, Y, 7, xs)   # overfit
+\end{lstlisting}
+		\medskip
+		\footnotesize A line is too rigid (high bias); the degree-7 fit starts chasing noise at the edges.
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\centering
+		\includegraphics[height=0.82\textheight]{figures/fit.png}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (b): $L1$, $L2$ \& elastic net}
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import (
+    Ridge, lasso_path, enet_path)
+
+Xs = StandardScaler().fit_transform(X)
+Yc = Y - Y.mean()
+
+# L1: lasso coefficient path
+a1, c1, _ = lasso_path(Xs, Yc)
+# L2: ridge path over a grid
+a2 = np.logspace(-2, 3, 100)
+c2 = [Ridge(alpha=a).fit(Xs, Yc).coef_
+      for a in a2]
+# elastic net, alpha = 0.3
+ae, ce, _ = enet_path(Xs, Yc, l1_ratio=0.3)
+\end{lstlisting}
+		\medskip
+		\footnotesize $L1$ sends coefficients to exactly $0$ (sparsity); $L2$ shrinks them smoothly; elastic net blends both.
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\centering
+		\includegraphics[height=0.85\textheight]{figures/paths.png}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (b): the underdetermined problem}
+	With $n = 100 < p + 1 = 101$, the Gram matrix $\Xmat^\top\Xmat$ is singular, so the normal equations have no unique solution.
+	\bigskip
+\begin{lstlisting}[style=pystyle]
+XtX = X.T @ X                          # shape (101, 101)
+np.linalg.matrix_rank(XtX)             # -> 100  (< 101)
+np.linalg.cond(XtX)                    # -> 2.0e+17
+beta = np.linalg.solve(XtX, X.T @ Y)   # numerically meaningless
+\end{lstlisting}
+	\smallskip
+	\footnotesize
+	R's \texttt{solve} aborts with ``system is computationally singular''; NumPy returns a vector, but the condition number $\sim 10^{17}$ flags it as garbage.
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (b): bias--variance trade-off}
+	\begin{columns}[T]
+	\begin{column}{0.46\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+plt.scatter(x1, Y, alpha=0.2)
+plt.plot(xs, np.sin(xs), lw=2)   # truth
+
+# overlay fits of growing degree
+for deg in range(1, 7):
+    yhat = poly_fit(x1, Y, deg, xs)
+    plt.plot(xs, yhat,
+             label=f"degree {deg}")
+\end{lstlisting}
+		\smallskip
+		\footnotesize Low degree $\to$ high bias; high degree $\to$ high variance (edge wiggles).
+	\end{column}
+	\begin{column}{0.54\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures/bias_variance.png}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 2 (b): early stopping}
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
+Xtr, Xv, ytr, yv = train_test_split(
+    X, Y, test_size=0.2, random_state=42)
+net = MLPRegressor((50, 50), activation="relu",
+        solver="adam", warm_start=True, max_iter=1,
+        random_state=42)
+
+best, wait, patience = np.inf, 0, 50
+for epoch in range(300):
+    net.fit(Xtr, ytr)             # one epoch
+    v = mean_squared_error(yv, net.predict(Xv))
+    if v < best - 1e-4:
+        best, wait = v, 0
+    else:
+        wait += 1
+        if wait >= patience:
+            break                 # stop early
+\end{lstlisting}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures/early_stopping.png}
+
+		\smallskip
+		\footnotesize Training loss keeps dropping while validation loss plateaus $\Rightarrow$ stop at the best epoch.
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Summary --- connecting the exercise to the lecture}
+	\small
+	\begin{center}
+	\renewcommand{\arraystretch}{1.18}
+	\begin{tabular}{@{}p{0.10\textwidth}p{0.44\textwidth}p{0.40\textwidth}@{}}
+		\toprule
+		& \textbf{Key take-away} & \textbf{Lecture slide} \\
+		\midrule
+		Ex 1 (i,ii) & Orthonormal design $\Xmat^\top\Xmat = \Imat$ decouples the regularized ERM into $p$ scalar problems $g_i(\theta_i)$ & $L1$/$L2$ regularization with orthonormal design \\
+		Ex 1\newline(iii--v) & Each scalar problem $\Rightarrow$ hard threshold $\thetah_{L0,i} = \thetah_i\,\id_{|\thetah_i| > \sqrt{2\lambda}}$ & L0 regularization (analog of lasso's soft-thresholding) \\
+		Ex 2 (a) & Simulate $1$ signal $+\,100$ noise features: the $p \gtrsim n$ regime that needs regularization & Surplus features let the model fit noise instead of signal --- the root of overfitting \\
+		Ex 2 (b) & Under-/overfitting and the bias--variance trade-off, swept via polynomial degree & Too little capacity misses the signal; too much chases the noise \\
+		Ex 2 (b) & $L1$/$L2$/elastic-net shrinkage paths; underdetermined OLS; early stopping & $L1$ zeros out noise features while $L2$ shrinks smoothly; early stopping $\approx$ implicit $L2$ \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
 \end{frame}
 
 \end{document}
