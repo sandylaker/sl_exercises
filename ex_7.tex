@@ -23,8 +23,37 @@
 \usepackage{comment}
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{bm}
+\usepackage{booktabs}
 \usepackage{pgfpages}
+\usepackage{tikz}
+\usepackage{listings}
+\definecolor{codekw}{rgb}{0.13,0.29,0.53}
+\definecolor{codestr}{rgb}{0.64,0.08,0.08}
+\definecolor{codecom}{rgb}{0.40,0.45,0.40}
+\definecolor{codebg}{rgb}{0.97,0.97,0.97}
+\lstdefinestyle{pystyle}{
+	language=Python,
+	backgroundcolor=\color{codebg},
+	basicstyle=\ttfamily\scriptsize,
+	keywordstyle=\color{codekw}\bfseries,
+	stringstyle=\color{codestr},
+	commentstyle=\color{codecom}\itshape,
+	numberstyle=\tiny\color{codecom},
+	showstringspaces=false,
+	breaklines=true,
+	frame=single,
+	rulecolor=\color{black!20},
+	framesep=6pt,
+	xleftmargin=14pt,
+	xrightmargin=4pt,
+	numbers=left,
+	numbersep=8pt,
+	tabsize=4,
+	columns=fullflexible,
+	keepspaces=true,
+}
 % citations
 \usepackage{natbib}
 \bibpunct{(}{)}{;}{a}{,}{,}
@@ -61,7 +90,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 10, 2024}
+\date{June 11, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -106,7 +135,7 @@
 
 \begin{frame}{Exercise 1}
 	For a design matrix $\Xmat \in \mathbb{R}^{n \times p}$ and the vector of targets $\yv \in \mathbb{R}^n$, consider Lasso regression, i.e., 
-	$$\argmin_{\thetab \in \mathbb{R}^p} 0.5 || \Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1. \qquad \lhd$$
+	$$\argmin_{\thetav \in \mathbb{R}^p} 0.5 || \Xmat \thetav - \yv ||_2^2 + \lambda ||\thetav||_1.$$
 	where $\lambda > 0$ is the regularization parameter.
 	
 	(a) Since there exists no analytical solution to Lasso regression in general, we want to find a procedure similar to gradient descent that should converge to the true solution.
@@ -119,30 +148,32 @@
 	
 	\vspace{10pt}
 	\uncover<2->{
-		\textbf{Solution}: Because $\lambda ||\thetab||_1$ is not differentiable at $\thetab = \zero$.
+		\textbf{Solution}: Because $\lambda ||\thetav||_1$ is not differentiable at $\thetav = \zero$.
 	}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (ii)}
+	Recall the regularized risk of the Lasso problem $$\riskr = 0.5 ||\Xmat \thetav - \yv ||_2^2 + \lambda ||\thetav||_1.$$
+
 	\textbf{Question (a) (ii)}: Show that $\riskr$ is convex. \emph{Hint: The sum of convex function is convex.}
 	
 	\vspace{10pt} 
 	
 	\textbf{Solution}: 
 		\begin{enumerate}
-			\item<2-> $0.5 ||\Xmat \thetab - \yv ||_2^2$ is convex, since it is quadratic.
-			\item<3-> $\lambda || \theta_1 ||_1$ is also convex (since it is a norm).
+			\item<2-> $0.5 ||\Xmat \thetav - \yv ||_2^2$ is convex, since it is quadratic.
+			\item<3-> $\lambda || \thetav ||_1$ is also convex (since it is a norm).
 			\item<4-> Sum of convex functions is convex. So $\riskr$ is convex.
 		\end{enumerate}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (iii)}
 	\small
-	\textbf{Question (a) (iii)}: Find $\rho_j, z_j \in \mathbb{R}$ for which $$0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2 = -\rho_j + \theta_j z_j. \qquad \lhd$$
+	\textbf{Question (a) (iii)}: Find $\rho_j, z_j \in \mathbb{R}$ for which $$0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetav - \yv ||_2^2 = -\rho_j + \theta_j z_j.$$
 	\textbf{Solution}: 
 	\begin{align*}
 		\only<2->{
-			\frac{\partial}{\partial \theta_j} ||\Xmat \thetab - \yv ||_2^2
+			0.5 \frac{\partial}{\partial \theta_j} ||\Xmat \thetav - \yv ||_2^2
 		} 
 		\only<3->{
 			&= \frac{\partial}{\partial \theta_j} 0.5 \sumin \left(\yi - \sum_{k=1}^p \xik \theta_k \right)^2 \\
@@ -156,9 +187,45 @@
 	\end{align*}
 \end{frame}
 
-\begin{frame}[t]{Exercise 1(a) (iii)}
-Show how to derive using the matrix form here.
-	
+\begin{frame}[t]{Exercise 1 (a) (iii): matrix form, step by step}
+	\footnotesize
+	\textbf{Question (a)(iii):} find $\rho_j, z_j$ with $0.5\,\tfrac{\partial}{\partial\theta_j}\|\Xmat\thetav-\yv\|_2^2 = -\rho_j + \theta_j z_j$.
+	\smallskip
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+		\only<2->{\textbf{Step 1.} residual $\mathbf{r} := \Xmat\thetav - \yv$, gradient $\Xmat^\top\mathbf{r}$; component $j =$ column $\Xmat_{\cdot j}$ dotted with $\mathbf{r}$:}
+		\only<3->{\[ 0.5\,\tfrac{\partial}{\partial\theta_j}\|\Xmat\thetav-\yv\|_2^2 = \Xmat_{\cdot j}^\top\mathbf{r} \]}
+
+		\smallskip
+		\only<4->{\textbf{Step 2.} isolate $\theta_j$ via $\Xmat\thetav = \Xmat_{\cdot j}\theta_j + \Xmat_{-j}\thetav_{-j}$, group:}
+		\only<5->{\[ \begin{aligned}
+			\Xmat_{\cdot j}^\top\mathbf{r} &= \underbrace{\Xmat_{\cdot j}^\top\Xmat_{\cdot j}}_{z_j}\theta_j \\
+			&\quad - \underbrace{\Xmat_{\cdot j}^\top(\yv - \Xmat_{-j}\thetav_{-j})}_{\rho_j} \\
+			\onslide<6->{&= -\rho_j + \theta_j z_j}
+		\end{aligned} \]}
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\only<7->{\textbf{Step 3.} The gradient is a line in $\theta_j$, $\,-\rho_j + \theta_j z_j$:}
+		\begin{itemize}
+			\item<8-> \emph{slope} $z_j = \|\Xmat_{\cdot j}\|_2^2 \ge 0$: size (energy) of feature $j$.
+			\item<9-> \emph{intercept} $-\rho_j$: here $\rho_j = \Xmat_{\cdot j}^\top\mathbf{r}_{-j}$ correlates feature $j$ with the partial residual $\mathbf{r}_{-j} = \yv - \Xmat_{-j}\thetav_{-j}$ (target minus the other features' fit).
+			\item<10-> \emph{root} $\theta_j = \rho_j/z_j$: best coordinate-$j$ fit (OLS); (a)(v) soft-thresholds it.
+		\end{itemize}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[t]{Exercise 1 (a): what we have so far}
+	\small
+	Goal: minimize $\riskr(\thetav) = 0.5\|\Xmat\thetav-\yv\|_2^2 + \lambda\|\thetav\|_1$ one coordinate $\theta_j$ at a time.
+	\medskip
+	\begin{itemize}
+		\item (i) $\riskr$ \emph{not} differentiable --- the kink of $\lambda\|\thetav\|_1$ at $\thetav = \zero$.
+		\item (ii) but $\riskr$ \emph{convex} --- a per-coordinate minimum is global.
+		\item (iii) the smooth part is linear in $\theta_j$: $0.5\,\tfrac{\partial}{\partial\theta_j}\|\Xmat\thetav-\yv\|_2^2 = -\rho_j + \theta_j z_j$, \\ with slope $z_j = \|\Xmat_{\cdot j}\|_2^2$ and $\rho_j = \Xmat_{\cdot j}^\top\mathbf{r}_{-j}$ (partial residual).
+	\end{itemize}
+	\medskip
+	\textbf{Next (a)(iv):} only $\lambda|\theta_j|$ remains, non-smooth at $0$. Use its \emph{subderivative} and add to (iii) to assemble $\partial_{\theta_j}\riskr$.
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (iv)}
@@ -174,32 +241,46 @@ Show how to derive using the matrix form here.
 		$
 		\item and for $f, g$ real-valued convex functions with $\partial f(\tilde{\theta}) = [a, b], \partial g(\tilde{\theta}) = [c, d]$, $$\partial(f+g)(\tilde{\theta}) = [a + c, b + d]$$ where $b \geq a$ and $d \geq c$.
 	\end{itemize}
-	With this compute the sub-derivative of $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}$ w.r.t. $\theta_j$, i.e., $\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} $ where $\mathcal{R}_{\text{reg}, \thetab_{\neq j}}: \mathbb{R} \to \mathbb{R}_{\geq 0}, \theta_j \longmapsto \riskr(\theta_1, \ldots, \theta_j, \ldots, \theta_p)$ for constants $\thetab_{\neq j} = (\theta_1, \ldots, \theta_{j-1}, \theta_{j+1}, \ldots, \theta_p)^T$. \emph{Hint: Use (a) (iii).}
+	With this compute the sub-derivative of $\mathcal{R}_{\text{reg}, \thetav_{\neq j}}$ w.r.t. $\theta_j$, i.e., $\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetav_{\neq j}} $ where $\mathcal{R}_{\text{reg}, \thetav_{\neq j}}: \mathbb{R} \to \mathbb{R}_{\geq 0}, \theta_j \longmapsto \riskr(\theta_1, \ldots, \theta_j, \ldots, \theta_p)$ for constants $\thetav_{\neq j} = (\theta_1, \ldots, \theta_{j-1}, \theta_{j+1}, \ldots, \theta_p)^T$. \emph{Hint: Use (a) (iii).}
 \end{frame}
 
-\begin{frame}{Exercise 1 (a) (iv): Continued}
-	\textbf{Solution}:
-	Recall that $\riskr = 0.5 ||\Xmat \thetab - \yv ||_2^2 + \lambda ||\thetab||_1$ and $\frac{\partial}{\partial \theta_j} 0.5 ||\Xmat \thetab - \yv ||_2^2 = - \rho_j + \theta_j z_j$.
-	Therefore,
-	\uncover<2->{ 
-		\begin{align*}
-			\partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
-					\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
-					[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
-					\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
-			\end{cases}
-		\end{align*}
-	}
+\begin{frame}[t]{Exercise 1 (a) (iv): case by case}
+	\setbeamercovered{invisible}
+	\textbf{Solution}: by the sum rule $\partial_{\theta_j}\mathcal{R}_{\text{reg},\thetav_{\neq j}} = \underbrace{\{-\rho_j+\theta_j z_j\}}_{\text{from (iii)}} + \partial(\lambda|\theta_j|)$, and $\partial(\lambda|\theta_j|)$ splits on the sign of $\theta_j$:
+	\medskip
+
+	\renewcommand{\arraystretch}{1.5}
+	\begin{center}
+	\begin{tabular}{ccc|c}
+		\hline
+		$\theta_j$ & smooth part & $\partial(\lambda|\theta_j|)$ & $\partial_{\theta_j}\mathcal{R}_{\text{reg}}$ \\
+		\hline
+		$< 0$ & $\{-\rho_j+\theta_j z_j\}$ & $\{-\lambda\}$ & \uncover<2->{$\{-\rho_j+\theta_j z_j-\lambda\}$} \\
+		$= 0$ & $\{-\rho_j\}$ & $[-\lambda,\lambda]$ & \uncover<3->{$[-\rho_j-\lambda,\ -\rho_j+\lambda]$} \\
+		$> 0$ & $\{-\rho_j+\theta_j z_j\}$ & $\{\lambda\}$ & \uncover<4->{$\{-\rho_j+\theta_j z_j+\lambda\}$} \\
+		\hline
+	\end{tabular}
+	\end{center}
+	\medskip
+
+	\uncover<5->{The right column is $\partial_{\theta_j}\mathcal{R}_{\text{reg},\thetav_{\neq j}}$ --- the optimality input for (a)(v).}
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (v)}
 
 	\textbf{Question (a) (v)}: For a real-valued convex function $f$, the global minimum (if it exists) can be characterized in the following way:
 		
-		A point $\theta^* \in \mathbb{R}$ is the global minimum of $f$ if and only if $0 \in \partial f(\theta^*)$. 
+		\begin{center}
+		\setlength{\fboxsep}{8pt}%
+		\colorbox{blue!10}{%
+		\begin{minipage}{0.9\textwidth}
+		\centering
+		A point $\theta^* \in \mathbb{R}$ is the global minimum of $f$ if and only if $0 \in \partial f(\theta^*)$.
+		\end{minipage}}
+	\end{center} 
 		
 		With this show that 
-		$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} \Leftrightarrow \theta_j^* = 
+		$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetav_{\neq j}} \Leftrightarrow \theta_j^* = 
 		\begin{cases}
 			\frac{\rho_j + \lambda}{z_j} \qquad & \text{for } \rho_j < - \lambda \\
 			0 \qquad & \text{for } - \lambda \leq \rho_j \leq \lambda \\
@@ -208,29 +289,26 @@ Show how to derive using the matrix form here.
 		$$
 \end{frame}
 
-\begin{frame}{Exercise 1 (a) (v): Continued}
+\begin{frame}{Exercise 1 (a) (v): Solve $0 \in \partial_{\theta_j}\mathcal{R}_{\text{reg}}$ in each sign-case}
 	\small
-	\textbf{Solution}: we need to show that 
-	\begin{align*}
-		0 \in \partial_{\theta_j} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} &= \begin{cases}
-				\{ -\rho_j + \theta_j z_j - \lambda \} \qquad & \text{for } \theta_j < 0, \\
-				[-\rho_j -\lambda, -\rho_j + \lambda ] \qquad & \text{for } \theta_j = 0; \\
-				\{- \rho_j + \theta_j z_j + \lambda  \} \qquad & \text{for } \theta_j > 0. 
-		\end{cases}
-	\end{align*}
-		
-	where $z_j = \sumin \left( \xij \right)^2 \geq 0$.
+	\textbf{Solution}: set $0 \in \partial_{\theta_j}\mathcal{R}_{\text{reg},\thetav_{\neq j}}$, the subgradient from (a)(iv) (with $z_j=\|\Xmat_{\cdot j}\|_2^2>0$):
+	\[ \partial_{\theta_j}\mathcal{R}_{\text{reg},\thetav_{\neq j}} = \begin{cases}
+		\{-\rho_j+\theta_j z_j-\lambda\} & \theta_j<0, \\
+		[-\rho_j-\lambda,\ -\rho_j+\lambda] & \theta_j=0, \\
+		\{-\rho_j+\theta_j z_j+\lambda\} & \theta_j>0.
+	\end{cases} \]
+	Solve each case for $\theta_j^*$. For the singletons, $0\in\{x\}$ means $0=x$; the assumed sign then forces a condition on $\rho_j$:
 	\begin{itemize}
-		\item<2-> If $\theta_j < 0$, then $-\rho_j + \theta_j z_j - \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j + \lambda}{z_j}$. Since $\theta_j^* <0$ and $z_j \geq 0$, we have $\rho_j < -\lambda$;
-		\item<3-> If $\theta_j = 0$, then $\theta_j^* = 0$, and $-\rho_j - \lambda \leq 0 \leq -\rho_j + \lambda$ leads to $-\lambda \leq \rho_j \leq \lambda$, ;
-		\item<4-> If $\theta_j > 0$ then $-\rho_j + \theta_j z_j + \lambda = 0$ leads to $\theta_j^* = \frac{\rho_j - \lambda}{z_j}$. Since $\theta_j^* > 0$, we have $\rho_j > \lambda$.
+		\item<2-> $\theta_j<0$: $\;0 = -\rho_j+\theta_j z_j-\lambda \Rightarrow \theta_j^*=\tfrac{\rho_j+\lambda}{z_j}$; with $z_j>0$, $\;\theta_j^*<0 \Rightarrow$ \colorbox{blue!10}{$\rho_j<-\lambda$}.
+		\item<3-> $\theta_j=0$: $\;0\in[-\rho_j-\lambda,\,-\rho_j+\lambda] \Rightarrow -\rho_j-\lambda\le0\le-\rho_j+\lambda \Rightarrow$ \colorbox{blue!10}{$-\lambda\le\rho_j\le\lambda$}.
+		\item<4-> $\theta_j>0$: $\;0 = -\rho_j+\theta_j z_j+\lambda \Rightarrow \theta_j^*=\tfrac{\rho_j-\lambda}{z_j}$; with $z_j>0$, $\;\theta_j^*>0 \Rightarrow$ \colorbox{blue!10}{$\rho_j>\lambda$}.
 	\end{itemize}
 	
 \end{frame}
 
 \begin{frame}{Exercise 1 (a) (v): Continued}
 	Summarize everthing up:
-	$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetab_{\neq j}} \Leftrightarrow \theta_j^* = 
+	$$\theta_j^* \in \argmin_{\theta_j \in \mathbb{R}} \mathcal{R}_{\text{reg}, \thetav_{\neq j}} \Leftrightarrow \theta_j^* = 
 		\begin{cases}
 			\frac{\rho_j + \lambda}{z_j} \qquad & \text{for } \rho_j < - \lambda \\
 			0 \qquad & \text{for } - \lambda \leq \rho_j \leq \lambda \\
@@ -239,95 +317,268 @@ Show how to derive using the matrix form here.
 	$$
 \end{frame}
 
-\begin{frame}{Exercise 1 (a) (vi)}
-	\textbf{Question (a) (vi)}: Plot $\theta_j^*$ as a function of $\rho_j$ for $\rho_j \in [-5, 5], \lambda =1, z_j = 1$. (This function is called soft thresholding operator).
-	\vspace{10pt}
-	
-	\textbf{Solution}: \textbf{Show the standard solution.}
+\begin{frame}[fragile]{Exercise 1 (a) (vi)}
+	\textbf{Question (a) (vi)}: Plot $\theta_j^*$ as a function of $\rho_j$ for $\rho_j \in [-5, 5], \lambda =1, z_j = 1$. (This function is called the soft thresholding operator.)
+	\medskip
+	\begin{columns}[T]
+	\begin{column}{0.52\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\scriptsize]
+rhos = np.arange(-5, 5.001, 0.1)
+lam = z = 1.0
+theta_star = np.where(
+    rhos < -lam, (rhos + lam) / z,
+    np.where(rhos > lam,
+             (rhos - lam) / z, 0.0))
+theta_ols = rhos / z
+\end{lstlisting}
+		\footnotesize Soft thresholding is OLS pulled toward $0$ by $\lambda$, and clamped to exactly $0$ on $[-\lambda, \lambda]$ --- the source of sparsity.
+	\end{column}
+	\begin{column}{0.48\textwidth}
+		\centering
+		\includegraphics[height=0.62\textheight]{figure_ex7/soft_threshold.png}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
-	\small
-	\textbf{Question (b)}: For non-singular $\Xmat^T \Xmat$, find the matrix $\Amat \in \mathbb{R}^{p \times p} $ for which $$\Amat^T \Xmat^T \Xmat \Amat = \Imat$$
-	\emph{Hint: $\Xmat^T \Xmat$ is positive definite.}
-	
-	\textbf{Solution}: 
-	\uncover<2->{
-		Since $\Xmat^T \Xmat$ is positive definite, there exist an orthogonal matrix $\Vmat$ and a diagonal matrix $\Dmat$ with $D_{ii} > 0$ such that $$\Vmat \Dmat \Vmat^T = \Xmat^T \Xmat.$$
-	}
-	\uncover<3->{
-		So 
-		\begin{align*}
-			\Amat^T \Xmat^T \Xmat \Amat = \Amat^T \Vmat \Dmat \Vmat^T \Amat = \Imat
-		\end{align*}
-	}
-	\uncover<4->{
-		To solve the equation for $\Amat$, we substitute the variable $ \Vmat^T \Amat = \Pmat$. Then, 
-		\begin{align*}
-			\Pmat^T \Dmat \Pmat = \Imat
-		\end{align*}
-	}
-	\uncover<5->{
-		Since $\Dmat$ is a diagnonal matrix, it can be seen that $\Pmat = \Dmat^{- 0.5}$. Hence $\Vmat^T \Amat = \Pmat$. Because $\Vmat$ is orthogonal, we have $\Amat = \Vmat \Dmat^{-0.5}$.
-	}
+	\textbf{Question (b)}: for non-singular $\Xmat^\top\Xmat$, find $\Amat \in \mathbb{R}^{p\times p}$ with
+	$$\Amat^\top \Xmat^\top\Xmat\, \Amat = \Imat.$$
+	\emph{Hint: $\Xmat^\top\Xmat$ is positive definite.}
+	\medskip
+
+	\uncover<2->{\textbf{Use the hint:} what structure does positive-definiteness give us?}
+	\medskip
+
+	\uncover<3->{%
+	\begin{center}
+		\setlength{\fboxsep}{8pt}%
+		\colorbox{blue!10}{%
+		\begin{minipage}{0.92\textwidth}
+		\centering
+		Recall --- a positive definite matrix has a spectral decomposition
+		\[ \Xmat^\top\Xmat = \Vmat\Dmat\Vmat^\top, \quad \Vmat^\top\Vmat = \Imat, \quad \Dmat = \mathrm{diag}(d_1,\dots,d_p),\ d_i > 0. \]
+		\end{minipage}}
+	\end{center}}
+\end{frame}
+
+\begin{frame}{Exercise 1 (b): solve for $\Amat$}
+	Want $\Amat^\top \Xmat^\top\Xmat\, \Amat = \Imat$, using $\Xmat^\top\Xmat = \Vmat\Dmat\Vmat^\top$.
+	\medskip
+	\begin{itemize}
+		\item<2-> plug in: $\;\Amat^\top \Vmat\Dmat\Vmat^\top \Amat = \Imat$
+		\item<3-> substitute $\Pmat := \Vmat^\top\Amat$: $\;\Pmat^\top\Dmat\Pmat = \Imat$
+		\item<4-> $\Dmat$ diagonal, $d_i>0 \Rightarrow \Pmat = \Dmat^{-0.5}$ \quad (then $\Dmat^{-0.5}\Dmat\,\Dmat^{-0.5}=\Imat$)
+		\item<5-> undo the substitution: $\Vmat^\top\Amat = \Dmat^{-0.5}$, $\Vmat$ orthogonal $\Rightarrow$ \colorbox{blue!10}{$\Amat = \Vmat\Dmat^{-0.5}$}
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c) (i)}
-	(c) For a design matrix with orthornormal columns, i.e., $\Xmat^T \Xmat = \Imat$, exists an analytical minimizer of the Lasso regression $\thetabh_{Lasso} = (\thetah_{Lasso, 1}, \ldots, \thetah_{Lasso, p})^T$ that is given by 
-	$$\thetah_{Lasso, i} = \sign(\thetah_{i}) \max \left\{ \left|\thetah_i \right|  - \lambda, 0   \right\}, \quad i = i, \ldots, p,$$
-	where $\thetabh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk (w.r.t. the L2 loss).
+	(c) For a design matrix with orthornormal columns, i.e., $\Xmat^T \Xmat = \Imat$, exists an analytical minimizer of the Lasso regression $\thetavh_{Lasso} = (\thetah_{Lasso, 1}, \ldots, \thetah_{Lasso, p})^T$ that is given by 
+	$$\thetah_{Lasso, i} = \sign(\thetah_{i}) \max \left\{ \left|\thetah_i \right|  - \lambda, 0   \right\}, \quad i = 1, \ldots, p,$$
+	where $\thetavh = (\thetah_1, \ldots, \thetah_p)^T = (\Xmat^T \Xmat)^{-1} \Xmat^T \yv$ is the minimizer of the unregularized empirical risk (w.r.t. the L2 loss).
 	
-	Under the assumption that $\Xmat^T\Xmat$ is non-singular, your colleague proposes to project $\Xmat$ with $\Amat$ from (b), i.e., use $\Amattilde = \Xmat \Amat$ and then apply the analytical solution given here. 
+	Under the assumption that $\Xmat^T\Xmat$ is non-singular, your colleague proposes to project $\Xmat$ with $\Amat$ from (b), i.e., use $\tilde{\Xmat} = \Xmat \Amat$ and then apply the analytical solution given here. 
 	\vspace{10pt}
 	
 	\textbf{(i)} Show that this does not generally solve the original Lasso regression.
 	 
 	\vspace{10pt} 
-	\emph{Hint: You only need to check under which condition $\nabla_{\thetab} 0.5 || \Xmat \thetab - \yv||_2^2 = \nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 $. The proof can be finished with a subgradient argument regarding stationarity, which you do not have to do.}
+	\emph{Hint: You only need to check under which condition $\nabla_{\thetav} 0.5 || \Xmat \thetav - \yv||_2^2 = \nabla_{\thetav} 0.5 ||\Xmat \Amat \thetav - \yv||_2^2 $. The proof can be finished with a subgradient argument regarding stationarity, which you do not have to do.}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c) (i): Continued}
-	\textbf{Solution}:
-		\begin{align*}
-			\nabla_{\thetab} 0.5 ||\Xmat \Amat \thetab - \yv||_2^2 &=  \Amat^T \Xmat^T \Xmat \Amat \thetab - \Amat^T \Xmat^T \yv \\
-			\nabla_{\thetab} 0.5 ||\Xmat \thetab - \yv ||_2^2 &= \Xmat^T \Xmat \thetab - \Xmat^T \yv\\
-		\end{align*}
-		\uncover<2->{
-			To let the gradient be equal, it must be satisfied that 
-			$$\Amat = \Imat.$$
-			In other words, if $\Amat \neq \Imat$, then the analytical solution does not solve the original Lasso regression.
-		}
+	\textbf{Solution}: compare the two gradients (the hint).
+	\begin{align*}
+		\onslide<2->{\nabla_{\thetav}\, 0.5\|\Xmat\Amat\thetav - \yv\|_2^2 &= \Amat^\top\Xmat^\top\Xmat\Amat\,\thetav - \Amat^\top\Xmat^\top\yv} \\
+		\onslide<3->{\nabla_{\thetav}\, 0.5\|\Xmat\thetav - \yv\|_2^2 &= \Xmat^\top\Xmat\,\thetav - \Xmat^\top\yv}
+	\end{align*}
+	\uncover<4->{equal $\Rightarrow \Amat^\top\Xmat^\top\Xmat\Amat = \Xmat^\top\Xmat \overset{(b)}{\Longrightarrow} \Xmat^\top\Xmat = \Imat$, \;i.e.\ \colorbox{blue!10}{$\Amat = \Imat$}.}
+	\medskip
+	\uncover<5->{$\Amat \neq \Imat \;\Rightarrow\;$ projected solution $\neq$ original Lasso.}
 \end{frame}
 
 
 \begin{frame}{Exercise 1 (c) (ii)}
-	\textbf{Question (c) (ii)}: How could you adapt the penalty term such that the solution to the projected problem is equivalent to the original Lasso regression? In this case, can we still solve for parameters independently?
-	
-		\textbf{Solution:} 
-		
-		\begin{itemize}
-			\item<2-> We can choose $||\Amat \thetab||_1$ as regularization term. This will yeild $\thetab^*_{\text{Projected}} = \Amat^{-1} \thetab_{\text{Lasso}}$. It is equivalent to the original Lasso regression in the sense that \textbf{the optimal solution leads to the same risk}. 
-			\item<3-> However, due to the $||\Amat \thetab||_1$, it is (generally) not possible to split the risk into a sum of functiosn that depend on one parameter.
-		\end{itemize}
+	\textbf{Question (c) (ii)}: How to adapt the penalty so the projected problem matches the original Lasso? Can we still solve coordinate-wise?
+	\medskip
+
+	\textbf{Solution}:
+	\begin{itemize}
+		\item<2-> penalize $||\Amat\thetav||_1$ (not $||\thetav||_1$) $\Rightarrow \thetav^*_{\text{proj}} = \Amat^{-1}\thetav_{\text{Lasso}}$ --- same minimal risk, \colorbox{blue!10}{equivalent}.
+		\item<3-> but $||\Amat\thetav||_1$ couples the coordinates $\Rightarrow$ no per-coordinate split --- not solvable independently.
+	\end{itemize}
+	\medskip
+
+	\uncover<3->{%
+	\begin{center}
+	\begin{tikzpicture}[scale=0.78]
+		\draw[->,gray!55] (-1.5,0)--(1.7,0) node[right,black]{\scriptsize$\theta_1$};
+		\draw[->,gray!55] (0,-1.3)--(0,1.6) node[above,black]{\scriptsize$\theta_2$};
+		\draw[thick,fill=blue!12] (1,0)--(0,1)--(-1,0)--(0,-1)--cycle;
+		\node at (0,-1.85) {\scriptsize$\|\thetav\|_1\le t$: axis-aligned};
+		\node at (0,-2.3) {\scriptsize separable, sparse corners};
+		\begin{scope}[xshift=5.6cm]
+			\draw[->,gray!55] (-1.7,0)--(1.7,0) node[right,black]{\scriptsize$\theta_1$};
+			\draw[->,gray!55] (0,-1.3)--(0,1.6) node[above,black]{\scriptsize$\theta_2$};
+			\draw[thick,fill=orange!18,rotate=35,xscale=1.35,yscale=0.72] (1,0)--(0,1)--(-1,0)--(0,-1)--cycle;
+			\node at (0,-1.85) {\scriptsize$\|\Amat\thetav\|_1\le t$: tilted};
+			\node at (0,-2.3) {\scriptsize coupled, corners off-axis};
+		\end{scope}
+	\end{tikzpicture}
+	\end{center}}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c) (iii)}
-	\textbf{Question (c) (iii)}: Does the procedure proposed in \textbf{(c)} perform variable selection?
-	
-	\vspace{10pt}
-	\textbf{Solution}: 
+	\textbf{Question (c) (iii)}: Does the procedure in (c) perform variable selection?
+	\medskip
+
+	\textbf{Solution}:
 	\begin{itemize}
-		\item<2-> We can see $||\Xmat \Amat \thetab -  \yv ||_2^2 + \lambda ||\thetab||_1$ as a projection of variables followed by a Lasso regression.
-		\item<3-> Hence, we select variables in these projected coordinates. That is, for $(\Xmat \Amat) \thetab^* = \tilde{\Xmat} \thetab^*$, $\thetab^*$ select variables on $\tilde{\Xmat}$.
-		\item<4-> But this does not imply that variable selection will occur on the original coordinates. To see this, $\Xmat \Amat \thetab^*$ needs to be viewed as $\Xmat (\Amat \thetab^*)$ as we now consider original features $\Xmat$.  In this case, $\Amat \thetab^*$ is in general non-sparse. Therefore, it does not perform variable selection on $\Xmat$.
+		\item<2-> $||\tilde{\Xmat}\thetav - \yv||_2^2 + \lambda||\thetav||_1$ with $\tilde{\Xmat}=\Xmat\Amat$ --- Lasso in the \emph{projected} coordinates.
+		\item<3-> so $\thetav^*$ is sparse on $\tilde{\Xmat}$ --- selects \emph{projected} features.
+		\item<4-> but $\Xmat\Amat\thetav^* = \Xmat(\Amat\thetav^*)$, and $\Amat\thetav^*$ is generally dense $\Rightarrow$ \colorbox{blue!10}{no selection on $\Xmat$}.
 	\end{itemize}
+	\medskip
+
+	\uncover<4->{%
+	\begin{center}
+	\begin{tikzpicture}[scale=0.55]
+		\draw[gray!50] (-0.3,0)--(5.3,0);
+		\draw[very thick,blue!70!black] (2,0)--(2,1.6); \fill[blue!70!black] (2,1.6) circle (2.4pt);
+		\draw[very thick,blue!70!black] (4,0)--(4,-1.1); \fill[blue!70!black] (4,-1.1) circle (2.4pt);
+		\foreach \x in {1,3,5} \fill[gray!55] (\x,0) circle (1.6pt);
+		\node[align=center] at (2.5,-2.3) {\scriptsize$\thetav^*$ (projected): sparse,\\[-1pt]\scriptsize selects features};
+		\draw[->,thick] (6,0)--(7.7,0) node[midway,above]{\scriptsize$\Amat\,\cdot$};
+		\begin{scope}[xshift=8.4cm]
+			\draw[gray!50] (-0.3,0)--(5.3,0);
+			\foreach \x/\h in {1/0.9, 2/1.5, 3/-0.7, 4/-1.2, 5/0.6}
+				{\draw[very thick,orange!80!black] (\x,0)--(\x,\h); \fill[orange!80!black] (\x,\h) circle (2.4pt);}
+			\node[align=center] at (2.5,-2.3) {\scriptsize$\Amat\thetav^*$ (original): dense,\\[-1pt]\scriptsize no selection};
+		\end{scope}
+	\end{tikzpicture}
+	\end{center}}
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
-	(d) You are given the following code to compare the quality of the projected Lasso regression vs. the regular Lasso regression. Complete the missing code of the algorithms and interpret the result.
-	\vspace{20pt}
-	
-	\textbf{Solution: show the sandard solution.}
+	(d) You are given the following code to compare the quality of the projected Lasso regression vs.\ the regular Lasso regression. Complete the missing code of the algorithms and interpret the result.
+	\medskip
+
+	The two estimators are ported from the R reference solution to Python. Part (b) gives $\Amat = \Vmat \Dmat^{-0.5}$, which orthonormalizes the design so the closed-form Lasso applies; the regular Lasso uses the coordinate-descent update derived in (a)(v).
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 1 (d): the two estimators (Python)}
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+def proj_orth_lasso(X, y, lam):
+    vals, vecs = np.linalg.eigh(X.T @ X)
+    A = vecs @ np.diag(vals ** -0.5)
+    Xt = X @ A                 # Xt'Xt = I
+    b = Xt.T @ y               # OLS, orthonormal
+    b = np.sign(b) * np.maximum(
+        np.abs(b) - lam, 0.0)  # soft-threshold
+    return A @ b               # back to X-coords
+\end{lstlisting}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+def lasso(X, y, lam, N):
+    p = X.shape[1]
+    theta = np.ones(p)
+    for i in range(1, N + 1):
+        j = i % p
+        mask = np.ones(p); mask[j] = 0.0
+        rho = X[:, j] @ (y - X @ (theta * mask))
+        z = np.sum(X[:, j] ** 2)
+        if rho < -lam:   theta[j] = (rho+lam)/z
+        elif rho > lam:  theta[j] = (rho-lam)/z
+        else:            theta[j] = 0.0
+    return theta
+\end{lstlisting}
+	\end{column}
+	\end{columns}
+	\medskip
+	\footnotesize Left: project $\to$ closed-form soft-threshold $\to$ map back via $\Amat$. Right: cyclic coordinate descent applying the $(a)(v)$ update to one $\theta_j$ at a time.
+\end{frame}
+
+\begin{frame}[fragile]{Exercise 1 (d): the experiment}
+	\begin{columns}[T]
+	\begin{column}{0.55\textwidth}
+\begin{lstlisting}[style=pystyle, basicstyle=\ttfamily\tiny]
+p, n, N = 10, 100, 400
+lam, s_sig, s_noise = 1.0, 1.0, 0.1
+rmse = lambda e, t: n/(n-1)*np.std(e-t, ddof=1)
+for _ in range(100):
+    X = rng.normal(scale=s_sig, size=(n, p))
+    th = rng.normal(size=p)
+    th[rng.binomial(1, 0.7, p) == 1] = 0   # sparse
+    y = X @ th + rng.normal(scale=s_noise, size=n)
+    # compare rmse(proj_orth_lasso) vs rmse(lasso)
+\end{lstlisting}
+	\end{column}
+	\begin{column}{0.45\textwidth}
+		\footnotesize
+		\textbf{Setup} (100 repetitions):
+		\begin{itemize}
+			\item random design $\Xmat$ ($n{=}100,\ p{=}10$)
+			\item true $\thetav$: $\sim\!70\%$ of entries \emph{forced} to $0$ --- sparse in the original coordinates
+			\item $\yv = \Xmat\thetav + \text{small noise}$
+		\end{itemize}
+		\smallskip
+		\textbf{Metric}: RMSE $=$ how far the estimate $\thetavh$ is from the true $\thetav$ (lower $=$ better recovery).
+		\smallskip
+		\textbf{Compare}: \texttt{proj\_orth\_lasso} (projected) vs.\ \texttt{lasso} (regular).
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Exercise 1 (d): result}
+	\begin{columns}[T]
+	\begin{column}{0.5\textwidth}
+		\centering
+		\includegraphics[height=0.68\textheight]{figure_ex7/proj_vs_lasso.png}\\
+		{\footnotesize ``yes'' $=$ projected, \quad ``no'' $=$ regular}
+	\end{column}
+	\begin{column}{0.5\textwidth}
+		\footnotesize
+		Regular ($\approx 0.01$) beats projected ($\approx 0.10$) by $\sim\!10\times$.
+		\medskip
+
+		\textbf{Why?}
+		\begin{itemize}
+			\item regular penalizes in the original coords $\Rightarrow$ zeros the junk $\Rightarrow$ recovers the sparse $\thetav$.
+			\item projected is sparse in rotated coords; back in original, $\thetavh = \Amat\cdot(\text{sparse})$ is \emph{dense} $\Rightarrow$ misses the sparse $\thetav$.
+		\end{itemize}
+		\medskip
+		Confirms (c): the projection selects in the \emph{wrong} coordinate system.
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.1}
+	\begin{tabular}{@{}p{0.05\textwidth}p{0.46\textwidth}p{0.43\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		(a) & $\riskr$ convex but non-smooth; coordinate-wise minimizer $\theta_j^* = \mathrm{ST}_\lambda(\rho_j)/z_j$ (soft-thresholding) & \emph{Soft-thresholding and $L1$ regularization}; coordinate descent for Lasso \\
+		(b) & $\Amat = \Vmat\Dmat^{-0.5}$ orthonormalizes the design: $\Amat^\top\Xmat^\top\Xmat\Amat = \Imat$ & \emph{$L1$ and $L2$ Reg.\ with orthonormal design} (where Lasso has a closed form) \\
+		(c) & projected closed form $\neq$ original Lasso; it selects in rotated, not original, coordinates & $L1$ geometry: sparsity is \emph{basis-dependent} \\
+		(d) & regular Lasso recovers the sparse $\thetav$; projected $\sim\!10\times$ worse & \emph{Support recovery of Lasso} / feature selection \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
+
+	\uncover<2->{
+		\textbf{\textcolor{orange!75!black}{Take-aways}}
+		\begin{itemize}\setlength{\itemsep}{1pt}
+			\item no general closed form $\Rightarrow$ coordinate descent; the per-coordinate step is \emph{soft-thresholding}.
+			\item orthonormal design ($\Xmat^\top\Xmat = \Imat$) is the special case with an exact soft-threshold formula.
+			\item L1 selects only in the basis it penalizes; rotating the design leaves $\thetavh$ dense in the original coordinates.
+		\end{itemize}
+	}
 \end{frame}
 
 \end{document}
