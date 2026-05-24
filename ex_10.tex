@@ -7,7 +7,7 @@
 %% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
 
 \documentclass[aspectratio=169]{beamer}
- 
+
 \mode<presentation>
 {
 \usetheme{NYU}
@@ -24,6 +24,11 @@
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
 \usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{matrix, decorations.pathreplacing}
+\usepackage{booktabs}
 \usepackage{pgfpages}
 % citations
 \usepackage{natbib}
@@ -56,6 +61,35 @@
 \newcommand{\betaMmone}{\beta^{[M-1]}}
 \newcommand{\gammam}{\gamma^{[m]}}
 
+% --- proof roadmap: one colorbox per step (done / active / upcoming) ---
+\newcommand{\qbox}[4]{% #1 active idx, #2 this idx, #3 label, #4 short descriptor
+	\ifnum#2<#1
+		\begin{tcolorbox}[colback=green!6,colframe=green!35!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{green!45!black}{$\checkmark$~\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!55}{#4}}
+		\end{tcolorbox}
+	\else\ifnum#2=#1
+		\begin{tcolorbox}[colback=blue!12,colframe=blue!55!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{blue!60!black}{$\blacktriangleright$~\textbf{#3}}}\\[1pt]{\scriptsize #4}
+		\end{tcolorbox}
+	\else
+		\begin{tcolorbox}[colback=black!3,colframe=black!20,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{black!45}{\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!45}{#4}}
+		\end{tcolorbox}
+	\fi\fi}
+% 5-step chain (a) -> (e) of the AdaBoost training-error bound
+\newcommand{\rmboost}[1]{%
+	{\footnotesize\bfseries Roadmap}\par
+	\qbox{#1}{1}{(a) $\gammahm$}{better than guessing}%
+	\qbox{#1}{2}{(b) Weight $\Wm$}{$=\sqrt{1-4(\gammahm)^2}$}%
+	\qbox{#1}{3}{(c) $\wMponei$}{unroll the recursion}%
+	\qbox{#1}{4}{(d) $\id \le e^{-yf}$}{exp. surrogate}%
+	\qbox{#1}{5}{(e) Combine}{(d)$\to$(c)$\to$(b)}}
+
+% small recall side-note
+\newcommand{\recall}[1]{%
+	\setlength{\fboxsep}{5pt}%
+	\colorbox{blue!10}{\footnotesize #1}}
+
 \title[]{\textbf{Exercise of Supervised Learning: \\ Boosting Part 1}}
 
 %\subtitle{}
@@ -63,7 +97,7 @@
 % - Use the \inst{?} command only if the authors have different
 %   affiliation.
 %\author{F.~Author\inst{1} \and S.~Another\inst{2}}
-\author{Yawei Li} 
+\author{Yawei Li}
 
 % - Use the \inst command only if there are several affiliations.
 % - Keep it simple, no one is interested in your street address.
@@ -73,7 +107,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{January 14, 2025}
+\date{July 2, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -118,42 +152,112 @@
 
 
 \begin{frame}{Exercise 1: AdaBoost - Empirical Risk}
-	Let $\fh(\xv) = \summM \betahm \bhm (\xv) $ be the scoring function after running AdaBoost for $M \in \mathbb{N}$ iterations. Show that the average empirical risk (on $\Dtrain$) of the corresponding classifier $\hx = \sign (\fh(\xv))$ is bounded as follows
+	Let $\fh(\xv) = \summM \betam \bhm (\xv) $ be the scoring function after running AdaBoost for $M \in \mathbb{N}$ iterations. Show that the average empirical risk (on $\Dtrain$) of the corresponding classifier $\hx = \sign (\fh(\xv))$ is bounded as follows
 	\begin{align}
 		\frac{\riske (\hat{h})}{n} = \frac{\sumin \idhxneqy}{n} \leq \prodmM \sqrt{1 - 4 \left(\gammahm\right)^2},
 	\end{align}
 	where $\gammahm = \frac{1}{2} - \errm$. For this purpose, proceed as follows:
-	
-	(a) Given an interpretation of $\gammahm$.
+
+	(a) Give an interpretation of $\gammahm$.
+\end{frame}
+
+\begin{frame}{Proof Roadmap: How the Five Parts Fit Together}
+	\small
+	The bound is assembled in (e); parts (a)--(d) build the pieces it needs.
+	\medskip
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize,
+		box/.style={draw, rounded corners=2pt, align=center, inner sep=3pt, minimum height=13mm},
+		done/.style={box, fill=green!8, draw=green!40!black},
+		goal/.style={box, fill=blue!10, draw=blue!55!black, thick}]
+	\node[done] (a) at (0,0) {\textbf{(a)} beats guessing\\ $\gammahm = \tfrac12 - \errm$};
+	\node[done] (b) at (3.5,0) {\textbf{(b)} total weight\\ $\Wm = \sqrt{1-4(\gammahm)^2}$};
+	\node[done] (c) at (8.0,0) {\textbf{(c)} unroll recursion\\ $\wMponei = \frac{\wonei e^{-\yi\fh(\xi)}}{\prodmM \Wm}$};
+	\node[done] (d) at (3.5,-1.9) {\textbf{(d)} surrogate\\ $\idhxneqy \le e^{-\yi \fh(\xi)}$};
+	\node[goal] (e) at (8.3,-1.9) {\textbf{(e)} combine $\Rightarrow$\\ $\frac{\riske(\hh)}{n} \le \prodmM \sqrt{1-4(\gammahm)^2}$};
+	\draw[->] (d) -- (e);
+	\draw[->] (c.south) -- (e.north);
+	\draw[->] (a) -- (b);
+	\draw[->] (b) -- (c);
+	\end{tikzpicture}
+	\end{center}
+	\uncover<2->{\centering\recall{In (e): start from (d), rewrite via (c), bound each $\Wm$ by (b).}}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (a)}
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
 	\begin{itemize}
+		\setlength{\itemsep}{12pt}
 		\item<1-> Recall that $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$ is the weighted error of $\bhm$.
-		\item<2-> Random guessing has an error of approx. $\frac{1}{2}$.
-		\item<3-> So, $\gammahm = \frac{1}{2} - \errm$ tells us how better $\bhm$ is compared to random guessing.
+		\item<2-> Random guessing (a fair coin flip) has weighted error exactly $\tfrac{1}{2}$.
+		\item<3-> So, $\gammahm = \frac{1}{2} - \errm$ tells us how much \emph{better} $\bhm$ is compared to random guessing.
 	\end{itemize}
-	
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\rmboost{1}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
 	(b) For any $m = 1, \ldots, M$ let $\Wm = \sumin \wtmi$ be the total weight in iteration $m$ before normalizing the weights. Show that $\Wm = \sqrt{1 - 4\left(\gammahm \right)^2}$.
-	
+
 	Hint:
 	\begin{itemize}
 		\item $\wtmi = \wmi \cdot \exp \left( - \betam \yi \bhm(\xi) \right)$.
-		\item<2-> Two cases: 
+		\item<2-> Two cases:
 			\begin{itemize}
 				\item correct prediction: $\yi = \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = 1$
 				\item incorrect prediction: $\yi \neq \bhm(\xi) \Leftrightarrow \yi \cdot \bhm(\xi) = -1$
 			\end{itemize}
-		\item<3-> $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$. That is, identify all the wrong predicted samples, sum up their weights.
-		\item<4-> The association can be symbolized as: $\Wm \leftarrow \wtmi \leftarrow \wmi \leftarrow \errm \leftarrow \gammahm$. Our goal: $\Wm \leftarrow \gammahm$.
+		\item<3-> $\errm = \sumin \wmi \cdot \id_{\yi \neq \bhm(\xi)}$, i.e.\ $\errm$ sums the weights of all misclassified samples.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}{1 (b): Think Before Solving}
+	\small
+	\textbf{Target:}\quad $\Wm = \sumin \wtmi \;\overset{!}{=}\; \sqrt{1 - 4(\gammahm)^2}$.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{Split.} $\yi\bhm(\xi) \in \{+1, -1\}$ only --- can the sum be split into correct vs.\ incorrect samples?
+		\item<2-> \textbf{Collapse.} Within each group, is the exponential factor the same for every sample? If so, what do $\sum_{\text{correct}}\wmi$ and $\sum_{\text{incorrect}}\wmi$ equal?
+		\item<3-> \textbf{Substitute.} How does $\betam = \tfrac12\log\frac{1-\errm}{\errm}$ turn $e^{\pm\betam}$ into a square root, and $\errm$ into $\gammahm$?
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{chain to build: $\gammahm \to \errm \to \wmi \to \wtmi \to \Wm$}}
+\end{frame}
+
+\begin{frame}{1 (b): Split the Weight Sum into Two Groups}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.66\textwidth}
+	$\yi\bhm(\xi)=+1$ on correct samples, $=-1$ on incorrect ones $\Rightarrow$ split $\sumin\wtmi$:
+	\medskip
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize]
+	\node[draw, rounded corners, fill=green!10, draw=green!45!black, align=center, minimum width=3.1cm, minimum height=1.35cm] (cor) at (0,0)
+		{\textbf{correct:} $\yi=\bhm(\xi)$\\[2pt] $\displaystyle\sum_{i:\,\yi=\bhm(\xi)}\!\!\wmi = 1-\errm$\\[3pt] weight $\times\, e^{-\betam}$};
+	\node[draw, rounded corners, fill=red!8, draw=red!55!black, align=center, minimum width=3.1cm, minimum height=1.35cm] (inc) at (0,-2.5)
+		{\textbf{incorrect:} $\yi\neq\bhm(\xi)$\\[2pt] $\displaystyle\sum_{i:\,\yi\neq\bhm(\xi)}\!\!\wmi = \errm$\\[3pt] weight $\times\, e^{+\betam}$};
+	\node[align=center, anchor=west, xshift=8pt] at (cor.east) {$\to e^{-\betam}(1-\errm)$};
+	\node[align=center, anchor=west, xshift=8pt] at (inc.east) {$\to e^{+\betam}\,\errm$};
+	\end{tikzpicture}
+	\end{center}
+	\end{column}
+	\begin{column}{0.31\textwidth}
+	\rmboost{2}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{1 (b): Express $\Wm$ with $\wmi$, and then $\errm$}
 \small
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
+	\footnotesize
 	\begin{align*}
 		\Wm &= \sumin \wtmi \\
 		&= \sumin \wmi \exp \left( -\betam \yi \bhm (\xi) \right) \\
@@ -167,89 +271,210 @@
 			&= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
 		}
 	\end{align*}
+	\end{column}
+	\begin{column}{0.23\textwidth}
+	\rmboost{2}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{1 (b): Substitute $\betam$ with An Expression of $\errm$}
-	Summarizing the previous steps: 
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
+	Summarizing the previous steps:
+	{\footnotesize
 	\begin{align}
 			\Wm &= \sumin \wtmi = \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm)
-	\end{align}
-	
+	\end{align}}
+
 	\uncover<2->{
-		Recall that $\betam = \frac{1}{2} \log \left(\frac{1 - \errm}{\errm} \right)$, so that 
+		Recall that $\betam = \frac{1}{2} \log \left(\frac{1 - \errm}{\errm} \right)$, so that
+		{\footnotesize
 		\begin{align}
-			\exp \left( \betam \right) = \sqrt{\frac{1 - \errm}{\errm}}, \qquad \text{and } \qquad \exp \left( -\betam \right) = \sqrt{\frac{\errm}{1 - \errm}}.
-		\end{align}
-		We can then plug (3) into (2) and eliminate the terms related to $\betam$.
-	} 
+			\exp \left( \betam \right) &= \sqrt{\frac{1 - \errm}{\errm}}, \\
+			\exp \left( -\betam \right) &= \sqrt{\frac{\errm}{1 - \errm}}.
+		\end{align}}%
+		We can then plug (3)--(4) into (2) and eliminate the terms related to $\betam$.
+	}
+	\end{column}
+	\begin{column}{0.23\textwidth}
+	\rmboost{2}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{1 (b): Plug in the Relation between $\errm$ and $\gammahm$}
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
 	\begin{align*}
 		\Wm &= \exp \left( \betam \right) \errm + \exp \left(- \betam \right) (1 - \errm) \\
 		&= 2 \sqrt{( 1 - \errm) \errm} \\
 		\only<2->{
-			&= 2 \sqrt{\left(\frac{1}{2} + \gammahm \right) \left(\frac{1}{2} - \gammahm \right)} \qquad \qquad (\gammahm = \frac{1}{2} - \errm)\\
+			&= 2 \sqrt{\left(\frac{1}{2} + \gammahm \right) \left(\frac{1}{2} - \gammahm \right)} \qquad (\gammahm = \tfrac{1}{2} - \errm)\\
 		}
 		\only<3->{
 			&= 2 \sqrt{\frac{1}{4} - \left(\gammahm \right)^2} \\
-			&= \sqrt{1 - 4 (\gammahm)^2}. \\
+			&= \sqrt{1 - 4 (\gammahm)^2}. \hfill\qed\\
 		}
 	\end{align*}
+	\end{column}
+	\begin{column}{0.23\textwidth}
+	\rmboost{2}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c)}
-	(c) Show that 
+	(c) Show that
 	\begin{align*}
 		\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm},
 	\end{align*}
-	where $\wMponei$ is the \textbf{normalized} weight if we would run AdaBoost for $M + 1$ iterations.
-	
+	where $\wMponei$ is the \textbf{normalized} weight we would obtain if AdaBoost were run for $M+1$ iterations.
+
 	Hint:
+	\begin{align*}
+		\wmponei = \frac{\wtmi}{\sumin \wtmi} = \frac{\wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}{\sumin \wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}
+	\end{align*}
 	\begin{itemize}
-		\item 
-			\begin{align*}
-				\wmponei = \frac{\wtmi}{\sumin \wtmi} = \frac{\wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}{\sumin \wmi \cdot \exp \left(-\betam \yi \bhm (\xi) \right)}
-			\end{align*}
-		\item The above hint shows relation bewtween $\wmponei$ and $\wmi$, or between $\wmi$ and $w^{[m - 1](i)}$, ..., or $w^{[2](i)}$ and $w^{[1](i)}.$ This motivates us to use a recursive way for the proof.
+		\item The above hint relates $\wmponei$ to $\wmi$, or $\wmi$ to $w^{[m - 1](i)}$, ..., or $w^{[2](i)}$ to $w^{[1](i)}.$ This motivates a recursive proof.
 	\end{itemize}
-	
+
+\end{frame}
+
+\begin{frame}{1 (c): Think Before Solving}
+	\small
+	\textbf{Target:}\quad $\wMponei = \dfrac{\wonei \exp(-\yi\fh(\xi))}{\prodmM \Wm}$.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{One step.} The hint writes $\wmponei$ via $\wmi$ and $\Wm$ --- can you unfold this from level $M{+}1$ down to level $1$?
+		\item<2-> \textbf{Stacking.} Once the steps are stacked, what happens to the $\Wm$ factors and to the product of exponentials?
+		\item<3-> \textbf{Exponent sum.} Why does $\sum_{m} \betam\bhm(\xi)$ collapse into the single score $\fh(\xi)$?
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{1 (c): Unrolling the Weight Recursion}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.70\textwidth}
+	Apply $w^{[m+1](i)} = w^{[m](i)}\,\dfrac{e^{-\betam\yi\bhm(\xi)}}{\Wm}$ repeatedly, peeling one factor each step:
+	\medskip
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize,
+		w/.style={draw, rounded corners=2pt, fill=blue!8, draw=blue!55!black, inner sep=3pt}]
+	\node[w] (M1) at (0,0) {$\wMponei$};
+	\node[w] (M) at (3.3,0) {$\wMi$};
+	\node (dots) at (4.9,0) {$\cdots$};
+	\node[w] (one) at (7.4,0) {$\wonei = \tfrac1n$};
+	\draw[->] (M1) -- node[above, font=\scriptsize, yshift=2pt]{$\times\dfrac{e^{-\betaM\yi\bhM(\xi)}}{\WM}$} (M);
+	\draw[->] (M) -- (dots);
+	\draw[->] (dots) -- node[above, font=\scriptsize, yshift=2pt]{$\times\dfrac{e^{-\beta^{[1]}\yi\hat b^{[1]}(\xi)}}{W^{[1]}}$} (one);
+	\end{tikzpicture}
+	\end{center}
+	\smallskip
+	\uncover<2->{All $M$ exponentials multiply; all $M$ weights $\Wm$ collect in the denominator.}
+	\end{column}
+	\begin{column}{0.27\textwidth}
+	\rmboost{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{1 (c): From $\wMponei$ to $\wMi$, and to $\wMmonei$}
-	\small
-	Note: our proof target $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}$ involves $\Wm$ in the denominator. 
+	\scriptsize
+	\begin{columns}[T]
+	\begin{column}{0.76\textwidth}
+	Note: the target involves $\prodmM\Wm$ in the denominator.
+	\setlength{\jot}{2pt}
 	\begin{align*}
 		\wMponei &= \wMi \cdot \frac{\exp \left(-\betaM \yi \bhM (\xi) \right)}{\sumin \wMi \cdot \exp \left(-\betaM \yi \bhM (\xi) \right)} \\
-		&= \wMi \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM}  \qquad \text{(Definition of $\WM$)}\\
+		&= \wMi \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM}  \quad \text{(Def.\ of $\WM$)}\\
 		\only<2->{
-			&= \wMmonei \cdot \frac{\exp \left( - \betaMmone \yi \bhMmone (\xi) \right)}{W^{[M-1]}} \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM} \quad \text{(Use hint)} \\
+			&= \wMmonei \cdot \frac{\exp \left( - \betaMmone \yi \bhMmone (\xi) \right)}{W^{[M-1]}} \cdot \frac{\exp \left( - \betaM \yi \bhM (\xi)\right)}{\WM} \\
 		}
 		\only<3->{
-			&= \ldots \qquad \text{(Repeatedly use the hint)}\\
+			&= \ldots \quad \text{(apply the one-step recursion $M$ times)}\\
 		}
 		\only<4->{
-			&= \wonei \cdot \frac{\prodmM \exp \left( - \betam \yi \bhm (\xi) \right)}{\prodmM \Wm} = \wonei \frac{\exp \left( - \yi \summM \betam \bhm (\xi) \right)}{\prodmM \Wm} \\
+			&= \wonei \cdot \frac{\prodmM \exp \left( - \betam \yi \bhm (\xi) \right)}{\prodmM \Wm} \\
+			&= \wonei \frac{\exp \left( - \yi \summM \betam \bhm (\xi) \right)}{\prodmM \Wm} \\
 		}
 		\only<5->{
-			&= \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}  \qquad \text{(Since $\summM \betam \bhm (\xi) = \fh(\xi)$)}
+			&= \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}  \quad \text{(Since $\sum\betam\bhm=\fh$)} \hfill\qed
 		}
 	\end{align*}
+	\end{column}
+	\begin{column}{0.22\textwidth}
+	\rmboost{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
-	(d) Argue that $\idhxneqy \leq \exp \left( -y \fh(\xv) \right)$ for any $(\xv, y) \in \Xspace \times \Yspace$.
-	
-	Hint: 
-	What happens to $\exp(-y \fh(\xv))$ if $\yi \neq \hh(\xi)$?
-	\uncover<2->{
-		\textbf{Solution:}
-		\begin{align*}
-			\hh(\xv) \neq y &\Leftrightarrow \sign(\fh(\xv)) \neq y \\
-			&\Leftrightarrow -y\fh(\xv) > 0 \\
-			&\Leftrightarrow \exp(-y\fh(\xv)) > \exp(0) = 1 = \id_{\ [\hh(\xv) \neq y]}
-		\end{align*}
-	}
+	(d) Argue that $\id_{[\hh(\xv) \neq y]} \leq \exp \left( -y \fh(\xv) \right)$ for any $(\xv, y) \in \Xspace \times \Yspace$.
+
+	\vspace{6pt}
+	Hint:
+	when $\hh(\xv)\neq y$ (the indicator $=1$), how large is $\exp(-y\fh(\xv))$?
+\end{frame}
+
+\begin{frame}{1 (d): Think Before Solving}
+	\small
+	\textbf{Target:}\quad $\id_{\,[\hh(\xv)\neq y]} \le \exp(-y\fh(\xv))$ for all $(\xv,y)$.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{Two outcomes.} The indicator is $0$ or $1$ --- check the inequality separately for a correct and an incorrect prediction.
+		\item<2-> \textbf{Misclassified.} $\hh=\sign(\fh)$, so $\hh(\xv)\neq y \Leftrightarrow y\fh(\xv) < 0$. What does that force $\exp(-y\fh(\xv))$ to exceed?
+		\item<3-> \textbf{Picture.} Sketch $e^{-\nu}$ and the $0/1$ step against $\nu=yf$ --- does the curve ever dip below the step?
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{1 (d): The Exponential Upper-Bounds the 0/1 Loss}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.60\textwidth}
+	\begin{itemize}
+		\setlength{\itemsep}{6pt}
+		\item Write the margin $\nu := y\fh(\xv)$.
+		\item $0/1$ loss $\id_{[\hh\neq y]} = \id_{[\nu<0]}$ (step at $0$).
+		\item Surrogate $e^{-\nu}$ lies \emph{above} the step for \emph{all} $\nu$:
+		\begin{itemize}\footnotesize
+			\item $\nu<0$ (wrong): $e^{-\nu}>1=\id$.
+			\item $\nu\ge 0$ (right): $e^{-\nu}>0=\id$.
+		\end{itemize}
+		\item $\Rightarrow \id_{[\hh\neq y]} \le \exp(-y\fh(\xv))$.
+	\end{itemize}
+	\end{column}
+	\begin{column}{0.40\textwidth}
+	\centering
+	\begin{tikzpicture}[font=\scriptsize, scale=0.95]
+	% axes
+	\draw[->] (-1.7,0) -- (2.0,0) node[right] {$\nu = y\fh(\xv)$};
+	\draw[->] (0,-0.25) -- (0,2.45) node[above] {loss};
+	% 0/1 step
+	\draw[very thick, red!70!black] (-1.7,1) -- (0,1);
+	\draw[very thick, red!70!black] (0,0) -- (2.0,0);
+	\fill[red!70!black] (0,0) circle (1.3pt);
+	\draw[red!70!black] (0,1) circle (1.3pt);
+	% exp surrogate e^{-nu}
+	\draw[thick, blue!70!black, domain=-0.85:2.0, samples=60, smooth] plot (\x, {exp(-\x)});
+	\node[blue!70!black] at (1.45,1.0) {$e^{-\nu}$};
+	\node[red!70!black, align=center] at (-1.05,1.32) {$0/1$};
+	\node[below, xshift=-6pt] at (0,-0.02) {$0$};
+	\draw[dashed, gray] (0,1) -- (-1.7,1);
+	\node[left, gray, yshift=-4pt] at (0,1) {$1$};
+	\end{tikzpicture}
+	\end{column}
+	\end{columns}
+	\vspace{2pt}
+	\uncover<2->{\footnotesize
+	\begin{align*}
+		\hh(\xv) \neq y &\Leftrightarrow \sign(\fh(\xv)) \neq y \Leftrightarrow -y\fh(\xv) > 0 \\
+		&\Leftrightarrow \exp(-y\fh(\xv)) > \exp(0) = 1 = \id_{\ [\hh(\xv) \neq y]}.
+	\end{align*}}
 \end{frame}
 
 \begin{frame}{Exercise 1 (e)}
@@ -261,25 +486,71 @@
 	Hint: \begin{itemize}
 		\item In (b), we proved $\Wm = \sqrt{1 - 4\left(\gammahm \right)^2}$.
 		\item In (c), $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm}$.
-		\item In (d): $\idhxneqy \leq \exp \left( -y \fh(\xv) \right)$
+		\item In (d): $\id_{[\hh(\xv) \neq y]} \leq \exp \left( -y \fh(\xv) \right)$
 	\end{itemize}
 
 \end{frame}
 
-\begin{frame}{1 (e): Use (d), and then (c) and then (b)}
+\begin{frame}{1 (e): Think Before Solving}
 	\small
+	\textbf{Target:}\quad $\dfrac{\riske(\hh)}{n} \le \prodmM\sqrt{1-4(\gammahm)^2}$.
+	\rule{\linewidth}{0.4pt}
+	\vspace{3pt}
+	\begin{itemize}
+		\setlength{\itemsep}{7pt}
+		\item<1-> \textbf{Start.} The error is an average of indicators --- which earlier bound replaces each indicator?
+		\item<2-> \textbf{Reweight.} With $\wonei=\tfrac1n$, which identity rewrites $\wonei e^{-\yi\fh(\xi)}$ as $\wMponei\prodmM\Wm$?
+		\item<3-> \textbf{Close.} Why does $\sumin \wMponei = 1$, and which result turns $\prodmM\Wm$ into the final square-root product?
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{(d)\,$\id\le e^{-yf}$}\;\;\recall{(c)\,$\wonei e^{-yf}=\wMponei\prodmM\Wm$}\;\;\recall{(b)\,$\Wm=\sqrt{1-4(\gammahm)^2}$}}
+\end{frame}
+
+\begin{frame}{1 (e): Use (d), and then (c) and then (b)}
+	\footnotesize
+	\setlength{\jot}{1pt}
 	\begin{align*}
-		\frac{\riske(\hh)}{n} &= \frac{\sumin \id_{\ \hh(\xi) \neq \yi}}{n} = \sumin \frac{1}{n} \cdot \id_{\ \hh(\xi) \neq \yi} \leq \sumin \frac{1}{n} \cdot \exp\left(- \yi \fh(\xi) \right)  \qquad \text{(Use (d))}\\
+		\frac{\riske(\hh)}{n} &= \frac{\sumin \id_{\ \hh(\xi) \neq \yi}}{n} = \sumin \frac{1}{n} \cdot \id_{\ \hh(\xi) \neq \yi} \\
+		&\leq \sumin \frac{1}{n} \cdot \exp\left(- \yi \fh(\xi) \right)  \quad \text{\recall{(d)}}\\
 		\only<2->{
-			&= \sumin \wonei \exp \left( - \yi \fh(\xi) \right) \qquad \text{(Definition of $\wonei = 1 / n$)}\\
+			&= \sumin \wonei \exp \left( - \yi \fh(\xi) \right) \quad \text{(Definition of $\wonei = 1 / n$)}\\
 		}
 		\only<3->{
-			&= \sumin \wMponei \prodmM \Wm \qquad \text{(Use (c): $\wMponei = \frac{\wonei \exp \left( - \yi \fh(\xi) \right)}{\prodmM \Wm }$)} \\
+			&= \sumin \wMponei \prodmM \Wm \quad \text{\recall{(c): $\wMponei = \frac{\wonei \exp ( - \yi \fh(\xi) )}{\prodmM \Wm }$}} \\
 		}
 		\only<4->{
-			&= \prodmM \Wm \underbrace{\sumin \wMponei}_{=1} \leq \prodmM \sqrt{1 - 4 \left(\gammahm \right)^2} \qquad \text{(Use (b) $\Wm = \sqrt{1 - 4\left(\gammahm \right)^2}$ \ )}
+			&= \prodmM \Wm \underbrace{\sumin \wMponei}_{=1} \leq \prodmM \sqrt{1 - 4 \left(\gammahm \right)^2} \quad \text{\recall{(b): $\Wm = \sqrt{1 - 4(\gammahm )^2}$}}
 		}
 	\end{align*}
+	\only<4->{\centering The training error decays geometrically as long as every round beats guessing ($\gammahm > 0$). \qed}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.1}
+	\begin{tabular}{@{}p{0.05\textwidth}p{0.50\textwidth}p{0.39\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		(a) &
+			$\gammahm = \tfrac12 - \errm$ measures how far the weighted error of $\bhm$ beats random guessing. &
+			Weighted base-learner error; the AdaBoost weighting scheme. \\
+		(b) &
+			Total unnormalized weight $\Wm = \sqrt{1-4(\gammahm)^2}$ (via $\betam = \tfrac12\log\frac{1-\errm}{\errm}$). &
+			AdaBoost weight update $\betam$; normalizing constant per round. \\
+		(c) &
+			Unrolling the reweighting recursion gives $\wMponei = \wonei e^{-\yi\fh(\xi)} / \prodmM\Wm$, linking single weights to the ensemble score $\fh$. &
+			Additive model $\fh = \sum_m \betam\bhm$; multiplicative weight recursion. \\
+		(d) &
+			$\id_{[\hh\neq y]} \le \exp(-y\fh(\xv))$: the exponential is a convex \emph{surrogate} upper-bounding the $0/1$ loss. &
+			Exponential loss as a surrogate for misclassification loss. \\
+		(e) &
+			Combine (d)$\to$(c)$\to$(b): $\frac{\riske(\hh)}{n} \le \prodmM\sqrt{1-4(\gammahm)^2}$. &
+			Training-error bound; boosting drives error down if every $\gammahm > 0$. \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
 \end{frame}
 
 \end{document}
