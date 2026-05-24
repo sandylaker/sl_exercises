@@ -25,6 +25,11 @@
 \usepackage{amsmath}
 
 \usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{matrix, decorations.pathreplacing}
+\usepackage{booktabs}
 \usepackage{pgfpages}
 % citations
 \usepackage{natbib}
@@ -37,6 +42,7 @@
 \input{latex-math/ml-svm.tex}
 
 \newcommand{\zv}{\bm{z}}
+\newcommand{\thetab}{\bm{\theta}}
 \newcommand{\betav}{\bm{\beta}}
 \newcommand{\Kmat}{\bm{K}}
 \newcommand{\linearphixi}{\thetab\top \phixi + \theta_0}
@@ -46,6 +52,32 @@
 \newcommand{\psixiyi}{\psi(\xi, \yi)}
 \newcommand{\thetabt}{\tilde{\thetab}}
 \newcommand{\betab}{\bm{\beta}}
+
+% --- guiding-questions roadmap: one colorbox per step (done / active / upcoming) ---
+\newcommand{\qbox}[4]{% #1 active idx, #2 this idx, #3 label, #4 short descriptor
+	\ifnum#2<#1
+		\begin{tcolorbox}[colback=green!6,colframe=green!35!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=3pt,after skip=3pt]
+		{\footnotesize\textcolor{green!45!black}{$\checkmark$~\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!55}{#4}}
+		\end{tcolorbox}
+	\else\ifnum#2=#1
+		\begin{tcolorbox}[colback=blue!12,colframe=blue!55!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=3pt,after skip=3pt]
+		{\footnotesize\textcolor{blue!60!black}{$\blacktriangleright$~\textbf{#3}}}\\[1pt]{\scriptsize #4}
+		\end{tcolorbox}
+	\else
+		\begin{tcolorbox}[colback=black!3,colframe=black!20,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=3pt,after skip=3pt]
+		{\footnotesize\textcolor{black!45}{\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!45}{#4}}
+		\end{tcolorbox}
+	\fi\fi}
+\newcommand{\qroadmap}[1]{%
+	{\footnotesize\bfseries Roadmap}\par
+	\qbox{#1}{1}{Multiclass}{one joint hinge loss}%
+	\qbox{#1}{2}{Intercept ($\theta_0$)}{dummy feature $1$}%
+	\qbox{#1}{3}{Equivalence}{$g{=}2 \Rightarrow$ binary (a)}}
+\newcommand{\qroadmapc}[1]{%
+	{\footnotesize\bfseries Roadmap}\par
+	\qbox{#1}{1}{Represent}{$\thetab = \Xmat^\top\betav$}%
+	\qbox{#1}{2}{Norm}{$\|\thetab\|^2 = \betav^\top\Kmat\betav$}%
+	\qbox{#1}{3}{Scores}{$\thetab^\top\psi \to (\Kmat\betav)$}}
 
 
 \title[]{\textbf{Exercise of Supervised Learning: \\ SVM Part 2}}
@@ -65,7 +97,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{December 23, 2024}
+\date{June 25, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -118,7 +150,7 @@
 	
 	(a) Argue that this is equivalent to the following ERM problem:
 		\begin{align*}
-			\riske(\thetab) = \frac{1}{2} ||\thetab||^2 + C\sumin \max(1 - \yi(\thetab^\top \phixi + \theta_0)), 0). \qquad \lhd 
+			\riske(\thetab) = \frac{1}{2} ||\thetab||^2 + C\sumin \max(1 - \yi(\thetab^\top \phixi + \theta_0), 0).
 		\end{align*}
 		i.e., the regularized ERM problem for the hinge loss for the hypothesis space 
 		\begin{align*}
@@ -154,7 +186,7 @@
     }
     
     \uncover<3->{
-    \textbf{Observation:} Both contain $\frac{1}{2} \thetab^\top \thetab$ and $1 - y^{(i)}(\thetab^\top \phi(\mathbf{x}^{(i)}) + \theta_0)$. Both contain $C \sumin \ldots$ penalty terms.
+    \textbf{Observation:} Both contain $\frac{1}{2} \thetab^\top \thetab$. Both contain $C \sumin \ldots$ penalty terms.
     
     \textbf{Next:} Prove that $\sli$ equals $\max(\ldots)$ term.
     }
@@ -181,6 +213,13 @@
 	\uncover<3->{
 	\textbf{Note:} Our target is to $\min_{\thetab, \theta_0, \zeta^{(i)}} \frac{1}{2} \thetab^\top \thetab + C \sum_{i=1}^n \zeta^{(i)}$, so smaller $\sli$ are preferred. $\leadsto$ Choose $ \sli = \max(\ldots, 0) $
 	}
+
+	\uncover<3->{
+	\begin{flushright}
+	\setlength{\fboxsep}{6pt}%
+	\colorbox{blue!10}{\footnotesize recall SVM Part 1, Ex.~1(b)}
+	\end{flushright}
+	}
 	
 \end{frame}
 
@@ -201,141 +240,242 @@ which is exactly $\riske$. \qed
 
 
 \begin{frame}{Exercise 1 (b)}
-	(b) Now assume we deal with a multiclass classification problem with a data set $\D = \{(\xv^{(1)}, y^{(1)}), \ldots, (\xv^{(n)}, y^{(n)})\}$ such that $y^{(i)} \in \Yspace = \{1, \ldots, g \}$ for each $i \in \{1, \ldots, n \}$. In this case, we can derive a similar regularized ERM problem by using the multiclass hinge loss (see Exercse Sheet 4(b)):
-	$$\risket = \frac{1}{2} || \thetab||^2 + C \sumin \sum_{y\neq \yi} \max (1 + \textcolor{red}{\thetabt}^\top \psi (\xi, y) - \textcolor{red}{\thetabt}^\top \psi(\xi, \yi), 0), $$
-	where \textcolor{red}{$\thetabt := (\theta_0, \thetab^\top)^\top \in \mathbb{R}^{d + 1}$}, and $\psi: \Xspace \times \Yspace \to \mathbb{R}^{d \textcolor{red}{+1}}$ is a suitable (multiclass) feature map. Specify a $\psi$ such that this regularized multiclass ERM problem coincides with the regularized binary ERM problem in (a). \textcolor{red}{P.S.: Red colored text means the places different from the exercise. May be updated in the next version of the exercise.}
+	(b) Now assume we deal with a multiclass classification problem with a data set $\D = \{(\xv^{(1)}, y^{(1)}), \ldots, (\xv^{(n)}, y^{(n)})\}$ such that $y^{(i)} \in \Yspace = \{1, \ldots, g \}$ for each $i \in \{1, \ldots, n \}$. In this case, we can derive a similar regularized ERM problem by using the multiclass hinge loss (see Exercise Sheet 4(b)):
+	$$\risket = \frac{1}{2} || \thetab||^2 + C \sumin \sum_{y\neq \yi} \max (1 + \thetabt^\top \psi (\xi, y) - \thetabt^\top \psi(\xi, \yi), 0), $$
+	where $\thetabt := (\theta_0, \thetab^\top)^\top \in \mathbb{R}^{d + 1}$, and $\psi: \Xspace \times \Yspace \to \mathbb{R}^{d+1}$ is a suitable (multiclass) feature map. Specify a $\psi$ such that this regularized multiclass ERM problem coincides with the regularized binary ERM problem in (a).
 \end{frame}
 
-\begin{frame}{1(b): A Closer Look Into the Multiclass Hinge Loss}
-\small
-\textbf{Goal:} Prove that Multiclass Hinge Loss resolves to the Binary Hinge Loss (a) in the binary case.
-	\begin{itemize}
-		\item<1-> \textbf{Class label encoding:} Binary: $\yi \in \{-1, +1\}$. Multiclass: $\yi \in \{1, \ldots, g\}$.
-		\item<2-> \textbf{Penalty:} 
-			\begin{itemize}
-				\item Binary: $C \sumin \max\left(1 - y^{(i)} \left(\thetab^\top \phi(\mathbf{x}^{(i)}) + \theta_0 \right), 0 \right)$.
-				\item Multiclass: $C \sumin \sum_{y\neq \yi} \max (1 + \thetab^\top \psi (\xi, y) - \thetab^\top \psi(\xi, \yi), 0)$.
-			\end{itemize}
-		\item<3-> Align class label encoding: $\yi \in \{1, 2\} \leadsto \yi \in \{-1, 1 \}$.
-		\item<4-> $\sum_{y \neq \yi}$ means: $\yi = +1, y = -1$ or $\yi = -1, y = +1$.
-		\item<5-> \textbf{Note} $\psi(\xi, \yi)$ takes both $\xi$ and $\yi$ as arguments, while $\phi(\xi)$ only operates on $\xi$.
-		\item<6-> There is no $\theta_0$ in Multiclass Hinge Loss. \textbf{How to deal with $\theta_0$?} 
-	\end{itemize}
-	
-\end{frame}
-
-\begin{frame}{1(b): Define $\psi: \Xspace \times \Yspace \rightarrow \mathbb{R}^{d + 1}$}
-	\begin{enumerate}
-		\item<1-> Motivation: functional margin has form $y(\langle\phi(\xv), \thetab \rangle + \theta_0)$. We need it into a inner product $\langle \cdot, \cdot \rangle$.
-		\item<2-> We need to merge $\theta_0$ into the inner product. We can add a dummy feature $1$ to $\phi(\xv)$, as $\langle\phi(\xv), \thetab \rangle + \theta_0 = \langle(1, \phi(\xv) )^\top,  (\theta_0, \thetab)^\top \rangle$. Define $\tilde{\phi}(\xv) = (1, \phi(\xv))^\top $, and $\tilde{\thetab} = (\theta_0, \thetab)^\top$.
-		\item<3-> We can merge the coefficient $y$ into $\tilde{\phi}(\xv)$, obtaining $y\tilde{\phi}(\xv)$.
-		\item<4-> We have transformed $y(\langle\phi(\xv), \thetab \rangle + \theta_0)$ into inner product $\langle y \tilde{\phi}(\xv), \thetabt \rangle$.
-		\item<5-> Multiply with a magic number $\frac{1}{2}$. Consider $\psi(\xv, y) = \frac{1}{2} y \tilde{\phi}(\xv)$.
-	\end{enumerate}
-	
-	\vspace{10pt}
-	\uncover<6->{
-	\textbf{Our next target:} Prove that in the binary case:
-	
-	$$
-	\sum_{y\neq \yi} \max (1 + \thetabt^\top \psi (\xi, y) - \thetabt^\top \psi(\xi, \yi), 0)
-	$$ 
-	is equivalent to 
-	$$
-	\max(1 - \yi (\thetab^\top \phixi + \theta_0), 0)
-	$$
-	}
-\end{frame}
-
-\begin{frame}{1 (b): We need to reach $\max(1 - \yi (\thetab^\top \phixi + \theta_0), 0)$}
+\begin{frame}{1 (b): Think Before Solving}
 	\small
+	\[ \text{(a) binary:}\quad \riske(\thetab) = \tfrac{1}{2}\|\thetab\|^2 + C\sumin \max(1 - \yi(\thetab^\top \phixi + \theta_0), 0) \]
+	\[ \text{(b) multiclass:}\quad \risket = \tfrac{1}{2}\|\thetab\|^2 + C \sumin \sum_{y\neq \yi} \max(1 + \thetabt^\top \psi(\xi, y) - \thetabt^\top \psi(\xi, \yi), 0) \]
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{8pt}
+		\item<1-> \textbf{Multiclass.} SVM is binary by design --- one-vs-one, one-vs-rest, or one joint loss?
+		\item<2-> \textbf{Intercept.} Margin needs $+\,\theta_0$, but $\psi$ gives only an inner product $\langle \thetabt, \psi(\xi, y) \rangle$. How to absorb $\theta_0$?
+		\item<3-> \textbf{Equivalence.} Why do (a) and (b) coincide in the binary case ($g = 2$)?
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{1(b): A Closer Look at the Multiclass Hinge Loss}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.7\textwidth}
+	\textbf{Goal:} multiclass hinge $\to$ binary hinge when $g = 2$.
+	\medskip
+	\begin{itemize}
+		\setlength{\itemsep}{10pt}
+		\item<1-> Binary encoding: $\yi \in \{1,2\} \;\mapsto\; \{-1,+1\}$.
+		\item<2-> Then $\sum_{y\neq\yi}$ collapses to \textbf{one term} ($y = -\yi$).
+		\item<3-> $\psi(\xi,\yi)$ uses \emph{both} $\xi$ and $\yi$ --- unlike $\phi(\xi)$.
+		\item<4-> No $\theta_0$ in the multiclass loss $\Rightarrow$ absorb it how? \textit{(next)}
+	\end{itemize}
+	\end{column}
+	\begin{column}{0.26\textwidth}
+	\qroadmap{1}
+	\end{column}
+	\end{columns}
 	
+\end{frame}
+
+\begin{frame}{1(b): Define $\psi: \Xspace \times \Yspace \rightarrow \mathbb{R}^{d+1}$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	\textbf{Goal:} write the margin $y(\thetab^\top \phi(\xv) + \theta_0)$ as one inner product.
+	\medskip
 	\begin{enumerate}
-		\item<1-> In the binary case, $\sum_{y\neq \yi} \max (1 + \thetabt^\top \psi (\xi, y) - \thetabt^\top \psi(\xi, \yi), 0)$ has \textbf{only one term}.
-		\item<2-> The only term corresponds to $\yi = +1, y = -1$ or $\yi = -1, y = +1$.
+		\setlength{\itemsep}{10pt}
+		\item<2-> Absorb $\theta_0$ via a dummy feature $1$:
+		\[ \thetab^\top \phi(\xv) + \theta_0 = \underbrace{\begin{pmatrix} \theta_0 \\ \thetab \end{pmatrix}^{\!\top}}_{\thetabt^\top} \underbrace{\begin{pmatrix} 1 \\ \phi(\xv) \end{pmatrix}}_{\tilde\phi(\xv)} \]
+		\item<3-> Pull in $y$:\quad $y\,\thetabt^\top \tilde\phi(\xv) = \thetabt^\top \big(y\,\tilde\phi(\xv)\big)$
+		\item<4-> Scale by $\tfrac12$:\quad $\boxed{\;\psi(\xv, y) = \tfrac{1}{2}\, y\, \tilde\phi(\xv)\;}$
 	\end{enumerate}
-	\vspace{10pt}
-	
-	\uncover<3->{
-	Therefore, 
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmap{2}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (b): What We Prove Next}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	With $\psi(\xv, y) = \tfrac12\, y\, \tilde\phi(\xv)$, it remains to show --- in the binary case ($g = 2$) --- that the multiclass penalty reduces to the binary hinge of (a):
+	\medskip
+	\[ \underbrace{\sum_{y\neq \yi} \max(1 + \thetabt^\top \psixiy - \thetabt^\top \psixiyi, 0)}_{\text{(b) multiclass}} \]
+	\[ =\ \underbrace{\max(1 - \yi (\thetab^\top \phixi + \theta_0), 0)}_{\text{(a) binary}}. \]
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmap{3}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (b): Reduce to the Binary Hinge}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	Binary case $\Rightarrow$ the sum has \textbf{one term} ($y = -\yi$). Then:
+	\uncover<2->{
 	\begin{align*}
 		& 1 + \thetabt^\top \psixiy - \thetabt^\top \psixiyi \\
-		&= 1 + \frac{1}{2} y \thetabt^\top \phitxi - \frac{1}{2} \yi \thetabt^\top \phitxi \\
-		&= 1 + \frac{1}{2} \left(y - \yi \right) \thetabt^\top \phixi \\
-		&= \begin{cases}
-			1 +  \thetabt^\top \phitxi, \qquad &\text{if} \ \yi = - 1, y = +1 \\
-			1 -  \thetabt^\top \phitxi, \qquad &\text{if} \ \yi = +1, y = -1 \\
-		\end{cases} \\
-		&= 1 - \yi \thetabt^\top \phitxi. \\
+		&= 1 + \tfrac{1}{2} y\, \thetabt^\top \phitxi - \tfrac{1}{2} \yi\, \thetabt^\top \phitxi \\
+		&= 1 + \tfrac{1}{2}(y - \yi)\, \thetabt^\top \phitxi \\
+		&= \begin{cases} 1 + \thetabt^\top \phitxi, & \yi = -1 \\ 1 - \thetabt^\top \phitxi, & \yi = +1 \end{cases} \\
+		&= 1 - \yi\, \thetabt^\top \phitxi.
 	\end{align*}
 	}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmap{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Solution to 1 (b): Continued}
-	Thus, 
-				\begin{align*}
-					\risket &= \frac{1}{2}||\thetab||^2 + C \sumin \sum_{y \neq \yi} \max(1 + \thetabt^\top \psixiy - \thetabt^\top \psixiyi, 0) \\
-					&= \frac{1}{2} ||\thetab||^2 + C \sumin \max(1 - \yi \thetabt^\top\phitxi, 0) \\
-					&= \frac{1}{2} ||\thetab||^2 + C \sumin \max(1 - \yi (\thetab^\top \phixi + \theta_0), 0).
-				\end{align*}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	From the per-term reduction, the sum collapses to a single term:
+	\begin{align*}
+		\risket &= \tfrac{1}{2}\|\thetab\|^2 + C \sumin \max(1 - \yi\, \thetabt^\top\phitxi, 0) \\
+		&= \tfrac{1}{2}\|\thetab\|^2 + C \sumin \max(1 - \yi (\thetab^\top \phixi + \theta_0), 0).
+	\end{align*}
+	\uncover<2->{\colorbox{blue!10}{multiclass ERM $=$ binary ERM (a)}\;\qed}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmap{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c)}
 	\footnotesize
-	(c) Show that the regularized multiclass ERM problem in (b) can be written in the kernelized form:
-	$$\frac{1}{2} \betav^\top \Kmat \betav + C\sumin \sum_{y \neq \yi} \max (1 + (\Kmat \beta)_{(i-i)g + y} - (\Kmat \betav)_{(i-1)g + \yi}), 0),$$
-	where $\betav \in \mathbb{R}^{ng}$ and $\Kmat = \Xmat \Xmat^\top$ for $\Xmat \in \mathbb{R}^{ng \times (d \textcolor{red}{+1})}$ with row entries $\psi(\xi, y)^\top $ for $i = i, \ldots, n$, $y = 1, \ldots, g$, i.e., 
+	Show that the regularized multiclass ERM problem in (b) can be written in the kernelized form:
+	$$\frac{1}{2} \betav^\top \Kmat \betav + C\sumin \sum_{y \neq \yi} \max (1 + (\Kmat \betav)_{(i-1)g + y} - (\Kmat \betav)_{(i-1)g + \yi}, 0),$$
+	where $\betav \in \mathbb{R}^{ng}$ and $\Kmat = \Xmat \Xmat^\top$ for $\Xmat \in \mathbb{R}^{ng \times (d+1)}$ with row entries $\psi(\xi, y)^\top $ for $i = 1, \ldots, n$, $y = 1, \ldots, g$, i.e.,
+
+	\medskip
+	\begin{columns}[T]
+	\begin{column}{0.44\textwidth}
 	$$\Xmat = \begin{pmatrix}
-		\psi(\xv^{(1)}, 1)^\top & \\
-		\psi(\xv^{(1)}, 2)^\top & \\
-		\vdots & \\
-		\psi(\xv^{(1)}, g)^\top &  \\
-		\psi(\xv^{(2)}, 1)^\top & \\
-		\vdots & \\
-		\psi(\xv^{(n)}, g)^\top &  \\
+		\psi(\xv^{(1)}, 1)^\top \\
+		\psi(\xv^{(1)}, 2)^\top \\
+		\vdots \\
+		\psi(\xv^{(1)}, g)^\top \\
+		\psi(\xv^{(2)}, 1)^\top \\
+		\vdots \\
+		\psi(\xv^{(n)}, g)^\top \\
 	\end{pmatrix}.$$
-	Here, $(\Kmat \betav)_{(i-1)g + y}$ denotes the $((i-1)g + y)$-th entry of the vector $\Kmat \betav$. \emph{Hint:} The representation theorems tells us that for the solution $\thetab^*$ of $\risket$ it holds that $\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$
+
+	Here, $(\Kmat \betav)_{(i-1)g + y}$ is the $((i-1)g + y)$-th entry of $\Kmat \betav$.
+	\end{column}
+	\begin{column}{0.56\textwidth}
+	\textbf{How to get there?}
+	\begin{enumerate}
+		\setlength{\itemsep}{7pt}
+		\item \emph{Representer theorem:} $\thetab^* \in \mathrm{span}\{\psi(\xi, y)\}$. \\ Rewrite $\thetab$ with $\Xmat$ and $\betav$?
+		\item Then express $\tfrac12\|\thetab\|^2$ via $\Kmat = \Xmat\Xmat^\top$ and $\betav$?
+		\item And the scores $\thetab^\top \psi(\xi, y)$ via $\Kmat\betav$?
+	\end{enumerate}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{1 (c): Express $||\thetab||_2^2$ with $\Kmat$ and $\betab$}
-
-	$\thetab^* \in \mathrm{span} \{(\psi(\xi, y))_{i=1, \ldots, n, y=1, \ldots, g} \}$ means that $\thetab$ is a linear combination of the spanning bases,
-	 
+\begin{frame}{1 (c): Express $\|\thetab\|^2$ with $\Kmat$ and $\betav$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	Representer theorem: $\thetab^*$ is a linear combination of the $\psi(\xi, y)$, i.e.
+	\[ \thetab = \Xmat^\top \betav, \qquad \betav \in \mathbb{R}^{ng}, \]
+	with the $\psi(\xi, y)^\top$ as the rows of $\Xmat$ (as on the previous slide).
 	\uncover<2->{
-		i.e. $\thetab = \Xmat^\top \betab$ for $\betab \in \mathbb{R}^{ng}$ and 
-		$$\Xmat = \begin{pmatrix}
-			\psi(\xv^{(1)}, 1)^\top & \\
-			\psi(\xv^{(1)}, 2)^\top & \\
-			\vdots & \\
-			\psi(\xv^{(1)}, g)^\top &  \\
-			\psi(\xv^{(2)}, 1)^\top & \\
-			\vdots & \\
-			\psi(\xv^{(n)}, g)^\top &  \\
-		\end{pmatrix}.
-	$$
+	\medskip
+	With $\Kmat = \Xmat \Xmat^\top$:
+	\[ \|\thetab\|^2 = \thetab^\top \thetab = (\Xmat^\top \betav)^\top \Xmat^\top \betav = \boxed{\,\betav^\top \Kmat \betav\,}. \]
+	}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmapc{2}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (c): Express $\thetab^\top \psi(\xi, y)$ with $\Kmat$ and $\betav$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	Since $\thetab = \Xmat^\top \betav$:\quad $\thetab^\top \psixiy = \betav^\top \Xmat\, \psixiy$ \;(scalar).
+	\uncover<2->{
+	\vspace{-2pt}
+	\begin{center}
+	\begin{tikzpicture}[every node/.style={font=\scriptsize}]
+	\matrix (X) [matrix of math nodes, left delimiter={[}, right delimiter={]}, row sep=1pt, nodes={inner sep=1.5pt}] {
+	\psi(\xv^{(1)},1)^\top \\
+	\vdots \\
+	\psi(\xv^{(i-1)},g)^\top \\
+	\psi(\xv^{(i)},1)^\top \\
+	|[fill=blue!25]| \psi(\xv^{(i)},y)^\top \\
+	\psi(\xv^{(i)},g)^\top \\
+	};
+	\draw[decorate,decoration={brace,amplitude=4pt}] ([xshift=-4pt]X.west |- X-3-1.south) -- ([xshift=-4pt]X.west |- X-1-1.north) node[midway,left=5pt,align=center]{$(i{-}1)g$\\ rows};
+	\draw[decorate,decoration={brace,amplitude=4pt}] ([xshift=4pt]X.east |- X-4-1.north) -- ([xshift=4pt]X.east |- X-6-1.south) node[midway,right=5pt,align=center]{block $i$\\ ($g$ rows)};
+	\end{tikzpicture}
+	\end{center}
 	}
 	\uncover<3->{
-		So for $\Kmat = \Xmat \Xmat^\top$, we obtain
-		$$||\thetab||^2 = \thetab^\top \thetab = (\Xmat^\top \betab)^\top \Xmat^\top \betab = \betab^\top \Kmat \betab$$
+	\smallskip
+	So $\psixiy$ is row $(i{-}1)g{+}y$ of $\Xmat$, i.e.\ \emph{column} $(i{-}1)g{+}y$ of $\Xmat^\top$. \\[12pt] Next: form $\Xmat\psixiy$ via $\Kmat = \Xmat\Xmat^\top$.
 	}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmapc{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{1 (c): Express $\thetab^\top \psi(\xi, y)$ with $\Kmat$ and $\betab$}
-Furthermore,
-	$$\thetab^\top \psixiy - \thetab^\top \psixiyi = \betab^\top \Xmat \psixiy - \betab^\top\Xmat\psixiyi$$
-	Note that the result is a scalar.
-	\begin{itemize}
-		\item<2-> Recall that $\Kmat = \Xmat \Xmat^\top$. 
-		\item<3-> $\psixiy$ is the $((i - 1) g + y)$-th row of $\Xmat$. (Similar argument for $\psixiyi$)
-		\item<4-> So, $\Xmat \psixiy$ is the $((i - 1) g + y)$-th row/column of $\Kmat = \Xmat \Xmat^\top$ (symmetric).
-		\item<5-> So, the inner product $\betab^\top (\Xmat \psixiy)$ is equivalent to: first compute $\Kmat \betab$, and then retrieve the entry in the $((i - 1) g + y)$-th row.
-	\end{itemize}
-	\uncover<5->{
-		Therefore, 
-		\begin{align*}
-			\risket &= \frac{1}{2} ||\thetab||^2 + C\sumin \sum_{y \neq \yi} \max(1 + \thetab^\top \psixiy - \thetab^\top \psixiyi, 0) \\
-			&= \frac{1}{2} \betab^\top \Kmat \betab + \sumin \sum_{y \neq \yi} \max(1 + (\Kmat \betab)_{(i-1)g + y} - (\Kmat \betab)_{(i-1)g + \yi}), 0)
-		\end{align*}
+\begin{frame}{1 (c): $\Xmat\,\psi(\xi,y)$ is a column of $\Kmat$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	With $r := (i{-}1)g{+}y$: \;$\psixiy = $ col $r$ of $\Xmat^\top$, so $\Xmat\psixiy$ is column $r$ of $\Xmat\Xmat^\top$:
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize]
+	\draw (0,0) rectangle (0.8,2.2);
+	\fill[blue!25] (0,1.2) rectangle (0.8,1.45);
+	\draw (0,1.2) rectangle (0.8,1.45);
+	\node[above=1pt] at (0.4,2.2) {$\Xmat$};
+	\node[left=1pt,font=\tiny] at (0,1.325) {row $r$};
+	\node at (1.15,1.1) {$\cdot$};
+	\draw (1.5,0.6) rectangle (3.9,1.5);
+	\fill[blue!25] (2.5,0.6) rectangle (2.75,1.5);
+	\draw (2.5,0.6) rectangle (2.75,1.5);
+	\node[above=1pt] at (2.7,1.5) {$\Xmat^\top$};
+	\node[below=2pt,font=\tiny,align=center] at (2.625,0.6) {col $r$\\$=\psixiy$};
+	\node at (4.2,1.1) {$=$};
+	\draw (4.6,0) rectangle (6.8,2.2);
+	\fill[blue!25] (5.5,0) rectangle (5.75,2.2);
+	\draw (5.5,0) rectangle (5.75,2.2);
+	\node[above=1pt] at (5.7,2.2) {$\Kmat=\Xmat\Xmat^\top$};
+	\node[below=2pt,font=\tiny,align=center] at (5.625,0) {col $r$\\$=\Xmat\psixiy$};
+	\end{tikzpicture}
+	\end{center}
+	\uncover<2->{
+	\smallskip
+	$\Rightarrow \Xmat\psixiy = $ col $r$ of $\Kmat$ ($=$ row $r$, symmetric) $\;\Rightarrow\; \betav^\top\Xmat\psixiy = (\Kmat\betav)_r$.
+	}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\qroadmapc{3}
+	\end{column}
+	\end{columns}
+	\uncover<3->{
+	\vspace{-2pt}
+	{\footnotesize\[ \risket = \tfrac{1}{2} \betav^\top \Kmat \betav + \sumin \sum_{y \neq \yi} \max\!\big(1 + (\Kmat\betav)_{(i-1)g + y} - (\Kmat\betav)_{(i-1)g + \yi},\, 0\big). \]}
 	}
 \end{frame}
 
@@ -396,8 +536,33 @@ Furthermore,
 	
 	\vspace{10pt}
 	\uncover<2->{
-		\textbf{Solution:} Using the kernel method reduces the compuational costs of computing the scalar product in the higher-dimensional features space after calculating the feature map.
+		\textbf{Solution:} Using the kernel method reduces the computational cost of the scalar product in the higher-dimensional feature space, since the feature map is never formed explicitly.
 	}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.05}
+	\begin{tabular}{@{}p{0.06\textwidth}p{0.51\textwidth}p{0.38\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		1\,(a) &
+			Featurized soft-margin SVM $=$ regularized ERM with the hinge loss: $\tfrac12\|\thetab\|^2 + C\sumin \max(1 - \yi(\thetab^\top\phixi + \theta_0), 0)$. &
+			Hinge loss; SVM as regularized empirical risk minimization. \\
+		1\,(b) &
+			Joint feature map $\psi(\xv,y) = \tfrac12\, y\,\tilde\phi(\xv)$, $\tilde\phi = (1,\phi)^\top$ (absorbs $\theta_0$); the multiclass hinge collapses to the binary hinge when $g=2$. &
+			Multiclass SVM via a joint feature map $\psi(\xv,y)$; multiclass hinge loss. \\
+		1\,(c) &
+			Representer theorem $\thetab = \Xmat^\top\betav \Rightarrow$ kernelized form $\tfrac12\betav^\top\Kmat\betav + \sumin\sum_{y\neq\yi}\max(1 + (\Kmat\betav)_{(i-1)g+y} - (\Kmat\betav)_{(i-1)g+\yi}, 0)$, $\Kmat = \Xmat\Xmat^\top$. &
+			Representer theorem; kernelization; Gram matrix $\Kmat$. \\
+		2 &
+			Polynomial kernel $(x^\top\xt + b)^2 = \langle\phi(x),\phi(\xt)\rangle$ with explicit $\phi \in \mathbb{R}^6$; the kernel returns the inner product without forming $\phi$. &
+			Kernel trick; kernels vs.\ explicit feature maps (compute savings). \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
 \end{frame}
 
 
