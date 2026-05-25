@@ -24,6 +24,28 @@
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
 \usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{matrix, decorations.pathreplacing, arrows.meta}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{listings}
+\lstdefinestyle{pystyle}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{blue!65!black}\bfseries,
+  commentstyle=\color{green!45!black}\itshape,
+  stringstyle=\color{orange!85!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  aboveskip=4pt, belowskip=2pt,
+  backgroundcolor=\color{black!8},
+  xleftmargin=4pt, framexleftmargin=4pt, framexrightmargin=4pt,
+}
+\lstset{style=pystyle}
 \usepackage{pgfpages}
 % citations
 \usepackage{natbib}
@@ -52,6 +74,36 @@
 \newcommand{\xs}{x_{*}}
 \newcommand{\ms}{m_{*}}
 \newcommand{\av}{\bm{a}}
+\newcommand{\Kmaty}{\bm{K}_y}
+
+% --- proof roadmap: one colorbox per step (done / active / upcoming) ---
+\newcommand{\qbox}[4]{% #1 active idx, #2 this idx, #3 label, #4 short descriptor
+	\ifnum#2<#1
+		\begin{tcolorbox}[colback=green!6,colframe=green!35!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{green!45!black}{$\checkmark$~\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!55}{#4}}
+		\end{tcolorbox}
+	\else\ifnum#2=#1
+		\begin{tcolorbox}[colback=blue!12,colframe=blue!55!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{blue!60!black}{$\blacktriangleright$~\textbf{#3}}}\\[1pt]{\scriptsize #4}
+		\end{tcolorbox}
+	\else
+		\begin{tcolorbox}[colback=black!3,colframe=black!20,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{black!45}{\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!45}{#4}}
+		\end{tcolorbox}
+	\fi\fi}
+% Roadmap for Exercise 1: prior -> posterior -> predictive -> implement, parts (a)-(d)
+\newcommand{\rmgp}[1]{%
+	{\footnotesize\bfseries Roadmap (Ex.\ 1)}\par
+	\qbox{#1}{1}{(a) Prior}{$\fv\sim\N(\mv,\Kmat)$}%
+	\qbox{#1}{2}{(b) Posterior}{$\fv|\yv$: complete sq.}%
+	\qbox{#1}{3}{(c) Predictive}{$\ys|\ldots$: condition}%
+	\qbox{#1}{4}{(d) Implement}{$2\times2$ by hand + code}}
+
+% small recall side-note
+\newcommand{\recall}[1]{%
+	\setlength{\fboxsep}{5pt}%
+	\colorbox{blue!10}{\footnotesize #1}}
+
 
 \title[]{\textbf{Exercise of Supervised Learning: \\ Gaussian Processes Part 2}}
 
@@ -70,7 +122,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{February 4, 2025}
+\date{July 23, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -121,22 +173,87 @@ with $\fv = \fx \in \R^n$ being a realization of a Gaussian process (GP), for wh
 \begin{equation*}
 	\fx \sim \gp.
 \end{equation*}
-$\xv$ here only consists of 1 feature that is observed for $n$ data points.
+$\xv$ is a single (1-D) feature, observed at $n$ points.
 
 (a) Derive / define the prior distribution of $\fv$.
 \end{frame}
 
+\begin{frame}{Exercise 1: The GP-Regression Pipeline}
+	\small
+	Parts (a)--(d) walk from the prior to a working implementation. Each arrow is one operation on a Gaussian:
+	\medskip
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize, >=Latex,
+		box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, text width=21mm, minimum height=12mm, fill=blue!8, draw=blue!55!black},
+		lab/.style={font=\scriptsize, align=center}]
+	\node[box] (pri) at (0,0) {prior\\ $\fv\sim\N(\mv,\Kmat)$};
+	\node[box] (pos) at (3.7,0) {posterior\\ $\fv\,|\,\yv$};
+	\node[box] (prd) at (7.4,0) {predictive\\ $\ys\,|\,\xs,\xv,\yv$};
+	\node[box] (imp) at (11.0,0) {implement\\ ($n=2$, SE)};
+	\draw[->] (pri) -- node[above, lab]{(b)\\ cond.\ on $\yv$} (pos);
+	\draw[->] (pos) -- node[above, lab]{(c)\\ predict $x_*$} (prd);
+	\draw[->] (prd) -- node[above, lab]{(d)} (imp);
+	\end{tikzpicture}
+	\end{center}
+	\medskip
+	\begin{tcolorbox}[colback=blue!4, colframe=blue!55!black, boxsep=2pt, left=5pt, right=5pt, top=3pt, bottom=3pt, arc=2pt]
+	\footnotesize
+	\textbf{Key tool throughout:} a \textbf{Gaussian stays Gaussian} under multiplication (likelihood $\times$ prior) and under conditioning. So every box above is again a Gaussian --- we only need to track its mean and covariance.
+	\end{tcolorbox}
+\end{frame}
+
+\begin{frame}{Exercise 1: Three Gaussians --- Don't Confuse Them}
+	\small
+	The same setup produces three different distributions. Be precise about which one you mean:
+	\medskip
+	\begin{center}
+	\renewcommand{\arraystretch}{1.35}
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.40\textwidth}@{}}
+		\toprule
+		\textbf{Distribution} & \textbf{Symbol} & \textbf{What it is} \\
+		\midrule
+		Posterior & $\fv\,|\,\yv \sim \N(\fpost,\Kpost)$ & latent $\fv$ \emph{after} seeing $\yv$ \quad{\scriptsize\itshape (part (b))} \\
+		Predictive & $\ys\,|\,\xs,\xv,\yv$ & a \emph{new noisy} target at $\xs$ \quad{\scriptsize\itshape (part (c))} \\
+		Marginal & $\yv \sim \N(\mv,\Kmat+\sigma^2\id)$ & data likelihood; used to \emph{train} \quad{\scriptsize\itshape (part (d))} \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
+\end{frame}
+
 \begin{frame}{1 (a): Prior Distribution of $\fv$}
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
 	\begin{itemize}
+		\setlength{\itemsep}{8pt}
 		\item<1-> $\fv \sim \N(\mv, \Kmat)$.
 		\item<2-> $\mv = m (\xv)$.
-		\item<3-> $\kij = \kxij$. 
-		\item<4-> NB: Note the (in-)finite Gaussian property of a GP: no matter which finite collection of points you choose from the domain of the process, the corresponding values of the processes are jointly Gaussian.
+		\item<3-> $\kij = \kxij$.
+		\item<4-> \textbf{NB (finite-dim.\ property):} for \emph{any} finite set of input points, the corresponding process values are jointly Gaussian $\Rightarrow$ the prior over $\fv$ is the finite-dimensional Gaussian above. \hfill\qed
 	\end{itemize}
+	\end{column}
+	\begin{column}{0.24\textwidth}
+	\rmgp{1}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
 	(b) Derive the posterior distribution of $\fv | \yv$.
+\end{frame}
+
+\begin{frame}{1 (b): Think Before Solving}
+	\small
+	\textbf{Target:}\quad get the posterior $\fv\,|\,\yv$ from likelihood and prior --- without computing any normalizing integral.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{Both factors are Gaussian.} Bayes gives $p(\fv|\yv)\propto p(\yv|\fv)\,p(\fv)$. A product of two Gaussian densities (in $\fv$) is again Gaussian --- so what kind of function of $\fv$ sits in the exponent?
+		\item<2-> \textbf{Complete the square.} The exponent is a quadratic $-\tfrac12\fv^\top A\fv + \fv^\top b$. Which matrix plays the role of $A$, and which vector plays $b$?
+		\item<3-> \textbf{Read off the parameters.} Once written as $-\tfrac12(\fv-\mu)^\top A(\fv-\mu)$, the mean and covariance fall out directly. What are they?
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{Gaussian $\times$ Gaussian $\to$ complete the square $\to$ read off $(\fpost,\Kpost)$}}
 \end{frame}
 
 \begin{frame}{1 (b): Likelihood and Prior}
@@ -187,108 +304,240 @@ The likelihood is:
 	\begin{align*}
 		p(\fv | \yv) &\propto \exp \left( - \frac{1}{2} \fv^\top \kpinv \fv + \fv^\top \tfv \right)
 	\end{align*}
-	Recall the technique of \textbf{completing the square}: 
+	\begin{tcolorbox}[colback=blue!4, colframe=blue!55!black, boxsep=2pt, left=5pt, right=5pt, top=3pt, bottom=3pt, arc=2pt]
+	\footnotesize
+	\textbf{Completing the square} (symmetric $\Amat$):
 	\begin{itemize}
-		\item Scalar: $a x^2 + b x + c = a(x + \frac{b}{2a})^2 + (c - \frac{b^2}{4a})$
-		\item Matrix / vector: $\xv^\top \Amat \xv + \xv^\top \bv +c = (\xv + \frac{1}{2} \Amat^{-1} \bv)^\top \Amat (\xv + \frac{1}{2} \Amat^{-1} \bv) + (c - \frac{1}{4} \bv^\top \Amat^{-1} \bv)$ for a \textbf{symmetric} matrix $\Amat$.
+		\setlength{\itemsep}{2pt}
+		\item Scalar: $a x^2 + b x + c = a\big(x + \tfrac{b}{2a}\big)^2 + \big(c - \tfrac{b^2}{4a}\big)$.
+		\item Matrix: $\xv^\top \Amat \xv + \xv^\top \bv + c = \big(\xv + \tfrac12 \Amat^{-1}\bv\big)^\top \Amat \big(\xv + \tfrac12 \Amat^{-1}\bv\big) + \big(c - \tfrac14 \bv^\top \Amat^{-1}\bv\big)$.
 	\end{itemize}
+	\end{tcolorbox}
 	\uncover<2->{
-		In our case: $\Amat = -\frac{1}{2} \kpinv$, and $\bv = \tfv$, and $c=0$ or an arbitary const. So, 
-		$$\xv + \frac{1}{2} \Amat^{-1} \bv = \fv + \frac{1}{2}(-\frac{1}{2} \kpinv)^{-1} \tfv = \fv - \Kpost \tfv$$
-	
-		and we omit $c - \frac{1}{4} \bv^\top \Amat^{-1}\Amat \bv $ because
-		\begin{itemize}
-			\item It is a constant w.r.t. $\fv$.
-			\item the $\exp$ and $\propto$ operators.
-		\end{itemize}
+		Here $\Amat = -\tfrac{1}{2}\kpinv$, $\bv = \tfv$, $c=0$ (or an arbitrary const). So
+		$$\xv + \tfrac{1}{2}\Amat^{-1}\bv = \fv + \tfrac{1}{2}\big(-\tfrac{1}{2}\kpinv\big)^{-1}\tfv = \fv - \Kpost\,\tfv,$$
+		and we drop $c - \tfrac14 \bv^\top \Amat^{-1}\bv$ (a constant in $\fv$, absorbed by $\exp$ and $\propto$).
 	}
 \end{frame}
 
 \begin{frame}{1 (b): Complete the Square}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
+	With $\Amat = -\tfrac12\kpinv$, the exponent becomes a clean quadratic form in $\fv$:
 	\begin{align*}
-		p(\fv | \yv) &\propto \exp \bigg( (\fv - \Kpost \tfv )^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \underbrace{\Kpost \tfv}_{:= \fpost})\bigg) \\ &\propto \exp \bigg( (\fv - \fpost)^\top \left( -\frac{1}{2} \kpinv \right)^{-1} (\fv - \fpost)\bigg)
+		p(\fv | \yv) &\propto \exp \bigg( -\tfrac{1}{2}\,(\fv - \Kpost\tfv)^\top \kpinv \,(\fv - \underbrace{\Kpost\tfv}_{:=\,\fpost})\bigg) \\
+		&\propto \exp \bigg( -\tfrac{1}{2}\,(\fv - \fpost)^\top \kpinv \,(\fv - \fpost)\bigg).
 	\end{align*}
 	\uncover<2->{
-		Hence,
+		This is the kernel of a Gaussian with covariance $\Kpost$ and mean $\fpost$. Hence
 		\begin{align*}
-			\fv | \yv \sim \N(\fpost, \Kpost).
+			\fv | \yv \sim \N(\fpost, \Kpost). \hfill\qed
 		\end{align*}
 	}
+	\end{column}
+	\begin{column}{0.24\textwidth}
+	\rmgp{2}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c)}
-	(c) Derive the posterior predictive distribution $\ys | \xs, \xv, \yv$ for a new sample $\xs$ from the sample data-generating process.
+	(c) Derive the posterior predictive distribution $\ys | \xs, \xv, \yv$ for a new sample $\xs$ from the \textbf{same} data-generating process.
 \end{frame}
 
-\begin{frame}{1 (c): Derive Predictive Posterior from Joint Distribution}
+\begin{frame}{1 (c): Think Before Solving}
 	\small
-	Na\"ively, we can compute 
-	\begin{align*}
-		p(\ys | \xs, \xv, \yv) =\int p(\ys | \xs, \xv, \yv, \fv) \cdot p(\fv | \yv, \xv) \mathsf{d} \fv.
-	\end{align*}
-	This is cumbersome. 
-	\uncover<2->{
-		Alternative, we can use the fact that 
-		\begin{align*}
-			\text{if } \begin{pmatrix}
-				\av \\
-				\bv \\
-			\end{pmatrix} 
-			\sim \N 
-			\left( 
-				\begin{pmatrix}
-					\muv_{a} \\
-					\muv_{b} \\
-				\end{pmatrix}, 
-				\begin{pmatrix}
-					\Sigma_{aa} & \Sigma_{ab} \\
-					\Sigma_{ab}^\top & \Sigma_{bb} \\
-				\end{pmatrix}
-			\right), 
-			\ \text{then } \quad  \av | \bv \sim \N(\muv_{a|b}, \Sigma_{a|b})
-		\end{align*}
-	}
-	\uncover<3->{
-		where 
-		\begin{align*}
-			\muv_{a|b} &= \muv_a + \Sigma_{ab} \Sigma_{bb}^{-1}(\bv - \muv_b) \\
-			\Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab} \Sigma_{bb}^{-1} \Sigma_{ba}
-		\end{align*}
-	}
+	\textbf{Target:}\quad the distribution of a \emph{new noisy} target $\ys$ at a test point $\xs$, given the training data.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{The integral is cumbersome.} Marginalizing $\fv$ out of $p(\ys|\ldots,\fv)\,p(\fv|\yv)$ works but is messy. Is there a shortcut that avoids integrating?
+		\item<2-> \textbf{Use the known joint.} Training targets $\yv$ and the new $\ys$ are \emph{jointly} Gaussian. What are the four covariance blocks of $(\yv,\ys)$? Where does the noise $\sigma^2$ enter?
+		\item<3-> \textbf{Condition, don't integrate.} The Gaussian conditioning rule turns the joint into $\ys\,|\,\yv$ directly. What are $\muv_{a|b}$ and $\Sigma_{a|b}$ here?
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{known joint Gaussian $(\yv,\ys)$ $\to$ apply conditioning rule $\to$ done (no integral)}}
 \end{frame}
 
-\begin{frame}[t]{1 (c) Derive Predictive Posterior from Joint Distribution}
-	The joint distribution of $(\yv, \ys)$:
-	\textbf{Note: here is $\yv$ instead of $\fv$, and $\yv = \fv + \epsv$.  So we have $\sigma^2$ in the in the cov. matrix.}
+\begin{frame}{1 (c): Predictive via Gaussian Conditioning}
+	\small
+	Na\"ively: marginalize $\fv$ out via $p(\ys|\xs,\xv,\yv)=\int p(\ys|\xs,\xv,\yv,\fv)\,p(\fv|\yv,\xv)\,\mathsf{d}\fv$ --- cumbersome.
+	\smallskip
+
+	Instead, use the \textbf{Gaussian conditioning rule}:
+	\begin{tcolorbox}[colback=blue!4, colframe=blue!55!black, boxsep=2pt, left=5pt, right=5pt, top=3pt, bottom=3pt, arc=2pt]
+	\footnotesize
+	If
+	$\begin{pmatrix}\av \\ \bv\end{pmatrix}
+	\sim \N\!\left(
+		\begin{pmatrix}\muv_{a}\\ \muv_{b}\end{pmatrix},
+		\begin{pmatrix}\Sigma_{aa} & \Sigma_{ab}\\ \Sigma_{ab}^\top & \Sigma_{bb}\end{pmatrix}
+	\right)$,
+	then $\av\,|\,\bv \sim \N(\muv_{a|b}, \Sigma_{a|b})$ with
 	\begin{align*}
-		\begin{pmatrix}
-			\yv \\
-			\ys 
-		\end{pmatrix}
+		\muv_{a|b} &= \muv_a + \Sigma_{ab}\,\Sigma_{bb}^{-1}(\bv - \muv_b), &
+		\Sigma_{a|b} &= \Sigma_{aa} - \Sigma_{ab}\,\Sigma_{bb}^{-1}\,\Sigma_{ba}.
+	\end{align*}
+	\end{tcolorbox}
+\end{frame}
+
+\begin{frame}[t]{1 (c): Predictive via Gaussian Conditioning}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
+	\begin{tcolorbox}[colback=blue!10, colframe=blue!10, boxsep=1pt, left=4pt, right=4pt, top=2pt, bottom=2pt, arc=2pt, before skip=2pt, after skip=4pt]
+	\footnotesize Here we condition $\ys$ on $\yv$ (not $\fv$), and $\yv=\fv+\epsv$ $\Rightarrow$ add $\sigma^2$ on the diagonal of the cov.\ matrix.
+	\end{tcolorbox}
+
+	The joint distribution of $(\yv,\ys)$:
+	\begin{align*}
+		\begin{pmatrix}\yv \\ \ys\end{pmatrix}
 		\sim \N \left(
-		\begin{pmatrix}
-			\mv \\
-			\ms
-		\end{pmatrix},
+		\begin{pmatrix}\mv \\ \ms\end{pmatrix},
 		\begin{pmatrix}
 			\Kmat + \sigma^2 \id & \Kstar \\
-			\Kstar^\top  & \Kstarstar + \sigma^2 
+			\Kstar^\top  & \Kstarstar + \sigma^2
 		\end{pmatrix}
-		\right),
+		\right).
 	\end{align*}
-	
 	\uncover<2->{
-		Therefore, the conditional distribution $\ys | \xs, \xv, \yv $ is also a Gaussian:
+		Conditioning ($\av=\ys$, $\bv=\yv$) gives a Gaussian
+		$\ys | \xs, \xv, \yv \sim \N(\mu_*, \Sigma_*)$ with (here $\av=\ys$ is \emph{scalar}, so $\Sigma_{a|b}$ is the scalar predictive variance)
+		{\footnotesize
 		\begin{align*}
-			\ys | \xs, \xv, \yv \sim \N(\ms + \Kstar^\top(\Kmat + \sigma^2 \id)^{-1}(\yv -\mv), \Kstarstar + \sigma^2 - \Kstar^\top (\Kmat +\sigma^2 \id)^{-1} \Kstar).
-		\end{align*}
+			\mu_* &= \ms + \Kstar^\top(\Kmat + \sigma^2 \id)^{-1}(\yv -\mv),\\
+			\Sigma_* &= \Kstarstar + \sigma^2 - \Kstar^\top (\Kmat +\sigma^2 \id)^{-1} \Kstar. \hfill\qed
+		\end{align*}}%
 	}
+	\uncover<3->{\scriptsize\textbf{NB:} the variance keeps the $+\sigma^2$ because $\ys$ is the \emph{observable} target. The latent $f_*$ would drop it: $\operatorname{Var}=\Kstarstar - \Kstar^\top(\Kmat+\sigma^2\id)^{-1}\Kstar$.}
+	\end{column}
+	\begin{column}{0.24\textwidth}
+	\rmgp{3}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
-	Implement the GP with squared exponential kernel, zero mean function and $\ell = 1$ from scratch for $n=2$ observations $(\yv, \xv)$. Do this as efficiently as possible by explicitly calculating all expensive computations by hand. Do the same for the posterior predictive distribution of $\ys$. Test your implementation using simulated data.
-	
-	\textbf{Show the standard solution.}
+	\small
+	(d) Implement the GP with squared exponential (SE) kernel, zero mean function and $\ell = 1$ from scratch for $n=2$ observations $(\yv, \xv)$. Do this as efficiently as possible by explicitly calculating all expensive computations \textbf{by hand}. Do the same for the posterior predictive distribution of $\ys$. Test your implementation using simulated data.
+\end{frame}
+
+\begin{frame}{1 (d): Think Before Solving}
+	\small
+	\textbf{Target:}\quad a from-scratch GP for $n=2$ where the "expensive" step is done analytically.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
+	\begin{itemize}
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{What is expensive?} The predictive formula needs $(\Kmat+\sigma^2\id)^{-1}$. For $n=2$ this is just a $2\times2$ inverse --- can you write it in closed form?
+		\item<2-> \textbf{Few distinct entries.} With the SE kernel and $\ell=1$, $k(x,x)=1$ and off-diagonals share one value $\rho$. How many numbers actually determine $\Kmat$?
+		\item<3-> \textbf{Training.} With zero mean and $\ell$ fixed, the only free parameter is $\sigma^2$. How do you pick it from the data (which Gaussian do you maximize)?
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{$2\times2$ inverse by hand $\to$ plug into part (c) $\to$ tune $\sigma^2$ by marginal likelihood}}
+\end{frame}
+
+\begin{frame}{1 (d): Kernel Matrix and Its Inverse by Hand}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.74\textwidth}
+	SE kernel, $\ell=1$: $k(x,x')=\exp\!\big(-\tfrac12(x-x')^2\big)$, so $k(x,x)=1$.
+	For $n=2$ set $\rho := \exp\!\big(-\tfrac12(x^{(1)}-x^{(2)})^2\big)\in(0,1]$:
+	\begin{align*}
+		\Kmat = \begin{pmatrix} 1 & \rho \\ \rho & 1 \end{pmatrix},
+		\qquad
+		\Kmat^{-1} = \frac{1}{1-\rho^2}\begin{pmatrix} 1 & -\rho \\ -\rho & 1 \end{pmatrix}.
+	\end{align*}
+	\uncover<2->{
+	\textbf{Noisy version} $\Kmaty := \Kmat + \sigma^2\id$ (the matrix the predictive actually inverts):
+	{\footnotesize
+	\begin{align*}
+		\Kmaty = \begin{pmatrix} 1+\sigma^2 & \rho \\ \rho & 1+\sigma^2 \end{pmatrix},
+		\quad
+		\Kmaty^{-1} = \frac{1}{(1+\sigma^2)^2 - \rho^2}\begin{pmatrix} 1+\sigma^2 & -\rho \\ -\rho & 1+\sigma^2 \end{pmatrix}.
+	\end{align*}}%
+	}
+	\uncover<3->{\scriptsize ($\rho^2 = \exp(-(x^{(1)}-x^{(2)})^2)$.) This closed-form $2\times2$ inverse is the "expensive computation by hand." \hfill\qed}
+	\end{column}
+	\begin{column}{0.24\textwidth}
+	\rmgp{4}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (d): Posterior Predictive at $\xs$ (Zero Mean)}
+	\small
+	With zero mean ($\mv=\zero$, $\ms=0$) plug $\Kmaty^{-1}$ into the part-(c) formula. For a test point $\xs$,
+	$$\Kstar = \big(k(\xs,x^{(1)}),\, k(\xs,x^{(2)})\big)^\top, \qquad \Kstarstar = k(\xs,\xs) = 1.$$
+	\begin{align*}
+		\text{mean} &= \Kstar^\top \Kmaty^{-1}\, \yv, \\
+		\text{var} &= \underbrace{\Kstarstar + \sigma^2}_{=\,1+\sigma^2} - \Kstar^\top \Kmaty^{-1}\, \Kstar.
+	\end{align*}
+	\uncover<2->{
+	\textbf{Training ($\sigma^2$).} Zero mean, $\ell$ fixed $\Rightarrow$ the only free parameter is $\sigma^2$. Maximize the log marginal likelihood of $\yv\sim\N(\zero,\Kmaty)$. Using $\partial\Kmaty/\partial\sigma^2=\id$, set the derivative to zero:
+	$$\operatorname{tr}\!\big(\Kmaty^{-1}\yv\yv^\top\Kmaty^{-1} - \Kmaty^{-1}\big) = 0,$$
+	and solve for $\sigma^2$ numerically by root-finding. \hfill\qed
+	}
+\end{frame}
+
+\begin{frame}[fragile]{1 (d): Implementation and Test (Python)}
+	\scriptsize
+	Pure \texttt{NumPy}/\texttt{SciPy} (no GP library); the prediction uses the part-(c) result.
+	\begin{lstlisting}
+import numpy as np; from scipy.optimize import brentq
+rng = np.random.default_rng(190); n = 2; sigma = 1.0
+def kern(x, y=None):                       # SE kernel, l = 1
+    d = np.subtract.outer(np.ravel(x), np.ravel(x if y is None else y))
+    return np.exp(-0.5 * d**2)             # k(x,y) = exp(-0.5 (x-y)^2)
+# simulate noisy targets  y ~ N(0, K + sigma^2 I)
+x = rng.standard_normal(n); Ky = kern(x) + sigma**2 * np.eye(n)
+y = rng.multivariate_normal(np.zeros(n), Ky).reshape(-1, 1)
+# tune sigma^2 by marginal likelihood: solve tr(Kyi yy^T Kyi - Kyi) = 0
+def root(s2):
+    Kyi = np.linalg.inv(kern(x) + s2 * np.eye(n))
+    return 0.5 * np.trace(Kyi @ y @ y.T @ Kyi - Kyi)
+s2 = brentq(root, 1e-3, 20)
+# posterior predictive at x* = 0  (part (c))
+Kyi = np.linalg.inv(kern(x) + s2 * np.eye(n))
+Ks = kern(x, [0.0]); Kss = 1.0
+mean_pred = Ks.T @ Kyi @ y
+var_pred  = Kss + s2 - Ks.T @ Kyi @ Ks     # +s2: observable y*
+	\end{lstlisting}
+\end{frame}
+
+\begin{frame}{1 (d): Output --- $\sigma^2$ Fit and Posterior Predictive}
+	\small
+	Simulated $n=2$ data. Marginal-likelihood tuning gives $\sigma^2 \approx 0.20$ (left); the posterior-predictive mean $\pm 2\,$sd over a grid of $x_*$ (right) --- the band \textbf{narrows at the data}, \textbf{widens away}, and the mean reverts to the prior mean $0$ far from the points.
+	\begin{center}
+	\includegraphics[width=0.95\textwidth]{figures/gp_posterior_predictive.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.05\textwidth}>{\raggedright\arraybackslash}p{0.53\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		(a) &
+			Prior $\fv\sim\N(\mv,\Kmat)$, $\Kmat_{ij}=k(x^{(i)},x^{(j)})$. &
+			A GP restricted to finitely many points is a finite-dimensional Gaussian. \\
+		(b) &
+			Posterior $\fv|\yv\sim\N(\fpost,\Kpost)$ via Bayes $+$ completing the square: $\kpinv=\ssqiinv+\kinv$, $\fpost=\Kpost\tfv$. &
+			Bayesian posterior; Gaussian $\times$ Gaussian stays Gaussian. \\
+		(c) &
+			Predictive $\ys|\xs,\xv,\yv$ by conditioning the noisy joint $(\yv,\ys)$; variance keeps $+\sigma^2$ (observable $\ys$). &
+			Gaussian conditioning rule; latent $f_*$ vs.\ observable $\ys$. \\
+		(d) &
+			$n=2$ SE kernel: closed-form $2\times2$ inverse $\Kmaty^{-1}$, plug into (c); tune $\sigma^2$ by marginal likelihood (root-finding). &
+			Efficient GP regression; marginal-likelihood training. \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
 \end{frame}
 
 \end{document}
