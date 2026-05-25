@@ -7,7 +7,7 @@
 %% Template edited by Panagiotis Adamopoulos {padamopo}@stern.nyu.edu
 
 \documentclass[aspectratio=169]{beamer}
- 
+
 \mode<presentation>
 {
 \usetheme{NYU}
@@ -24,6 +24,11 @@
 %usepackage{appendixnumberbeamer}
 \usepackage{amsmath}
 \usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{matrix, decorations.pathreplacing, arrows.meta}
+\usepackage{booktabs}
 \usepackage{pgfpages}
 % citations
 \usepackage{natbib}
@@ -38,6 +43,35 @@
 \newcommand{\Rt}[1]{R_t^{[#1]}}
 \newcommand{\fhv}[1]{\tilde{\bm{f}}^{[#1]}}
 
+% --- proof roadmap: one colorbox per step (done / active / upcoming) ---
+\newcommand{\qbox}[4]{% #1 active idx, #2 this idx, #3 label, #4 short descriptor
+	\ifnum#2<#1
+		\begin{tcolorbox}[colback=green!6,colframe=green!35!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{green!45!black}{$\checkmark$~\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!55}{#4}}
+		\end{tcolorbox}
+	\else\ifnum#2=#1
+		\begin{tcolorbox}[colback=blue!12,colframe=blue!55!black,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{blue!60!black}{$\blacktriangleright$~\textbf{#3}}}\\[1pt]{\scriptsize #4}
+		\end{tcolorbox}
+	\else
+		\begin{tcolorbox}[colback=black!3,colframe=black!20,boxsep=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,arc=2pt,before skip=2.5pt,after skip=2.5pt]
+		{\scriptsize\textcolor{black!45}{\textbf{#3}}}\\[1pt]{\scriptsize\textcolor{black!45}{#4}}
+		\end{tcolorbox}
+	\fi\fi}
+% 5-step chain (i) -> (v) of one gradient-boosting iteration (part (b))
+\newcommand{\rmgb}[1]{%
+	{\footnotesize\bfseries Roadmap (b)}\par
+	\qbox{#1}{1}{(i) init $\fh^{[0]}$}{mean of $\log_2\yv$}%
+	\qbox{#1}{2}{(ii) residual $\rtilde{1}$}{$\log_2\yv - \fhv{0}$}%
+	\qbox{#1}{3}{(iii) stump $R^{[1]}$}{fit $\rtilde{1}$ on $x_1$}%
+	\qbox{#1}{4}{(iv) update $\fhv{1}$}{$\fhv{0} + \alpha\,R^{[1]}$}%
+	\qbox{#1}{5}{(v) residual $\rtilde{2}$}{$\log_2\yv - \fhv{1}$}}
+
+% small recall side-note
+\newcommand{\recall}[1]{%
+	\setlength{\fboxsep}{5pt}%
+	\colorbox{blue!10}{\footnotesize #1}}
+
 
 \title[]{\textbf{Exercise of Supervised Learning: \\ Boosting Part 2}}
 
@@ -46,7 +80,7 @@
 % - Use the \inst{?} command only if the authors have different
 %   affiliation.
 %\author{F.~Author\inst{1} \and S.~Another\inst{2}}
-\author{Yawei Li} 
+\author{Yawei Li}
 
 % - Use the \inst command only if there are several affiliations.
 % - Keep it simple, no one is interested in your street address.
@@ -56,7 +90,7 @@
   \texttt{yawei.li@stat.uni-muenchen.de}
 }
 
-\date{January 21, 2025}
+\date{July 9, 2026}
 
 
 % This is only inserted into the PDF information catalog. Can be left
@@ -98,132 +132,337 @@
 \end{frame}
 
 \begin{frame}{Exercise 1: Gradient Boosting}
-	In the following, you assume that your outcome follows a $\log_2$-normal distribution with density function 
-	$$p(y|f) = \frac{1}{y \sigma \sqrt{2\pi}} \exp\left( - \frac{(\log_2(y) - f)^2}{2\sigma^2} \right) \qquad \lhd$$ 
-	where $\sigma = 1$. In other words, $\log_2(Y)$ follows a normal distribution. You observe $n = 3$ data points $\yv$ and want to model $f$ using features $\Xmat \in \mathbb{R}^{n \times p}$. You choose to use a gradient boosting tree algorithm. 
-	
+	In the following, you assume that your outcome follows a $\log_2$-normal distribution with density function
+	$$p(y|f) = \frac{1}{y \sigma \sqrt{2\pi}} \exp\left( - \frac{(\log_2(y) - f)^2}{2\sigma^2} \right)$$
+	where $\sigma = 1$. In other words, $\log_2(Y)$ follows a normal distribution. You observe $n = 3$ data points $\yv$ and want to model $f$ using features $\Xmat \in \mathbb{R}^{n \times p}$. You choose to use gradient boosting with tree base learners. (The concrete data and the $p = 2$ features are specified in part (b).)
+
 	(a) Derive the pseudo residuals based on the negative log-likelihood for the given distribution assumption.
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (a)}
-	(a) Derive the pseudo residuals based on the negative log-likelihood for the given distribution assumption.
+\begin{frame}{Gradient Boosting: One Iteration at a Glance}
+	\small
+	Parts (a)--(c) walk through the loop below, repeated for $m = 1, \dots, M$ rounds. At round $m$ we fit a base learner to the \emph{current} pseudo-residuals, then take an additive step.
+	\medskip
+	\begin{center}
+	\begin{tikzpicture}[font=\scriptsize, >=Latex,
+		box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, text width=23mm, minimum height=12mm, fill=blue!8, draw=blue!55!black},
+		lab/.style={font=\scriptsize, align=center}]
+	\node[box] (f) at (0,0) {current model\\ $\fh^{[m-1]}$};
+	\node[box] (r) at (3.3,0) {pseudo-residuals\\ $\tilde r = -\dfrac{\partial L}{\partial f}$};
+	\node[box] (t) at (6.6,0) {fit base learner\\ (stump) to $\tilde r$};
+	\node[box, text width=29mm] (u) at (10.1,0) {update\\ $\fh^{[m]} = \fh^{[m-1]} + \alpha\,b$};
+	\draw[->] (f) -- node[above, lab]{(a)} (r);
+	\draw[->] (r) -- node[above, lab]{(b iii)} (t);
+	\draw[->] (t) -- node[above, lab]{(b iv)} (u);
+	\draw[->] (u.south) -- ++(0,-0.75) -| node[below, lab, pos=0.25]{$m \leftarrow m+1$} (f.south);
+	\end{tikzpicture}
+	\end{center}
+	\medskip
+	\uncover<2->{\centering\recall{(a): turn the loss into residuals \quad (b): run one full iteration on 3 samples \quad (c): does a second iteration help?}}
+\end{frame}
+
+\begin{frame}{1 (a): Think Before Solving}
+	\small
+	\textbf{Target:}\quad turn the distribution $p(y|f)$ into a pseudo-residual $\tilde r$.
+	\rule{\linewidth}{0.4pt}
+	\vspace{4pt}
 	\begin{itemize}
-		\item<2-> The loss is calulated by the NLL by: $$L(y, f) = - \ell(f) = - (const. - (\log_2(y) - f)^2 /2).$$
-		\item<3-> The pseudo residuals are: $$\tilde{r} (f) = \partial L(y,f) / \partial f = (\log_2(y) - f).$$
+		\setlength{\itemsep}{9pt}
+		\item<1-> \textbf{Likelihood.} The loss in gradient boosting is the NLL $L = -\ell$ with $\ell = \log p(y|f)$ --- what does $\ell$ look like once you take the log?
+		\item<2-> \textbf{Constants.} Which terms do not depend on $f$? Why may they be dropped for the gradient?
+		\item<3-> \textbf{Negative gradient.} Differentiate the squared term $\tfrac12(\log_2(y)-f)^2$ --- and recall the pseudo-residual is the \emph{negative} gradient $\tilde r = -\partial L / \partial f$.
+	\end{itemize}
+	\vspace{2pt}
+	\uncover<3->{\centering\recall{$p(y|f) \to \ell(f) \to L = -\ell \to \tilde r = -\partial L/\partial f$}}
+\end{frame}
+
+\begin{frame}{Solution to Exercise 1 (a)}
+	\small
+	(a) Derive the pseudo residuals based on the negative log-likelihood.
+	\setlength{\jot}{3pt}
+	\begin{itemize}
+		\setlength{\itemsep}{8pt}
+		\item<1-> Log-likelihood (drop $f$-independent constants):
+			$$\ell(f) = \log p(y|f) = \text{const} - \tfrac12 (\log_2(y) - f)^2.$$
+		\item<2-> The loss is the negative log-likelihood:
+			$$L(y, f) = - \ell(f) = \text{const} + \tfrac12 (\log_2(y) - f)^2.$$
+		\item<3-> The pseudo-residual is the \emph{negative} gradient of the loss:
+			$$\tilde{r} = - \frac{\partial L(y,f)}{\partial f} = \frac{\partial \ell(f)}{\partial f} = \log_2(y) - f. \hfill\qed$$
 	\end{itemize}
 \end{frame}
 
 \begin{frame}{Exercise 1 (b)}
-	(b) Given only the 3 samples $\yv = (1, 2, 4)\top \qquad \lhd$ 
-	
-	and two features 
-	$$\Xmat = (\xv_1, \xv_2) = 
+	\small
+	(b) Given only the 3 samples $\yv = (1, 2, 4)^\top$
+
+	and two features
+	$$\Xmat = (\xv_1, \xv_2) =
 		\begin{pmatrix}
 			1 & 0 \\
 			1 & 0 \\
 			0 & 0 \\
-		\end{pmatrix} \qquad \lhd
+		\end{pmatrix}
 	$$
 	explicitly derive or state with explanation
 	\begin{enumerate}[(i)]
 		\item the loss-optimal initial boosting model $\fhx{0}$,
 		\item the pseudo residual $\rtilde{1}$,
 		\item the regression stump $\Rt{1}, t = 1, 2$,
-		\item the boosting model $\fhx{1}$ as well as 
-		\item the pseduo residual $\rtilde{2}$
+		\item the boosting model $\fhx{1}$ as well as
+		\item the pseudo residual $\rtilde{2}$
 	\end{enumerate}
-	for tree base learners with depth $d = 1$ (stumps) and a learning rate of $\alpha = 1$. 
+	for tree base learners with depth $d = 1$ (stumps) and a learning rate of $\alpha = 1$.
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (b)}
-	(b) (i) Derive the loss-optimal intial boosting model $\fhx{1}$.
+\begin{frame}{1 (b): The Data, and What One Iteration Repeats}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.52\textwidth}
+	The three samples (note $\xv_2$ is constant $\Rightarrow$ carries no information):
+	\medskip
+	\begin{center}
+	\renewcommand{\arraystretch}{1.2}
+	\begin{tabular}{@{}ccccc@{}}
+		\toprule
+		$i$ & $y^{(i)}$ & $\log_2 y^{(i)}$ & $x_1^{(i)}$ & $x_2^{(i)}$ \\
+		\midrule
+		1 & $1$ & $0$ & $1$ & $0$ \\
+		2 & $2$ & $1$ & $1$ & $0$ \\
+		3 & $4$ & $2$ & $0$ & $0$ \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
+	\medskip
+	Target we regress on: $\log_2\yv = (0,1,2)^\top$.
+	\end{column}
+	\begin{column}{0.46\textwidth}
+	\textbf{Think before solving:} what are the repeating steps of \emph{one} gradient-boosting iteration?
+	\medskip
 	\begin{itemize}
-		\item<2-> We initialize $\fhx{0} = \argmin_{f^{[0]}} \sumin L(\yi, f^{[0]}(\xi))$.
-		\item<3-> It can be easily seen that $\fhx{0} = \frac{1}{n} \sumin \log_2(\yi) = 1$, as it miminizes the squared error.
+		\setlength{\itemsep}{6pt}
+		\item<2-> Where does the model \emph{start} before any tree is added?
+		\item<3-> Given the current model, how are the residuals $\tilde r$ formed (cf.\ (a))?
+		\item<4-> A depth-1 stump can only split on \emph{one} feature --- which one, and what value sits in each leaf?
+		\item<5-> How does the additive step turn $\fhv{0}$ into $\fhv{1}$?
 	\end{itemize}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (b): Continued}
-	(b) (ii) Derive the pseudo residual $\rtilde{1}$.
+\begin{frame}{1 (b)(i): Loss-optimal Initial Model $\fhx{0}$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
 	\begin{itemize}
-		\item<2-> From (a) we know $\tilde{r} (f) = \partial L(y,f) / \partial f = (\log_2(y) - f)$.
-		\item<3-> Denote $\fhv{0} = \left(\fh^{[0]}(\xv^{(1)}), \fh^{[0]}(\xv^{(2)}), \fh^{[0]}(\xv^{(3)}) \right)\top = (1, 1, 1)\top$
-		\item<4-> So 
+		\setlength{\itemsep}{10pt}
+		\item<1-> Initialize with the loss-minimizing constant:
+			$$\fhx{0} = \argmin_{f^{[0]}} \sumin L(\yi, f^{[0]}(\xi)).$$
+		\item<2-> Since $L$ is the squared error on $\log_2 y$, the minimizer is the mean:
+			$$\fhx{0} = \frac{1}{n} \sumin \log_2(\yi) = \frac{0+1+2}{3} = 1.$$
+		\item<3-> Hence the initial predictions on all 3 samples are
+			$$\fhv{0} = (1, 1, 1)^\top. \hfill\qed$$
+	\end{itemize}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\rmgb{1}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (b)(ii): Pseudo Residual $\rtilde{1}$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	\begin{itemize}
+		\setlength{\itemsep}{8pt}
+		\item<1-> From (a): $\tilde{r}(f) = -\partial L / \partial f = \log_2(y) - f$.
+		\item<2-> Current predictions: $\fhv{0} = \left(\fh^{[0]}(\xv^{(1)}), \fh^{[0]}(\xv^{(2)}), \fh^{[0]}(\xv^{(3)})\right)^\top = (1, 1, 1)^\top$.
+		\item<3-> So the first-round residuals are
+			$$\rtilde{1} = \log_2\yv - \fhv{0}
+			= \begin{pmatrix} 0 \\ 1 \\ 2 \end{pmatrix} - \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix}
+			= \begin{pmatrix} -1 \\ 0 \\ 1 \end{pmatrix}. \hfill\qed$$
+	\end{itemize}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\rmgb{2}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (b)(iii): Regression Stump $\Rt{1}$, $t = 1, 2$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.50\textwidth}
+	Fit the stump to $\rtilde{1} = (-1, 0, 1)^\top$:
+	\begin{itemize}
+		\setlength{\itemsep}{5pt}
+		\item<1-> Split on $x_1$ ($x_2$ carries no info); note $x_1^{(1)} = x_1^{(2)}$.
+		\item<2-> Each leaf value $=$ mean residual of its samples.
+		\item<3-> Leaf $x_1 \ge 0.5$ (samples 1,2): $\tfrac12(-1 + 0) = -0.5$.
+		\item<4-> Leaf $x_1 < 0.5$ (sample 3): $1$.
+	\end{itemize}
+	\uncover<5->{
+	\medskip
+	$$R_1^{[1]} = -0.5\cdot\id_{x_1 \ge 0.5}, \quad R_2^{[1]} = 1\cdot\id_{x_1 < 0.5}. \hfill\qed$$
+	}
+	\end{column}
+	\begin{column}{0.27\textwidth}
+	\centering
+	\begin{tikzpicture}[font=\tiny, >=Latex, scale=0.9, transform shape,
+		root/.style={draw, rounded corners=2pt, fill=blue!10, draw=blue!55!black, align=center, inner sep=2.5pt},
+		leaf/.style={draw, rounded corners=2pt, align=center, inner sep=2.5pt, minimum width=12mm}]
+	\node[root] (r) at (0,0) {split $x_1$\\ at $0.5$};
+	\node[leaf, fill=green!10, draw=green!45!black] (l) at (-1.05,-1.8) {$x_1 \ge 0.5$\\ \{1,2\}\\ $-0.5$};
+	\node[leaf, fill=orange!12, draw=orange!60!black] (rr) at (1.05,-1.8) {$x_1 < 0.5$\\ \{3\}\\ $+1$};
+	\draw[->] (r) -- (l);
+	\draw[->] (r) -- (rr);
+	\end{tikzpicture}
+	\end{column}
+	\begin{column}{0.21\textwidth}
+	\rmgb{3}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{1 (b)(iv): Boosting Model $\fhx{1}$ (predictions $\fhv{1}$)}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
+	\begin{itemize}
+		\setlength{\itemsep}{7pt}
+		\item<1-> Recall $R_1^{[1]} = -0.5\,\id_{x_1 \ge 0.5}$, $R_2^{[1]} = 1\cdot\id_{x_1 < 0.5}$, and $\alpha = 1$.
+		\item<2-> Update direction (per sample) from the stump: $(-0.5, -0.5, 1)^\top$.
+		\item<3-> Additive update:
 			\begin{align*}
-				\rtilde{1} &= \left(\log_2(y^{(1)}), \log_2(y^{(2)}), \log_2(y^{(3)})\right)\top - \fhv{0} \\
-				&= (0, 1, 2)\top - (1, 1, 1)\top \\
-				&= (-1, 0, 1)\top.
+				\fhv{1} &= \fhv{0} + \alpha\cdot(-0.5, -0.5, 1)^\top \\
+				&= \begin{pmatrix} 1 \\ 1 \\ 1 \end{pmatrix} + \begin{pmatrix} -0.5 \\ -0.5 \\ 1 \end{pmatrix}
+				= \begin{pmatrix} 0.5 \\ 0.5 \\ 2 \end{pmatrix}. \hfill\qed
 			\end{align*}
 	\end{itemize}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\rmgb{4}
+	\end{column}
+	\end{columns}
 \end{frame}
 
-\begin{frame}{Solution to Exercise 1 (b): Continued}
-	(b) (iii) Derive the regression stump $\Rt{1}, t = 1, 2$.
+\begin{frame}{1 (b)(v): Pseudo Residual $\rtilde{2}$}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.72\textwidth}
 	\begin{itemize}
-		\item<2-> $\Rt{1}, t = 1, 2$ will split using $\xv_1$, as $\xv_2$ carries no information.
-		\item<3-> Note that $x_1^{(1)} = x_1^{(2)}$.
-		\item<4-> Recall that $\rtilde{1} = (-1, 0, 1)\top$, and $\Rt{1}, t=1, 2$ aim to fit this pseudo residual.
-		\item<5-> $R_1 = - 0.5 \cdot \id_{x_1 \geq 0.5}$, for which $-0.5$ stems from $\frac{1}{2}(\tilde{r}^{[1](1)} + \tilde{r}^{[1](2)})$ because $\xv_1^{(1)} , \xv_1^{(2)} \geq 0.5$.
-		\item<6-> $R_2 = 1 \cdot \id_{x_1 < 0.5}$, for which $1$ stems from $\tilde{r}^{[1](3)}$ because only $\xv_1^{(3)} < 0.5$.
-	\end{itemize}
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (b): Continued}
-	(b) (iv) Derive the boosting model $\fhx{1}$ (i.e., $\fhv{1}$).
-	\begin{itemize}
-		\item<2-> Recall that $R_1^{[1]} = - 0.5 \id_{x_1 \geq 0.5}$ and $R_2^{[1]} = 1 \cdot \id_{x_1 < 0.5}$ , and learning rate $\alpha = 1$.
-		\item<3-> So the update direction given by the regression stump is $(-0.5, -0.5, 1)\top$.
-		\item<4-> Therefore, 
+		\setlength{\itemsep}{8pt}
+		\item<1-> Same computation as (ii), now against the updated model $\fhv{1}$.
+		\item<2-> So
 			\begin{align*}
-				\fhv{1} &= \fhv{0} + 1 \cdot (- 0.5, - 0.5, 1)\top \\
-				&= (1, 1, 1)^\top + (-0.5, -0.5, 1)^\top \\
-				&= (0.5, 0.5, 2)^\top
+				\rtilde{2} &= \log_2\yv - \fhv{1} \\
+				&= \begin{pmatrix} 0 \\ 1 \\ 2 \end{pmatrix} - \begin{pmatrix} 0.5 \\ 0.5 \\ 2 \end{pmatrix}
+				= \begin{pmatrix} -0.5 \\ 0.5 \\ 0 \end{pmatrix}. \hfill\qed
 			\end{align*}
 	\end{itemize}
-\end{frame}
-
-\begin{frame}{Solution to Exercise 1 (b): Continued}
-	(b) (v) Derive the pseudo residual $\rtilde{2}$.
-	\begin{itemize}
-		\item Similar as the previous step, 
-			\begin{align*}
-				\rtilde{2} & = \left(log_2(y^{(1)}), \log_2(y^{(2)}), \log_2 (y^{(3)}) \right)^\top - \fhv{1} \\
-				&= (0, 1, 2)\top - (0.5, 0.5, 2)\top \\
-				&= (-0.5, 0.5, 0)\top
-			\end{align*}
-	\end{itemize}
+	\end{column}
+	\begin{column}{0.25\textwidth}
+	\rmgb{5}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (c)}
-	(c) What would happend in the second iteration of the previous boosting algorithm?
+	(c) What would happen in the second iteration of the previous boosting algorithm?
+
+	\vspace{10pt}
+	\uncover<2->{\begin{center}\setlength{\fboxsep}{6pt}\colorbox{blue!10}{\begin{minipage}{0.85\linewidth}\footnotesize\textbf{Leading question:} samples 1 and 2 share the same features --- what value must a stump give them, and what does that do to residuals of opposite sign?\end{minipage}}\end{center}}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (c)}
-	(c) What would happend in the second iteration of the previous boosting algorithm?
-
-	\vspace{10pt}
+	\small
+	(c) What would happen in the second iteration?
+	\begin{columns}[T]
+	\begin{column}{0.58\textwidth}
 	\begin{itemize}
-		\item<2-> Recall that $\rtilde{2} = (-0.5, 0.5, 0)\top$, which needs to be fit by $R_1^{[2]}$ and $R_2^{[2]}$. 
-		\item<3-> Similar as before, we split based on $\xv_1$, and $\xv^{(1)}, \xv^{(2)}$ goes to $R_1^{[2]}$, while $\xv^{(3)}$ goes to $R_2^{[2]}$.
-		\item<4-> Therefore $R_1^{[2]} = \frac{-0.5 + 0.5}{2} \cdot \id_{x_1 \geq 0.5} = 0$, and $R_2^{[2]} = 0 \cdot \id_{x_1 < 0.5} = 0$.
-		\item<5-> So the update direction is $(0, 0, 0)\top$, implying that no information can be used to improve the model.
+		\setlength{\itemsep}{6pt}
+		\item<2-> Fit $\rtilde{2} = (-0.5, 0.5, 0)^\top$ with $R_1^{[2]}, R_2^{[2]}$.
+		\item<3-> Split on $x_1$: samples 1,2 $\to R_1^{[2]}$, sample 3 $\to R_2^{[2]}$.
+		\item<4-> Leaf values:
+			$$R_1^{[2]} = \tfrac{-0.5 + 0.5}{2}\,\id_{x_1 \ge 0.5} = 0, \quad R_2^{[2]} = 0\cdot\id_{x_1 < 0.5} = 0.$$
+		\item<5-> Update direction $(0,0,0)^\top$ $\Rightarrow$ \textbf{boosting stalls}: these features cannot improve the model further.
 	\end{itemize}
+	\end{column}
+	\begin{column}{0.40\textwidth}
+	\uncover<4->{
+	\vtop{\centering
+	\begin{tikzpicture}[font=\scriptsize]
+	\node[draw, rounded corners=2pt, fill=green!10, draw=green!45!black, align=center, minimum width=3.5cm, inner sep=4pt] (box) at (0,0)
+		{leaf $x_1 \ge 0.5$: samples 1,2\\[3pt]
+		identical features $x_1 = 1$\\[3pt]
+		residuals $-0.5$ and $+0.5$\\[3pt]
+		$\Rightarrow$ average $= 0$ (cancel)};
+	\end{tikzpicture}
+	\smallskip\\
+	\parbox{3.5cm}{\centering\scriptsize Opposite-sign residuals on indistinguishable samples cancel.}}
+	}
+	\end{column}
+	\end{columns}
 \end{frame}
 
 \begin{frame}{Exercise 1 (d)}
-	(d) If you are given more data points, but still the two binary feature vectors $\xv_1$ and $\xv_2$, what will happen as 
+	(d) If you are given more data points, but still the two binary feature vectors $\xv_1$ and $\xv_2$, what will happen as
 	\begin{enumerate}[(i)]
-		\item $M$ grows
-		\item $n$ grows
+		\item the number of boosting rounds $M$ grows
+		\item the sample size $n$ grows
 	\end{enumerate}
 	in terms of model capacity (if $d$ is kept fixed)?
+
+	\vspace{8pt}
+	\uncover<2->{\begin{center}\setlength{\fboxsep}{6pt}\colorbox{blue!10}{\begin{minipage}{0.85\linewidth}\footnotesize\textbf{Leading question:} which knob adds new base learners to the additive model --- the number of rounds $M$, or the sample size $n$?\end{minipage}}\end{center}}
 \end{frame}
 
 \begin{frame}{Solution to Exercise 1 (d)}
+	\small
+	\begin{columns}[T]
+	\begin{column}{0.60\textwidth}
 	\begin{enumerate}[(i)]
-		\item $M$ grows: capacity will increase and the algorithm may overfit.
-		\item $n$ grows: capacity will stay the same and the algorithm may underfit.
+		\setlength{\itemsep}{10pt}
+		\item<1-> \textbf{$M$ grows:} each round adds another stump (write $b^{[m]}$ for the round-$m$ stump) to $\fh = \fh^{[0]} + \sum_{m=1}^{M} \alpha\, b^{[m]}$ $\Rightarrow$ capacity \emph{increases}, the algorithm may \textbf{overfit}.
+		\item<2-> \textbf{$n$ grows:} the number of base learners (depth $d$ fixed, $M$ fixed) is unchanged $\Rightarrow$ capacity \emph{stays the same}, the algorithm may \textbf{underfit}.
 	\end{enumerate}
+	\end{column}
+	\begin{column}{0.38\textwidth}
+	\uncover<2->{
+	\centering
+	\begin{tikzpicture}[font=\scriptsize, >=Latex,
+		k/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, minimum width=2.4cm}]
+	\node[k, fill=blue!10, draw=blue!55!black] (M) at (0,0) {$M \uparrow$\\ more stumps\\ capacity $\uparrow$};
+	\node[k, fill=black!4, draw=black!35] (n) at (0,-1.8) {$n \uparrow$\\ same \# stumps\\ capacity fixed};
+	\end{tikzpicture}
+	}
+	\end{column}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Summary --- Connecting the exercise to the lecture}
+	\footnotesize
+	\begin{center}
+	\renewcommand{\arraystretch}{1.1}
+	\begin{tabular}{@{}p{0.05\textwidth}p{0.52\textwidth}p{0.37\textwidth}@{}}
+		\toprule
+		& \textbf{What we derived} & \textbf{Lecture concept made concrete} \\
+		\midrule
+		(a) &
+			Pseudo-residual $\tilde r = -\partial L / \partial f = \log_2(y) - f$ from the $\log_2$-normal NLL. &
+			Pseudo-residuals as the negative gradient of the loss. \\
+		(b) &
+			One full iteration on 3 samples: init $\fh^{[0]} = 1$, residual $\rtilde{1} = (-1,0,1)^\top$, stump on $x_1$, additive update $\fhv{1} = (0.5, 0.5, 2)^\top$, residual $\rtilde{2} = (-0.5, 0.5, 0)^\top$. &
+			One gradient-boosting iteration: init, residuals, fit base learner to residuals, additive update. \\
+		(c) &
+			Second update is $(0,0,0)^\top$: samples 1 \& 2 share features but have opposite-sign residuals $\Rightarrow$ boosting stalls. &
+			Base learners limited by features; boosting can stall. \\
+		(d) &
+			$M\uparrow$: capacity grows (may overfit); $n\uparrow$ (with $d$, $M$ fixed): capacity unchanged (may underfit). &
+			Capacity grows with the number of rounds $M$, not with $n$. \\
+		\bottomrule
+	\end{tabular}
+	\end{center}
 \end{frame}
 
 
