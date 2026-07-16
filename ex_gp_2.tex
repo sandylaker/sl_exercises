@@ -509,10 +509,21 @@ var_pred  = Kss + s2 - Ks.T @ Kyi @ Ks     # +s2: observable y*
 
 \begin{frame}{1 (d): Output --- $\sigma^2$ Fit and Posterior Predictive}
 	\small
-	Simulated $n=2$ data. Marginal-likelihood tuning gives $\sigma^2 \approx 0.20$ (left); the posterior-predictive mean $\pm 2\,$sd over a grid of $x_*$ (right) --- the band \textbf{narrows at the data}, \textbf{widens away}, and the mean reverts to the prior mean $0$ far from the points.
+	Simulated $n=2$ data: marginal-likelihood tuning gives $\sigma^2 \approx 0.20$
+	(left), and the right panel shows the predictive distribution of a new noisy target $y_*$.
 	\begin{center}
-	\includegraphics[width=0.95\textwidth]{figures/gp_posterior_predictive.pdf}
+	\includegraphics[width=0.93\textwidth]{figures/gp_posterior_predictive.pdf}
 	\end{center}
+	\vspace{-3pt}
+
+	{\footnotesize
+	\textbf{Question:} Why is the predictive standard deviation nonzero at the training
+	points, and why do three red points appear although $n=2$?
+
+	\textbf{Explanation:} Zero uncertainty at training points applies only to the latent GP
+	with noiseless observations; here the band predicts a new noisy $y_*$, and the apparent
+	third red point was only the legend marker.
+	}
 \end{frame}
 
 \begin{frame}{Summary --- Connecting the exercise to the lecture}

@@ -57,7 +57,9 @@ sd = np.sqrt(np.clip(var, 0.0, None))
 
 
 # --- figure: (left) sigma^2 tuning, (right) posterior predictive band ---
-fig, (axL, axR) = plt.subplots(1, 2, figsize=(9, 3.4))
+fig, (axL, axR) = plt.subplots(
+    1, 2, figsize=(9.5, 3.7), gridspec_kw={"width_ratios": [1.0, 1.15]}
+)
 
 axL.plot(grid, dvals, color="#1f4e79", lw=1.6)
 axL.axhline(0, ls="--", color="0.5", lw=1.0)
@@ -67,15 +69,19 @@ axL.set_ylabel("marginal-likelihood derivative")
 axL.set_title(rf"$\sigma^2$ tuning  (root $\approx {s2:.2f}$)")
 
 axR.fill_between(xs, mean - 2 * sd, mean + 2 * sd,
-                 color="#1f4e79", alpha=0.18, label=r"$\pm 2\,$sd")
+                 color="#1f4e79", alpha=0.18,
+                 label=r"new noisy $y_*$: mean $\pm 2\,$sd")
 axR.plot(xs, mean, color="#1f4e79", lw=1.8, label="post. mean")
-axR.scatter(x, y.ravel(), color="#c0392b", zorder=5, label="data")
+axR.scatter(x, y.ravel(), color="#c0392b", zorder=5,
+            label=r"training data ($n=2$)")
 axR.set_xlabel(r"$x_*$")
 axR.set_ylabel(r"$y_*$")
-axR.set_title(r"GP posterior predictive ($n=2$, SE, $\ell=1$)")
-axR.legend(loc="upper right", fontsize=8, frameon=False)
+axR.set_title(r"Predictive distribution of a new noisy $y_*$")
+axR.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=3,
+           fontsize=7.5, frameon=False, borderaxespad=0.0,
+           columnspacing=1.1, handletextpad=0.5)
 
-fig.tight_layout()
+fig.tight_layout(rect=(0.0, 0.08, 1.0, 1.0))
 out = "figures/gp_posterior_predictive.pdf"
 fig.savefig(out, bbox_inches="tight")
 print("saved", out)
